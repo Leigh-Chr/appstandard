@@ -1,41 +1,24 @@
 import {
+	buildOwnershipFilterFromContext,
+	isAnonymousUserFromContext,
+	isAuthenticatedUserFromContext,
+} from "@appstandard/api-core";
+import {
 	ANONYMOUS_LIMITS,
 	AUTHENTICATED_LIMITS,
 	getMaxCalendars,
 	getMaxEventsPerCalendar,
 	hasReachedCalendarLimit,
 	hasReachedEventLimit,
-} from "@calendraft/core";
-import prisma from "@calendraft/db";
+} from "@appstandard/core";
+import prisma from "@appstandard/db";
 import { TRPCError } from "@trpc/server";
 import type { Context } from "./context";
 
-/**
- * Build Prisma where clause for user ownership verification
- * Supports both authenticated and anonymous users
- */
-export function buildOwnershipFilter(ctx: Context) {
-	return {
-		OR: [
-			...(ctx.session?.user?.id ? [{ userId: ctx.session.user.id }] : []),
-			...(ctx.anonymousId ? [{ userId: ctx.anonymousId }] : []),
-		],
-	};
-}
-
-/**
- * Check if user is anonymous (not authenticated)
- */
-export function isAnonymousUser(ctx: Context): boolean {
-	return !ctx.session?.user?.id && !!ctx.anonymousId;
-}
-
-/**
- * Check if user is authenticated
- */
-export function isAuthenticatedUser(ctx: Context): boolean {
-	return !!ctx.session?.user?.id;
-}
+// Re-export from api-core for backwards compatibility
+export const buildOwnershipFilter = buildOwnershipFilterFromContext;
+export const isAnonymousUser = isAnonymousUserFromContext;
+export const isAuthenticatedUser = isAuthenticatedUserFromContext;
 
 /**
  * Get error message for calendar limit based on user type

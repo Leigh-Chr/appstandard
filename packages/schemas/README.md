@@ -1,11 +1,11 @@
-# @calendraft/schemas
+# @appstandard/schemas
 
 Zod validation schemas shared between frontend and backend.
 
 ## Installation
 
 ```bash
-bun add @calendraft/schemas
+bun add @appstandard/schemas
 ```
 
 ## Quick usage
@@ -17,7 +17,7 @@ import {
   attendeeSchema,
   alarmSchema,
   FIELD_LIMITS 
-} from '@calendraft/schemas';
+} from '@appstandard/schemas';
 
 // Validate event data
 const result = eventCreateSchema.safeParse(data);
@@ -58,7 +58,7 @@ if (!result.success) {
 ### emailSchema
 
 ```typescript
-import { emailSchema } from '@calendraft/schemas';
+import { emailSchema } from '@appstandard/schemas';
 
 emailSchema.parse('user@example.com'); // OK
 emailSchema.parse('invalid');          // Error
@@ -67,7 +67,7 @@ emailSchema.parse('invalid');          // Error
 ### urlSchema
 
 ```typescript
-import { urlSchema } from '@calendraft/schemas';
+import { urlSchema } from '@appstandard/schemas';
 
 urlSchema.parse('https://example.com'); // OK
 urlSchema.parse('not-a-url');           // Error
@@ -76,7 +76,7 @@ urlSchema.parse('not-a-url');           // Error
 ### nullableTrimmedStringSchema
 
 ```typescript
-import { nullableTrimmedStringSchema } from '@calendraft/schemas';
+import { nullableTrimmedStringSchema } from '@appstandard/schemas';
 
 const schema = nullableTrimmedStringSchema(255);
 schema.parse('  hello  '); // 'hello' (trimmed)
@@ -87,7 +87,7 @@ schema.parse(null);        // null
 ## Field limits
 
 ```typescript
-import { FIELD_LIMITS } from '@calendraft/schemas';
+import { FIELD_LIMITS } from '@appstandard/schemas';
 
 FIELD_LIMITS.TITLE            // 255
 FIELD_LIMITS.DESCRIPTION      // 10000
@@ -103,7 +103,7 @@ FIELD_LIMITS.RRULE            // 500
 ### RRULE
 
 ```typescript
-import { rruleSchema } from '@calendraft/schemas';
+import { rruleSchema } from '@appstandard/schemas';
 
 // Valid
 rruleSchema.parse('FREQ=DAILY;COUNT=5');
@@ -116,7 +116,7 @@ rruleSchema.parse('FREQ=DAILY;UNTIL=20240101;COUNT=5'); // Error
 ### Alarms
 
 ```typescript
-import { alarmSchema } from '@calendraft/schemas';
+import { alarmSchema } from '@appstandard/schemas';
 
 // DISPLAY requires summary
 alarmSchema.parse({
@@ -137,7 +137,7 @@ alarmSchema.parse({
 ### Attendees
 
 ```typescript
-import { attendeeSchema } from '@calendraft/schemas';
+import { attendeeSchema } from '@appstandard/schemas';
 
 attendeeSchema.parse({
   email: 'attendee@example.com',
@@ -157,7 +157,7 @@ import type {
   EventFormData,
   Attendee,
   Alarm
-} from '@calendraft/schemas';
+} from '@appstandard/schemas';
 ```
 
 ## Custom refinements
@@ -176,7 +176,7 @@ Schemas include advanced validations:
 ### Event creation
 
 ```typescript
-import { eventCreateSchema } from '@calendraft/schemas';
+import { eventCreateSchema } from '@appstandard/schemas';
 
 const eventData = {
   calendarId: 'calendar-123',
@@ -202,7 +202,7 @@ const result = eventCreateSchema.safeParse(eventData);
 ### Frontend form
 
 ```typescript
-import { eventFormDataSchema } from '@calendraft/schemas';
+import { eventFormDataSchema } from '@appstandard/schemas';
 
 // Dates are strings (datetime-local format)
 const formData = {
@@ -241,9 +241,9 @@ export type * from './validation-types';
 ## See also
 
 - [ARCHITECTURE.md](../../ARCHITECTURE.md) - Global project architecture
-- [@calendraft/core](../core/README.md) - Business logic and types
-- [@calendraft/api](../api/README.md) - tRPC API
+- [@appstandard/core](../core/README.md) - Business logic and types
+- [@appstandard/api](../api/README.md) - tRPC API
 
 ## License
 
-MIT
+AGPL-3.0

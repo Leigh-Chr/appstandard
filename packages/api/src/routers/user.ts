@@ -1,4 +1,4 @@
-import prisma from "@calendraft/db";
+import prisma from "@appstandard/db";
 import { TRPCError } from "@trpc/server";
 import { protectedProcedure, router } from "../index";
 import { getUserUsage } from "../middleware";

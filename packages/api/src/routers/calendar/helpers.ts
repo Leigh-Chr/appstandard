@@ -3,7 +3,8 @@
  * Extracted from calendar.ts for better maintainability
  */
 
-import prisma from "@calendraft/db";
+import { handlePrismaError } from "@appstandard/api-core";
+import prisma from "@appstandard/db";
 import { TRPCError } from "@trpc/server";
 import {
 	parseAlarmAction,
@@ -17,7 +18,6 @@ import {
 	prepareResourcesData,
 } from "../../lib/event-helpers";
 import type { ParsedEvent } from "../../lib/ics-parser";
-import { handlePrismaError } from "../../lib/prisma-error-handler";
 
 /**
  * Validate ICS file size

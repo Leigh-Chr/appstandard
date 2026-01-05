@@ -1,17 +1,17 @@
-# @calendraft/ics-utils
+# @appstandard/ics-utils
 
 TypeScript utilities for parsing and generating ICS (iCalendar) files according to RFC 5545.
 
 ## Installation
 
 ```bash
-bun add @calendraft/ics-utils
+bun add @appstandard/ics-utils
 ```
 
 ## Quick usage
 
 ```typescript
-import { parseIcsFile, generateIcsFile } from '@calendraft/ics-utils';
+import { parseIcsFile, generateIcsFile } from '@appstandard/ics-utils';
 
 // Parse an ICS file
 const { events, errors } = parseIcsFile(icsContent);
@@ -40,7 +40,7 @@ generateIcsFile(options: GeneratorOptions): string
 ### ICS Dates
 
 ```typescript
-import { formatDateToICS, parseDateFromICS } from '@calendraft/ics-utils';
+import { formatDateToICS, parseDateFromICS } from '@appstandard/ics-utils';
 
 formatDateToICS(new Date())           // '20240115T100000Z'
 parseDateFromICS('20240115T100000Z')  // Date object
@@ -49,7 +49,7 @@ parseDateFromICS('20240115T100000Z')  // Date object
 ### ISO 8601 Durations
 
 ```typescript
-import { formatDuration, parseDuration } from '@calendraft/ics-utils';
+import { formatDuration, parseDuration } from '@appstandard/ics-utils';
 
 formatDuration(15, 'minutes')  // 'PT15M'
 parseDuration('PT15M')         // { value: 15, unit: 'minutes' }
@@ -58,7 +58,7 @@ parseDuration('PT15M')         // { value: 15, unit: 'minutes' }
 ### Alarms
 
 ```typescript
-import { parseAlarmTrigger, formatAlarmTrigger } from '@calendraft/ics-utils';
+import { parseAlarmTrigger, formatAlarmTrigger } from '@appstandard/ics-utils';
 
 parseAlarmTrigger('-PT15M')              // { when: 'before', value: 15, unit: 'minutes' }
 formatAlarmTrigger('before', 15, 'minutes')  // '-PT15M'
@@ -75,8 +75,8 @@ formatAlarmTrigger('before', 15, 'minutes')  // '-PT15M'
 ## See also
 
 - [ARCHITECTURE.md](../../ARCHITECTURE.md) - Global project architecture
-- [@calendraft/core](../core/README.md) - Business logic and types
+- [@appstandard/core](../core/README.md) - Business logic and types
 
 ## License
 
-MIT
+AGPL-3.0

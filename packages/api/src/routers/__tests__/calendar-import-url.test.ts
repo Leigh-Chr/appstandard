@@ -5,8 +5,17 @@
 import { TRPCError } from "@trpc/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+// Mock auth first to prevent better-auth-harmony/validator from loading
+vi.mock("@appstandard/auth", () => ({
+	auth: {
+		api: {
+			getSession: vi.fn().mockResolvedValue(null),
+		},
+	},
+}));
+
 // Mock Prisma
-vi.mock("@calendraft/db", () => ({
+vi.mock("@appstandard/db", () => ({
 	default: {
 		calendar: {
 			findUnique: vi.fn(),
@@ -24,7 +33,7 @@ vi.mock("@calendraft/db", () => ({
 
 // Mock dependencies
 vi.mock("../../lib/url-validator", () => ({
-	assertValidExternalUrl: vi.fn(),
+	assertValidExternalUrlWithDNS: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock("../../lib/ics-parser", () => ({
@@ -48,7 +57,7 @@ vi.mock("../../middleware", () => ({
 // Mock global fetch
 global.fetch = vi.fn();
 
-import prisma from "@calendraft/db";
+import prisma from "@appstandard/db";
 import type { Context } from "../../context";
 import { findDuplicatesAgainstExisting } from "../../lib/duplicate-detection";
 import { parseIcsFile } from "../../lib/ics-parser";

@@ -6,7 +6,7 @@
 import { formatDateToICS } from "../date/format";
 import type { EventInput, GeneratorOptions, ParsedAlarm } from "../types";
 
-const DEFAULT_PROD_ID = "-//Calendraft//Calendraft//EN";
+const DEFAULT_PROD_ID = "-//AppStandard Calendar//AppStandard Calendar//EN";
 
 /**
  * Escape text for ICS format (RFC 5545)
@@ -38,7 +38,7 @@ function generateEventBasicProperties(
 	event: EventInput,
 	lines: string[],
 ): void {
-	const uid = event.uid || `${crypto.randomUUID()}@calendraft`;
+	const uid = event.uid || `${crypto.randomUUID()}@appstandard`;
 	lines.push(`UID:${uid}`);
 	lines.push(`DTSTAMP:${formatDateToICS(new Date())}`);
 	lines.push(`DTSTART:${formatDateToICS(event.startDate)}`);

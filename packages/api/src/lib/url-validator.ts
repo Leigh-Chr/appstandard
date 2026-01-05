@@ -1,7 +1,18 @@
 /**
  * URL Validator - Protection against SSRF (Server-Side Request Forgery)
  * Validates URLs before making server-side HTTP requests
+ *
+ * Security Measures:
+ * 1. Protocol validation (HTTP/HTTPS only)
+ * 2. Hostname blocklist (cloud metadata endpoints)
+ * 3. Private IP range detection (RFC 1918, link-local, loopback)
+ * 4. DNS rebinding protection via resolved IP validation
+ *
+ * @see https://owasp.org/Top10/A10_2021-Server-Side_Request_Forgery_%28SSRF%29/
  */
+
+import * as dns from "node:dns/promises";
+import { TRPCError } from "@trpc/server";
 
 /**
  * List of blocked hostnames for cloud metadata services
@@ -190,8 +201,133 @@ export function validateExternalUrl(urlString: string): UrlValidationResult {
 export function assertValidExternalUrl(urlString: string): void {
 	const result = validateExternalUrl(urlString);
 	if (!result.valid) {
-		// Import TRPCError dynamically to avoid circular dependencies
-		const { TRPCError } = require("@trpc/server");
+		throw new TRPCError({
+			code: "BAD_REQUEST",
+			message: result.error || "URL not allowed",
+		});
+	}
+}
+
+/**
+ * Validate resolved IP address against private ranges
+ * Used for DNS rebinding protection - validates after DNS resolution
+ *
+ * DNS Rebinding Attack Prevention:
+ * An attacker could use a domain that initially resolves to a public IP
+ * but then quickly changes to resolve to a private IP. By validating
+ * the resolved IP address before making the actual request, we prevent
+ * this class of SSRF attacks.
+ *
+ * @param ip - The resolved IP address to validate
+ * @returns UrlValidationResult indicating if the IP is safe
+ */
+export function validateResolvedIP(ip: string): UrlValidationResult {
+	if (isPrivateIPv4(ip)) {
+		return {
+			valid: false,
+			error:
+				"DNS resolved to a private IP address (possible DNS rebinding attack)",
+		};
+	}
+
+	if (isPrivateIPv6(ip)) {
+		return {
+			valid: false,
+			error:
+				"DNS resolved to a private IPv6 address (possible DNS rebinding attack)",
+		};
+	}
+
+	// Check cloud metadata IPs
+	if (BLOCKED_HOSTNAMES.includes(ip)) {
+		return {
+			valid: false,
+			error: "DNS resolved to a blocked IP address",
+		};
+	}
+
+	return { valid: true };
+}
+
+/**
+ * Resolve hostname and validate all resolved IPs
+ * Full DNS rebinding protection - resolves DNS and validates each IP
+ *
+ * @param hostname - The hostname to resolve
+ * @returns Promise<UrlValidationResult> with validation result
+ */
+export async function validateHostnameDNS(
+	hostname: string,
+): Promise<UrlValidationResult> {
+	// Skip DNS resolution for IP addresses (already validated)
+	if (isIPAddress(hostname)) {
+		return { valid: true };
+	}
+
+	try {
+		// Resolve all IPv4 addresses
+		const addresses = await dns.resolve4(hostname).catch(() => [] as string[]);
+
+		// Also try IPv6
+		const addresses6 = await dns.resolve6(hostname).catch(() => [] as string[]);
+
+		const allAddresses = [...addresses, ...addresses6];
+
+		if (allAddresses.length === 0) {
+			// DNS resolution failed - could be a non-existent domain
+			// Let the fetch fail naturally with a proper error
+			return { valid: true };
+		}
+
+		// Validate each resolved IP
+		for (const ip of allAddresses) {
+			const result = validateResolvedIP(ip);
+			if (!result.valid) {
+				return result;
+			}
+		}
+
+		return { valid: true };
+	} catch {
+		// DNS resolution error - let the fetch handle it
+		return { valid: true };
+	}
+}
+
+/**
+ * Complete URL validation with DNS rebinding protection
+ * Combines hostname validation with DNS resolution check
+ *
+ * @param urlString - The URL to validate
+ * @returns Promise<UrlValidationResult> with full validation result
+ */
+export async function validateExternalUrlWithDNS(
+	urlString: string,
+): Promise<UrlValidationResult> {
+	// First, do basic URL validation
+	const basicResult = validateExternalUrl(urlString);
+	if (!basicResult.valid) {
+		return basicResult;
+	}
+
+	// Then, validate DNS resolution
+	try {
+		const url = new URL(urlString);
+		return await validateHostnameDNS(url.hostname);
+	} catch {
+		return { valid: false, error: "Invalid URL" };
+	}
+}
+
+/**
+ * Assert URL is valid with full DNS rebinding protection
+ * Throws TRPCError if validation fails
+ */
+export async function assertValidExternalUrlWithDNS(
+	urlString: string,
+): Promise<void> {
+	const result = await validateExternalUrlWithDNS(urlString);
+	if (!result.valid) {
 		throw new TRPCError({
 			code: "BAD_REQUEST",
 			message: result.error || "URL not allowed",

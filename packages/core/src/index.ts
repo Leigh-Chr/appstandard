@@ -1,5 +1,5 @@
 /**
- * @calendraft/core
+ * @appstandard/core
  * Core domain logic and types for calendar management
  */
 

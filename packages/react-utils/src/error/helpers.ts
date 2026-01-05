@@ -3,7 +3,14 @@
  */
 
 import { logger } from "../logger";
-import type { AppError, ErrorContext, ErrorSeverity } from "./types";
+import { ERROR_MESSAGES, NETWORK_ERROR_PATTERNS } from "./constants";
+import type {
+	AppError,
+	ErrorContext,
+	ErrorInfo,
+	ErrorResult,
+	ErrorSeverity,
+} from "./types";
 
 /**
  * Create a standardized app error
@@ -23,15 +30,30 @@ export function createAppError(
 
 /**
  * Check if an error is a network error
+ * Handles both regular Error instances and tRPC errors with cause
  */
 export function isNetworkError(error: unknown): boolean {
+	// Check if it's a tRPC error with network error in cause
+	if (error && typeof error === "object" && "cause" in error) {
+		const cause = (error as { cause: unknown }).cause;
+		if (cause instanceof Error) {
+			const causeMessage = cause.message.toLowerCase();
+			if (
+				NETWORK_ERROR_PATTERNS.some((p) => causeMessage.includes(p)) ||
+				cause.name === "NetworkError" ||
+				cause.name === "TypeError"
+			) {
+				return true;
+			}
+		}
+	}
+
 	if (error instanceof Error) {
 		const message = error.message.toLowerCase();
 		return (
-			message.includes("network") ||
-			message.includes("fetch") ||
-			message.includes("connection") ||
-			message.includes("offline")
+			NETWORK_ERROR_PATTERNS.some((p) => message.includes(p)) ||
+			error.name === "NetworkError" ||
+			error.name === "TypeError"
 		);
 	}
 	return false;
@@ -63,7 +85,7 @@ export function getErrorMessage(error: unknown): string {
 	if (error && typeof error === "object" && "message" in error) {
 		return String(error.message);
 	}
-	return "Une erreur inconnue est survenue";
+	return "An unknown error occurred";
 }
 
 /**
@@ -157,4 +179,61 @@ export function logErrorInDev(error: unknown, context?: ErrorContext): void {
 		// Use logger for consistent error logging
 		logger.error(formatErrorForLog(error, context), error);
 	}
+}
+
+/**
+ * Extract tRPC error code from error object
+ * Returns the error code if it's a known tRPC error, otherwise "UNKNOWN"
+ */
+export function getTRPCErrorCode(error: unknown): string {
+	if (!error || typeof error !== "object" || !("data" in error)) {
+		return "UNKNOWN";
+	}
+	const data = (error as { data?: { code?: string } }).data;
+	const code = data?.code;
+	return code && code in ERROR_MESSAGES ? code : "UNKNOWN";
+}
+
+/**
+ * Build error result from network error
+ * @param customMessages - Optional custom error messages to override defaults
+ */
+export function buildNetworkError(
+	customMessages?: Partial<Record<string, ErrorInfo>>,
+): ErrorResult {
+	const messages = { ...ERROR_MESSAGES, ...customMessages };
+	const networkError = messages["NETWORK_ERROR"];
+	if (!networkError) {
+		return {
+			title: "Network Error",
+			description:
+				"Unable to contact the server. Please check your connection.",
+			code: "NETWORK_ERROR",
+		};
+	}
+	return {
+		title: networkError.title,
+		description: networkError.description,
+		code: "NETWORK_ERROR",
+	};
+}
+
+/**
+ * Build error result from error code and fallbacks
+ * @param customMessages - Optional custom error messages to override defaults
+ */
+export function buildErrorResult(
+	errorCode: string,
+	errorMessage: string,
+	fallbackTitle: string,
+	fallbackDescription: string,
+	customMessages?: Partial<Record<string, ErrorInfo>>,
+): ErrorResult {
+	const messages = { ...ERROR_MESSAGES, ...customMessages };
+	const errorInfo = errorCode !== "UNKNOWN" ? messages[errorCode] : undefined;
+	return {
+		title: errorInfo?.title || fallbackTitle,
+		description: errorInfo?.description || errorMessage || fallbackDescription,
+		code: errorCode,
+	};
 }

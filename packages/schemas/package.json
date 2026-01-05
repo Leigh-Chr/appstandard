@@ -1,5 +1,5 @@
 {
-	"name": "@calendraft/schemas",
+	"name": "@appstandard/schemas",
 	"version": "0.0.0",
 	"private": true,
 	"type": "module",
@@ -16,11 +16,13 @@
 	"scripts": {
 		"build": "tsdown",
 		"typecheck": "tsc --noEmit",
-		"clean": "rm -rf dist *.tsbuildinfo"
+		"clean": "rm -rf dist *.tsbuildinfo",
+		"test": "vitest run --passWithNoTests"
 	},
 	"devDependencies": {
 		"tsdown": "catalog:",
-		"@calendraft/config": "workspace:*"
+		"@appstandard/config": "workspace:*",
+		"vitest": "catalog:"
 	},
 	"peerDependencies": {
 		"typescript": "^5"

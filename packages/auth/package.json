@@ -1,5 +1,5 @@
 {
-	"name": "@calendraft/auth",
+	"name": "@appstandard/auth",
 	"exports": {
 		".": {
 			"types": "./dist/index.d.ts",
@@ -14,21 +14,24 @@
 	"scripts": {
 		"build": "tsdown",
 		"typecheck": "tsc --noEmit",
-		"clean": "rm -rf dist *.tsbuildinfo"
+		"clean": "rm -rf dist *.tsbuildinfo",
+		"test": "vitest run",
+		"test:watch": "vitest"
 	},
 	"devDependencies": {
 		"tsdown": "catalog:",
-		"@calendraft/config": "workspace:*"
+		"@appstandard/config": "workspace:*",
+		"vitest": "catalog:"
 	},
 	"peerDependencies": {
 		"typescript": "^5"
 	},
 	"dependencies": {
-		"@calendraft/db": "workspace:*",
+		"@appstandard/db": "workspace:*",
 		"better-auth": "catalog:",
 		"better-auth-harmony": "^1.2.5",
 		"dotenv": "catalog:",
-		"resend": "^6.5.2",
+		"resend": "^6.6.0",
 		"zod": "catalog:"
 	},
 	"license": "AGPL-3.0"

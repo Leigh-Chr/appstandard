@@ -3,7 +3,7 @@
  * Follows RFC 5545 specification
  */
 
-export interface AttendeeData {
+interface AttendeeData {
 	name?: string | null;
 	email: string;
 	role?: string | null;
@@ -11,7 +11,7 @@ export interface AttendeeData {
 	rsvp?: boolean;
 }
 
-export interface AlarmData {
+interface AlarmData {
 	trigger: string;
 	action: string;
 	summary?: string | null;
@@ -20,7 +20,7 @@ export interface AlarmData {
 	repeat?: number | null;
 }
 
-export interface EventData {
+interface EventData {
 	id: string;
 	title: string;
 	startDate: Date;
@@ -107,7 +107,7 @@ function formatIcsDate(date: Date): string {
  * Generate basic event properties (UID, DTSTAMP, dates, title, description, location)
  */
 function generateEventBasicProperties(event: EventData, lines: string[]): void {
-	const uid = event.uid || `${event.id}@calendraft`;
+	const uid = event.uid || `${event.id}@appstandard`;
 	lines.push(`UID:${uid}`);
 
 	const dtstamp = event.dtstamp || event.createdAt;
@@ -330,7 +330,7 @@ export function generateIcs(calendar: CalendarData): string {
 	// Header
 	lines.push("BEGIN:VCALENDAR");
 	lines.push("VERSION:2.0");
-	lines.push("PRODID:-//Calendraft//Calendraft//EN");
+	lines.push("PRODID:-//AppStandard Calendar//AppStandard Calendar//EN");
 	lines.push("CALSCALE:GREGORIAN");
 	lines.push("METHOD:PUBLISH");
 

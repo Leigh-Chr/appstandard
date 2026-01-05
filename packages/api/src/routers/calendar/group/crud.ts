@@ -3,12 +3,12 @@
  * Extracted from group.ts for better maintainability
  */
 
-import { ANONYMOUS_LIMITS, AUTHENTICATED_LIMITS } from "@calendraft/core";
-import prisma from "@calendraft/db";
+import { handlePrismaError } from "@appstandard/api-core";
+import { ANONYMOUS_LIMITS, AUTHENTICATED_LIMITS } from "@appstandard/core";
+import prisma from "@appstandard/db";
 import { TRPCError } from "@trpc/server";
 import z from "zod";
 import { authOrAnonProcedure, router } from "../../../index";
-import { handlePrismaError } from "../../../lib/prisma-error-handler";
 import { buildOwnershipFilter } from "../../../middleware";
 import {
 	isGroupOwner,

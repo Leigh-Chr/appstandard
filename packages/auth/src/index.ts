@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0
-// Copyright (C) 2024 Calendraft
+// Copyright (C) 2024 AppStandard Calendar
 
 // SPDX-License-Identifier: AGPL-3.0
-// Copyright (C) 2024 Calendraft
-import prisma, { cleanupCalendarRelations } from "@calendraft/db";
+// Copyright (C) 2024 AppStandard Calendar
+import prisma, { cleanupCalendarRelations } from "@appstandard/db";
 import { type BetterAuthOptions, betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { emailHarmony } from "better-auth-harmony";
@@ -197,9 +197,24 @@ export const auth = betterAuth<BetterAuthOptions>({
 			// Le plugin bloque automatiquement 55,000+ domaines temporaires
 		}),
 	],
+	// Session configuration for better security and UX
+	session: {
+		// Session expires after 7 days of inactivity
+		expiresIn: 60 * 60 * 24 * 7, // 7 days in seconds
+		// Refresh session if it's older than 1 day
+		updateAge: 60 * 60 * 24, // 1 day in seconds
+		// Enable cookie caching for better performance
+		cookieCache: {
+			enabled: true,
+			maxAge: 60 * 5, // 5 minutes
+		},
+	},
 	advanced: {
 		defaultCookieAttributes: {
-			sameSite: isProduction ? "none" : "lax",
+			// Use "lax" for same-site cookies - more secure than "none"
+			// "none" requires cookies to work across different domains (third-party)
+			// Since frontend/backend are same-origin or subdomain, "lax" is appropriate
+			sameSite: "lax",
 			secure: isProduction,
 			httpOnly: true,
 		},

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0
-// Copyright (C) 2024 Calendraft
+// Copyright (C) 2024 AppStandard Calendar
 import { Resend } from "resend";
 // Initialiser Resend seulement si la clé API est fournie
 import { env } from "./env";
@@ -38,9 +38,9 @@ export async function sendVerificationEmail({
 	// L'URL contient déjà le token et le callbackURL configuré par Better-Auth
 	resend.emails
 		.send({
-			from: env.EMAIL_FROM || "Calendraft <noreply@calendraft.com>",
+			from: env.EMAIL_FROM || "AppStandard Calendar <noreply@appstandard.com>",
 			to,
-			subject: "Verify your email address - Calendraft",
+			subject: "Verify your email address - AppStandard Calendar",
 			html: `
       <!DOCTYPE html>
       <html>
@@ -50,7 +50,7 @@ export async function sendVerificationEmail({
         </head>
         <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
           <h1 style="color: #18181b;">Verify your email address</h1>
-          <p>Thank you for signing up for Calendraft! Please click the button below to verify your email address:</p>
+          <p>Thank you for signing up for AppStandard Calendar! Please click the button below to verify your email address:</p>
           <div style="text-align: center; margin: 30px 0;">
             <a href="${url}" style="display: inline-block; background-color: #18181b; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 500;">Verify Email Address</a>
           </div>
@@ -63,7 +63,7 @@ export async function sendVerificationEmail({
     `,
 			text: `Verify your email address
 
-Thank you for signing up for Calendraft! Please click the link below to verify your email address:
+Thank you for signing up for AppStandard Calendar! Please click the link below to verify your email address:
 
 ${url}
 
@@ -120,9 +120,9 @@ export async function sendDeleteAccountVerificationEmail({
 	// L'URL contient déjà le token et le callbackURL configuré par Better-Auth
 	resend.emails
 		.send({
-			from: env.EMAIL_FROM || "Calendraft <noreply@calendraft.com>",
+			from: env.EMAIL_FROM || "AppStandard Calendar <noreply@appstandard.com>",
 			to,
-			subject: "Confirm account deletion - Calendraft",
+			subject: "Confirm account deletion - AppStandard Calendar",
 			html: `
       <!DOCTYPE html>
       <html>
@@ -132,7 +132,7 @@ export async function sendDeleteAccountVerificationEmail({
         </head>
         <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
           <h1 style="color: #18181b;">Confirm account deletion</h1>
-          <p>You have requested to delete your Calendraft account. This action is <strong>irreversible</strong> and will permanently delete:</p>
+          <p>You have requested to delete your AppStandard Calendar account. This action is <strong>irreversible</strong> and will permanently delete:</p>
           <ul style="color: #666; margin: 20px 0; padding-left: 20px;">
             <li>Your account and profile information</li>
             <li>All your calendars and events</li>
@@ -152,7 +152,7 @@ export async function sendDeleteAccountVerificationEmail({
     `,
 			text: `Confirm account deletion
 
-You have requested to delete your Calendraft account. This action is IRREVERSIBLE and will permanently delete:
+You have requested to delete your AppStandard Calendar account. This action is IRREVERSIBLE and will permanently delete:
 - Your account and profile information
 - All your calendars and events
 - All your calendar groups
@@ -220,9 +220,9 @@ export async function sendResetPasswordEmail({
 	// L'URL contient déjà le token et le callbackURL configuré par Better-Auth
 	resend.emails
 		.send({
-			from: env.EMAIL_FROM || "Calendraft <noreply@calendraft.com>",
+			from: env.EMAIL_FROM || "AppStandard Calendar <noreply@appstandard.com>",
 			to,
-			subject: "Reset your password - Calendraft",
+			subject: "Reset your password - AppStandard Calendar",
 			html: `
       <!DOCTYPE html>
       <html>
@@ -232,7 +232,7 @@ export async function sendResetPasswordEmail({
         </head>
         <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
           <h1 style="color: #18181b;">Reset your password</h1>
-          <p>We received a request to reset your password for your Calendraft account. Click the button below to reset it:</p>
+          <p>We received a request to reset your password for your AppStandard Calendar account. Click the button below to reset it:</p>
           <div style="text-align: center; margin: 30px 0;">
             <a href="${url}" style="display: inline-block; background-color: #18181b; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 500;">Reset Password</a>
           </div>
@@ -245,7 +245,7 @@ export async function sendResetPasswordEmail({
     `,
 			text: `Reset your password
 
-We received a request to reset your password for your Calendraft account. Click the link below to reset it:
+We received a request to reset your password for your AppStandard Calendar account. Click the link below to reset it:
 
 ${url}
 
@@ -300,9 +300,9 @@ export async function sendGroupInvitationEmail({
 	// Ne pas await pour éviter les timing attacks
 	resend.emails
 		.send({
-			from: env.EMAIL_FROM || "Calendraft <noreply@calendraft.com>",
+			from: env.EMAIL_FROM || "AppStandard Calendar <noreply@appstandard.com>",
 			to,
-			subject: `You've been invited to join "${groupName}" - Calendraft`,
+			subject: `You've been invited to join "${groupName}" - AppStandard Calendar`,
 			html: `
       <!DOCTYPE html>
       <html>
@@ -312,7 +312,7 @@ export async function sendGroupInvitationEmail({
         </head>
         <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
           <h1 style="color: #18181b;">You've been invited to join a calendar group</h1>
-          <p><strong>${inviterName}</strong> has invited you to join the calendar group <strong>"${groupName}"</strong> on Calendraft.</p>
+          <p><strong>${inviterName}</strong> has invited you to join the calendar group <strong>"${groupName}"</strong> on AppStandard Calendar.</p>
           <p>By accepting this invitation, you'll be able to:</p>
           <ul style="color: #666; margin: 20px 0; padding-left: 20px;">
             <li>View and manage calendars in this group</li>
@@ -330,7 +330,7 @@ export async function sendGroupInvitationEmail({
     `,
 			text: `You've been invited to join a calendar group
 
-${inviterName} has invited you to join the calendar group "${groupName}" on Calendraft.
+${inviterName} has invited you to join the calendar group "${groupName}" on AppStandard Calendar.
 
 By accepting this invitation, you'll be able to:
 - View and manage calendars in this group

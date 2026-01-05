@@ -2,8 +2,8 @@
  * Event relation update utilities
  */
 
-import type { Prisma } from "@calendraft/db";
-import type { eventUpdateSchema } from "@calendraft/schemas";
+import type { Prisma } from "@appstandard/db";
+import type { eventUpdateSchema } from "@appstandard/schemas";
 import type z from "zod";
 
 type EventUpdateInput = z.infer<typeof eventUpdateSchema>;

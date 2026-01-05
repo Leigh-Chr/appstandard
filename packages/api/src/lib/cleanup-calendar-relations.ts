@@ -1,10 +1,10 @@
 /**
- * Re-export cleanupCalendarRelations from @calendraft/db
+ * Re-export cleanupCalendarRelations from @appstandard/db
  * This file exists for backward compatibility and to provide logger integration
  */
 
-import type { Prisma } from "@calendraft/db";
-import { cleanupCalendarRelations as dbCleanupCalendarRelations } from "@calendraft/db";
+import type { Prisma } from "@appstandard/db";
+import { cleanupCalendarRelations as dbCleanupCalendarRelations } from "@appstandard/db";
 import { logger } from "./logger";
 
 type PrismaTransactionClient = Omit<

@@ -11,7 +11,6 @@ export {
 	useLocalStorage,
 	useMediaQuery,
 } from "usehooks-ts";
-
 // Custom hooks for convenience wrappers
 export {
 	useIsDesktop,
@@ -24,3 +23,12 @@ export {
 export { useMounted } from "./use-mounted";
 // Custom hook not available in usehooks-ts
 export { usePrevious } from "./use-previous";
+
+// Server status hook
+export {
+	createServerStatusHook,
+	type ServerStatus,
+	type ServerStatusOptions,
+	type ServerStatusState,
+	useServerStatus,
+} from "./use-server-status";

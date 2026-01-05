@@ -6,6 +6,8 @@ export default defineConfig({
 		"src/hooks/index.ts",
 		"src/query/index.ts",
 		"src/error/index.ts",
+		"src/auth/index.ts",
+		"src/sorting/index.ts",
 	],
 	format: ["esm"],
 	dts: true,

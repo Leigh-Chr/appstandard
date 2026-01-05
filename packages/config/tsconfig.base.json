@@ -23,8 +23,10 @@
 		"noUnusedParameters": true,
 		"noFallthroughCasesInSwitch": true,
 		"noImplicitReturns": true,
-		// Temporarily disabled to fix existing code - should be re-enabled after migration
-		// "exactOptionalPropertyTypes": true,
+		// exactOptionalPropertyTypes is disabled for now
+		// When enabled, optional props require `prop?: T | undefined` format
+		// See: https://www.typescriptlang.org/tsconfig#exactOptionalPropertyTypes
+		"exactOptionalPropertyTypes": false,
 		"noImplicitThis": true,
 		"alwaysStrict": true,
 		"strictNullChecks": true,

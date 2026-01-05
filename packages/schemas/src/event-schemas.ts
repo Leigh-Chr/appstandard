@@ -268,62 +268,64 @@ export const colorSchema = z
 	.optional();
 
 /**
- * Complete event schema for create operations
+ * Base event schema without refinements (used for .omit()/.extend() operations)
+ * Zod v4 doesn't allow .omit() on schemas with refinements
  */
-export const eventCreateSchema = z
-	.object({
-		calendarId: z.string(),
-		title: z
-			.string()
-			.trim()
-			.min(1, "Title is required")
-			.max(FIELD_LIMITS.TITLE)
-			.transform((val) => val.trim()),
-		startDate: z.coerce.date(),
-		endDate: z.coerce.date(),
-		description: nullableTrimmedStringSchema(FIELD_LIMITS.DESCRIPTION),
-		location: nullableTrimmedStringSchema(FIELD_LIMITS.LOCATION),
+const eventCreateSchemaBase = z.object({
+	calendarId: z.string(),
+	title: z
+		.string()
+		.trim()
+		.min(1, "Title is required")
+		.max(FIELD_LIMITS.TITLE)
+		.transform((val) => val.trim()),
+	startDate: z.coerce.date(),
+	endDate: z.coerce.date(),
+	description: nullableTrimmedStringSchema(FIELD_LIMITS.DESCRIPTION),
+	location: nullableTrimmedStringSchema(FIELD_LIMITS.LOCATION),
 
-		// Basic metadata
-		status: z
-			.enum(["CONFIRMED", "TENTATIVE", "CANCELLED"])
-			.optional()
-			.nullable(),
-		priority: z.number().int().min(0).max(9).optional().nullable(),
-		categories: nullableTrimmedStringSchema(FIELD_LIMITS.CATEGORIES_STRING), // Comma-separated
-		url: urlSchema,
-		class: z.enum(["PUBLIC", "PRIVATE", "CONFIDENTIAL"]).optional().nullable(),
-		comment: nullableTrimmedStringSchema(FIELD_LIMITS.COMMENT),
-		contact: nullableTrimmedStringSchema(FIELD_LIMITS.CONTACT),
-		resources: nullableTrimmedStringSchema(FIELD_LIMITS.RESOURCES_STRING), // Comma-separated
-		sequence: z.number().int().min(0).optional().nullable(),
-		transp: z.enum(["OPAQUE", "TRANSPARENT"]).optional().nullable(),
+	// Basic metadata
+	status: z.enum(["CONFIRMED", "TENTATIVE", "CANCELLED"]).optional().nullable(),
+	priority: z.number().int().min(0).max(9).optional().nullable(),
+	categories: nullableTrimmedStringSchema(FIELD_LIMITS.CATEGORIES_STRING), // Comma-separated
+	url: urlSchema,
+	class: z.enum(["PUBLIC", "PRIVATE", "CONFIDENTIAL"]).optional().nullable(),
+	comment: nullableTrimmedStringSchema(FIELD_LIMITS.COMMENT),
+	contact: nullableTrimmedStringSchema(FIELD_LIMITS.CONTACT),
+	resources: nullableTrimmedStringSchema(FIELD_LIMITS.RESOURCES_STRING), // Comma-separated
+	sequence: z.number().int().min(0).optional().nullable(),
+	transp: z.enum(["OPAQUE", "TRANSPARENT"]).optional().nullable(),
 
-		// Recurrence
-		rrule: rruleSchema,
-		rdate: jsonDateArraySchema,
-		exdate: jsonDateArraySchema,
+	// Recurrence
+	rrule: rruleSchema,
+	rdate: jsonDateArraySchema,
+	exdate: jsonDateArraySchema,
 
-		// Geography
-		geoLatitude: z.number().min(-90).max(90).optional().nullable(),
-		geoLongitude: z.number().min(-180).max(180).optional().nullable(),
+	// Geography
+	geoLatitude: z.number().min(-90).max(90).optional().nullable(),
+	geoLongitude: z.number().min(-180).max(180).optional().nullable(),
 
-		// Organizer
-		organizerName: nullableTrimmedStringSchema(FIELD_LIMITS.NAME),
-		organizerEmail: nullableEmailSchema,
+	// Organizer
+	organizerName: nullableTrimmedStringSchema(FIELD_LIMITS.NAME),
+	organizerEmail: nullableEmailSchema,
 
-		// Additional properties (RFC 5545)
-		uid: uidSchema,
-		recurrenceId: recurrenceIdSchema,
-		relatedTo: z.string().max(FIELD_LIMITS.RELATED_TO).optional().nullable(),
+	// Additional properties (RFC 5545)
+	uid: uidSchema,
+	recurrenceId: recurrenceIdSchema,
+	relatedTo: z.string().max(FIELD_LIMITS.RELATED_TO).optional().nullable(),
 
-		// Extensions (RFC 7986)
-		color: colorSchema,
+	// Extensions (RFC 7986)
+	color: colorSchema,
 
-		// Relations
-		attendees: z.array(attendeeSchema).optional(),
-		alarms: z.array(alarmSchema).optional(),
-	})
+	// Relations
+	attendees: z.array(attendeeSchema).optional(),
+	alarms: z.array(alarmSchema).optional(),
+});
+
+/**
+ * Complete event schema for create operations (with refinements)
+ */
+export const eventCreateSchema = eventCreateSchemaBase
 	.refine(
 		(data) => {
 			// End date must be after start date
@@ -364,8 +366,9 @@ export const eventCreateSchema = z
 
 /**
  * Schema for event update operations (all fields optional)
+ * Uses base schema without refinements to allow .omit()
  */
-export const eventUpdateSchema = eventCreateSchema
+export const eventUpdateSchema = eventCreateSchemaBase
 	.omit({ calendarId: true })
 	.extend({
 		id: z.string(),
@@ -390,6 +393,33 @@ export const eventUpdateSchema = eventCreateSchema
 		{
 			message: "End date must be after start date",
 			path: ["endDate"],
+		},
+	)
+	.refine(
+		(data) => {
+			// Both geo coordinates or neither
+			const hasLat =
+				data.geoLatitude !== null && data.geoLatitude !== undefined;
+			const hasLon =
+				data.geoLongitude !== null && data.geoLongitude !== undefined;
+			return hasLat === hasLon;
+		},
+		{
+			message: "Both latitude and longitude must be provided together",
+			path: ["geoLongitude"],
+		},
+	)
+	.refine(
+		(data) => {
+			// RECURRENCE-ID requires RRULE
+			if (data.recurrenceId && !data.rrule) {
+				return false;
+			}
+			return true;
+		},
+		{
+			message: "RECURRENCE-ID requires RRULE to be set",
+			path: ["recurrenceId"],
 		},
 	);
 

@@ -5,9 +5,18 @@
 import { TRPCError } from "@trpc/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-// Mock Prisma (must be before importing from @calendraft/db)
+// Mock auth first to prevent better-auth-harmony/validator from loading
+vi.mock("@appstandard/auth", () => ({
+	auth: {
+		api: {
+			getSession: vi.fn().mockResolvedValue(null),
+		},
+	},
+}));
+
+// Mock Prisma (must be before importing from @appstandard/db)
 // This prevents the env validation from running
-vi.mock("@calendraft/db", () => ({
+vi.mock("@appstandard/db", () => ({
 	default: {
 		calendar: {
 			findMany: vi.fn(),
@@ -26,7 +35,7 @@ vi.mock("@calendraft/db", () => ({
 	Prisma: {},
 }));
 
-import prisma from "@calendraft/db";
+import prisma from "@appstandard/db";
 import type { Context } from "../../context";
 import { calendarCoreRouter } from "../calendar/core";
 

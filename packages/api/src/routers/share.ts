@@ -1,11 +1,11 @@
 import { randomBytes } from "node:crypto";
-import prisma from "@calendraft/db";
+import { handlePrismaError } from "@appstandard/api-core";
+import prisma from "@appstandard/db";
 import { TRPCError } from "@trpc/server";
 import z from "zod";
 import { authOrAnonProcedure, publicProcedure, router } from "../index";
 import { deduplicateEvents } from "../lib/duplicate-detection";
 import { logger } from "../lib/logger";
-import { handlePrismaError } from "../lib/prisma-error-handler";
 import { buildOwnershipFilter } from "../middleware";
 
 /**

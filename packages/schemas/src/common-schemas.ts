@@ -6,6 +6,9 @@ import { FIELD_LIMITS } from "./field-limits";
  * These schemas include transformations and can be reused across the codebase
  */
 
+// Pre-created email validator for efficient reuse in refinements
+const emailValidator = z.string().email();
+
 /**
  * Email schema with automatic trimming and validation
  */
@@ -34,8 +37,8 @@ export const nullableEmailSchema = z
 		(val) => {
 			// Accept empty strings (optional field)
 			if (!val || val.trim() === "") return true;
-			// Otherwise validate as email
-			return z.string().email().safeParse(val).success;
+			// Otherwise validate as email using pre-created validator
+			return emailValidator.safeParse(val).success;
 		},
 		{
 			message: "Invalid email format",

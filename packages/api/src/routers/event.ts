@@ -1,5 +1,6 @@
-import prisma, { Prisma } from "@calendraft/db";
-import { eventCreateSchema, eventUpdateSchema } from "@calendraft/schemas";
+import { handlePrismaError } from "@appstandard/api-core";
+import prisma, { Prisma } from "@appstandard/db";
+import { eventCreateSchema, eventUpdateSchema } from "@appstandard/schemas";
 import { TRPCError } from "@trpc/server";
 import z from "zod";
 import { authOrAnonProcedure, router } from "../index";
@@ -11,7 +12,6 @@ import {
 	prepareRecurrenceDatesData,
 	prepareResourcesData,
 } from "../lib/event-helpers";
-import { handlePrismaError } from "../lib/prisma-error-handler";
 import { checkEventLimit } from "../middleware";
 import {
 	verifyCalendarAccess,

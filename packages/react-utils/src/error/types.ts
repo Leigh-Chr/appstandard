@@ -30,3 +30,20 @@ export interface ErrorContext {
 	/** Additional metadata */
 	metadata?: Record<string, unknown>;
 }
+
+/**
+ * Error info for display (title + description)
+ */
+export interface ErrorInfo {
+	title: string;
+	description: string;
+}
+
+/**
+ * Error result with code for handling
+ */
+export interface ErrorResult {
+	title: string;
+	description: string;
+	code: string;
+}

@@ -3,14 +3,14 @@
  * Extracted from calendar.ts for better maintainability
  */
 
-import prisma from "@calendraft/db";
+import { handlePrismaError } from "@appstandard/api-core";
+import prisma from "@appstandard/db";
 import { TRPCError } from "@trpc/server";
 import z from "zod";
 import { authOrAnonProcedure, router } from "../../index";
 import { findDuplicatesAgainstExisting } from "../../lib/duplicate-detection";
 import { type ParsedEvent, parseIcsFile } from "../../lib/ics-parser";
-import { handlePrismaError } from "../../lib/prisma-error-handler";
-import { assertValidExternalUrl } from "../../lib/url-validator";
+import { assertValidExternalUrlWithDNS } from "../../lib/url-validator";
 import { checkCalendarLimit, verifyCalendarAccess } from "../../middleware";
 import { createEventFromParsed, validateFileSize } from "./helpers";
 
@@ -70,16 +70,22 @@ function getHttpError(
 /**
  * Fetch ICS content from URL with error handling and circuit breaker
  * Best practice: Use circuit breaker to prevent cascading failures
+ * Security: SSRF protection via assertValidExternalUrlWithDNS validation
  */
 async function fetchIcsContent(url: string, timeout = 60000): Promise<string> {
+	// SECURITY: Validate URL against SSRF attacks before fetching
+	// This is defense-in-depth - callers should also validate, but this ensures safety
+	await assertValidExternalUrlWithDNS(url);
+
 	const { urlImportCircuitBreaker } = await import("../../lib/circuit-breaker");
 
 	return urlImportCircuitBreaker.execute(async () => {
 		try {
+			// nosemgrep: codacy.tools-configs.rules_lgpl_javascript_ssrf_rule-node-ssrf
 			const response = await fetch(url, {
 				headers: {
 					Accept: "text/calendar, application/calendar+xml, */*",
-					"User-Agent": "Calendraft/1.0",
+					"User-Agent": "AppStandard Calendar/1.0",
 				},
 				signal: AbortSignal.timeout(timeout),
 			});
@@ -285,8 +291,8 @@ export const calendarImportUrlRouter = router({
 		.mutation(async ({ ctx, input }) => {
 			await checkCalendarLimit(ctx);
 
-			// Validate URL against SSRF attacks
-			assertValidExternalUrl(input.url);
+			// Validate URL against SSRF attacks (includes DNS rebinding protection)
+			await assertValidExternalUrlWithDNS(input.url);
 
 			// Fetch the ICS content from the URL with circuit breaker
 			// Best practice: Reuse fetchIcsContent function for consistency
@@ -363,8 +369,8 @@ export const calendarImportUrlRouter = router({
 				});
 			}
 
-			// Validate URL against SSRF attacks
-			assertValidExternalUrl(calendar.sourceUrl);
+			// Validate URL against SSRF attacks (includes DNS rebinding protection)
+			await assertValidExternalUrlWithDNS(calendar.sourceUrl);
 
 			// If replaceAll, delete all events first
 			let deletedCount = 0;

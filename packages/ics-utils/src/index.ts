@@ -1,5 +1,5 @@
 /**
- * @calendraft/ics-utils
+ * @appstandard/ics-utils
  * Pure TypeScript utilities for parsing and generating ICS (iCalendar) files
  */
 

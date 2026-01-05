@@ -1,11 +1,11 @@
-# @calendraft/core
+# @appstandard/core
 
 Business logic and types for calendar management. Framework-independent package.
 
 ## Installation
 
 ```bash
-bun add @calendraft/core
+bun add @appstandard/core
 ```
 
 ## Quick usage
@@ -18,7 +18,7 @@ import {
   transformEventFormData,
   FIELD_LIMITS,
   applyPreset,
-} from '@calendraft/core';
+} from '@appstandard/core';
 
 // Initialize an empty form
 const formData = initializeFormData();
@@ -54,7 +54,7 @@ const apiData = transformEventFormData(formData, 'calendar-id');
 ### Validation
 
 ```typescript
-import { validateEventForm, isValidEmail, isValidUrl } from '@calendraft/core';
+import { validateEventForm, isValidEmail, isValidUrl } from '@appstandard/core';
 
 validateEventForm(data)     // Complete validation
 isValidEmail('a@b.com')     // true
@@ -71,7 +71,7 @@ import {
   normalizeDate, formatEventDuration, // Dates
   initializeFormData,                 // Form initialization
   transformEventFormData,             // API transformation
-} from '@calendraft/core';
+} from '@appstandard/core';
 ```
 
 ### Constants
@@ -82,15 +82,15 @@ import {
   EVENT_PRESETS,          // Presets: meeting, call, birthday, task...
   EVENT_STATUS_VALUES,    // ['CONFIRMED', 'TENTATIVE', 'CANCELLED']
   isValidEventStatus,     // Validator
-} from '@calendraft/core';
+} from '@appstandard/core';
 ```
 
 ### User limits
 
 ```typescript
-import { 
-  ANONYMOUS_LIMITS,       // { calendars: 10, eventsPerCalendar: 500, groups: 50, calendarsPerGroup: 15 }
-  AUTHENTICATED_LIMITS,   // { calendars: 100, eventsPerCalendar: 2000, groups: 100, calendarsPerGroup: 20 }
+import {
+  ANONYMOUS_LIMITS,       // { calendars: 5, eventsPerCalendar: 250, groups: 3, calendarsPerGroup: 10 }
+  AUTHENTICATED_LIMITS,   // { calendars: 150, eventsPerCalendar: 3000, groups: 100, calendarsPerGroup: 30 }
   hasReachedCalendarLimit,
   hasReachedEventLimit,
   hasReachedGroupLimit,
@@ -98,7 +98,7 @@ import {
   getMaxEventsPerCalendar,
   getMaxGroups,
   getMaxCalendarsPerGroup,
-} from '@calendraft/core';
+} from '@appstandard/core';
 
 // Check if limit reached
 hasReachedCalendarLimit(isAuth, currentCount)  // boolean
@@ -106,16 +106,16 @@ hasReachedEventLimit(isAuth, currentCount)     // boolean
 hasReachedGroupLimit(isAuth, currentCount)     // boolean
 
 // Get limits
-getMaxCalendars(isAuth)           // 10 or 100
-getMaxEventsPerCalendar(isAuth)   // 500 or 2000
-getMaxGroups(isAuth)              // 50 or 100
-getMaxCalendarsPerGroup(isAuth)   // 15 or 20
+getMaxCalendars(isAuth)           // 5 or 150
+getMaxEventsPerCalendar(isAuth)   // 250 or 3000
+getMaxGroups(isAuth)              // 3 or 100
+getMaxCalendarsPerGroup(isAuth)   // 10 or 30
 ```
 
 ### Recurrence (RRULE)
 
 ```typescript
-import { parseRRule, buildRRule } from '@calendraft/core';
+import { parseRRule, buildRRule } from '@appstandard/core';
 
 parseRRule('FREQ=WEEKLY;BYDAY=MO,WE')
 // { frequency: 'WEEKLY', byDay: ['MO', 'WE'] }
@@ -127,9 +127,9 @@ buildRRule({ frequency: 'MONTHLY', count: 6 })
 ## See also
 
 - [ARCHITECTURE.md](../../ARCHITECTURE.md) - Global project architecture
-- [@calendraft/schemas](../schemas/README.md) - Zod validation schemas
-- [@calendraft/ics-utils](../ics-utils/README.md) - ICS utilities
+- [@appstandard/schemas](../schemas/README.md) - Zod validation schemas
+- [@appstandard/ics-utils](../ics-utils/README.md) - ICS utilities
 
 ## License
 
-MIT
+AGPL-3.0

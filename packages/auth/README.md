@@ -1,17 +1,17 @@
-# @calendraft/auth
+# @appstandard/auth
 
-Better-Auth configuration for Calendraft authentication.
+Better-Auth configuration for AppStandard Calendar authentication.
 
 ## Installation
 
 ```bash
-bun add @calendraft/auth
+bun add @appstandard/auth
 ```
 
 ## Quick usage
 
 ```typescript
-import { auth } from '@calendraft/auth';
+import { auth } from '@appstandard/auth';
 
 // In a Hono handler
 app.on(['GET', 'POST'], '/api/auth/*', (c) => {
@@ -64,7 +64,7 @@ await authClient.signOut();
 ### Sessions
 
 ```typescript
-import { auth } from '@calendraft/auth';
+import { auth } from '@appstandard/auth';
 
 // Get session from headers
 const session = await auth.api.getSession({
@@ -108,7 +108,7 @@ trustedOrigins: [process.env.CORS_ORIGIN || 'http://localhost:3001']
 
 ```typescript
 // Configured auth instance
-export { auth } from '@calendraft/auth';
+export { auth } from '@appstandard/auth';
 ```
 
 ## Database schemas
@@ -123,14 +123,14 @@ The following tables are created by Better-Auth (see `packages/db/prisma/schema/
 ## Dependencies
 
 - `better-auth` - Authentication framework
-- `@calendraft/db` - Prisma client
+- `@appstandard/db` - Prisma client
 
 ## See also
 
 - [ARCHITECTURE.md](../../ARCHITECTURE.md) - Global project architecture
-- [@calendraft/db](../db/README.md) - Prisma client and schemas
+- [@appstandard/db](../db/README.md) - Prisma client and schemas
 - [SECURITY.md](../../SECURITY.md) - Security policy
 
 ## License
 
-MIT
+AGPL-3.0

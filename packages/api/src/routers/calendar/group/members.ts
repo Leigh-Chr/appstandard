@@ -1,16 +1,16 @@
 // SPDX-License-Identifier: AGPL-3.0
-// Copyright (C) 2024 Calendraft
+// Copyright (C) 2024 AppStandard Calendar
 /**
  * Calendar group members management
  * Handles invitations, member management, and access control for shared groups
  */
 
-import { sendGroupInvitationEmail } from "@calendraft/auth/lib/email";
-import prisma from "@calendraft/db";
+import { handlePrismaError } from "@appstandard/api-core";
+import { sendGroupInvitationEmail } from "@appstandard/auth/lib/email";
+import prisma from "@appstandard/db";
 import { TRPCError } from "@trpc/server";
 import z from "zod";
 import { protectedProcedure, router } from "../../../index";
-import { handlePrismaError } from "../../../lib/prisma-error-handler";
 import {
 	isGroupOwner,
 	verifyGroupAccessOrThrow,
@@ -246,14 +246,10 @@ export const calendarGroupMembersRouter = router({
 			// Verify access (owner or member)
 			await verifyGroupAccessOrThrow(input.groupId, ctx);
 
-			// Get all members with user information
+			// Get all members
 			const members = await prisma.groupMember.findMany({
 				where: {
 					groupId: input.groupId,
-				},
-				include: {
-					// Note: We need to manually join with User table since there's no relation
-					// We'll fetch user info separately for each member
 				},
 				orderBy: [
 					{ role: "asc" }, // OWNER first
@@ -262,52 +258,56 @@ export const calendarGroupMembersRouter = router({
 				],
 			});
 
-			// Fetch user information for each member
-			const membersWithUserInfo = await Promise.all(
-				members.map(async (member) => {
-					const user = await prisma.user.findUnique({
-						where: { id: member.userId },
-						select: {
-							id: true,
-							email: true,
-							name: true,
-						},
-					});
+			// Collect all unique user IDs (members and inviters) for batch fetching
+			const allUserIds = new Set<string>();
+			for (const member of members) {
+				allUserIds.add(member.userId);
+				allUserIds.add(member.invitedBy);
+			}
 
-					// Get inviter info
-					const inviter = await prisma.user.findUnique({
-						where: { id: member.invitedBy },
-						select: {
-							id: true,
-							name: true,
-							email: true,
-						},
-					});
+			// Batch fetch all users in a single query (fixes N+1 query issue)
+			const users = await prisma.user.findMany({
+				where: {
+					id: { in: Array.from(allUserIds) },
+				},
+				select: {
+					id: true,
+					email: true,
+					name: true,
+				},
+			});
 
-					return {
-						id: member.id,
-						userId: member.userId,
-						role: member.role,
-						invitedBy: member.invitedBy,
-						invitedAt: member.invitedAt,
-						acceptedAt: member.acceptedAt,
-						user: user
-							? {
-									id: user.id,
-									email: user.email,
-									name: user.name,
-								}
-							: null,
-						inviter: inviter
-							? {
-									id: inviter.id,
-									name: inviter.name,
-									email: inviter.email,
-								}
-							: null,
-					};
-				}),
-			);
+			// Create a lookup map for efficient access
+			const userMap = new Map(users.map((user) => [user.id, user]));
+
+			// Map members with user information from the lookup
+			const membersWithUserInfo = members.map((member) => {
+				const user = userMap.get(member.userId);
+				const inviter = userMap.get(member.invitedBy);
+
+				return {
+					id: member.id,
+					userId: member.userId,
+					role: member.role,
+					invitedBy: member.invitedBy,
+					invitedAt: member.invitedAt,
+					acceptedAt: member.acceptedAt,
+					user: user
+						? {
+								id: user.id,
+								email: user.email,
+								name: user.name,
+							}
+						: null,
+					inviter: inviter
+						? {
+								id: inviter.id,
+								name: inviter.name,
+								email: inviter.email,
+							}
+						: null,
+				};
+			});
 
 			return membersWithUserInfo;
 		}),

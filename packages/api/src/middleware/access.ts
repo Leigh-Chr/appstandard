@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: AGPL-3.0
-// Copyright (C) 2024 Calendraft
+// Copyright (C) 2024 AppStandard Calendar
 /**
  * Group and calendar access verification utilities
  * Handles access control for shared calendar groups
  */
 
-import prisma from "@calendraft/db";
+import prisma from "@appstandard/db";
 import { TRPCError } from "@trpc/server";
 import type { Context } from "../context";
 

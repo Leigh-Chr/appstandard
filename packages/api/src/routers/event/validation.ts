@@ -2,7 +2,7 @@
  * Event validation utilities
  */
 
-import prisma from "@calendraft/db";
+import prisma from "@appstandard/db";
 import { TRPCError } from "@trpc/server";
 
 /**

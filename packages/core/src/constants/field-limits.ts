@@ -2,7 +2,7 @@
  * Field length limits for validation and security
  * Prevents excessively long inputs and potential attacks
  *
- * IMPORTANT: Keep in sync with @calendraft/schemas/src/field-limits.ts
+ * IMPORTANT: Keep in sync with @appstandard/schemas/src/field-limits.ts
  */
 
 export const FIELD_LIMITS = {

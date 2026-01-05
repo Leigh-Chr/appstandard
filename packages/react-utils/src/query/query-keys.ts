@@ -3,7 +3,7 @@
  * Provides type-safe, consistent query key management
  *
  * Note: This is a generic utility for creating query keys.
- * For Calendraft-specific query keys, see apps/web/src/lib/query-keys.ts
+ * For AppStandard Calendar-specific query keys, see apps/web/src/lib/query-keys.ts
  */
 
 /**

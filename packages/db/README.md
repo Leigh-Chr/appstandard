@@ -1,17 +1,17 @@
-# @calendraft/db
+# @appstandard/db
 
-Prisma client and database schemas for Calendraft.
+Prisma client and database schemas for AppStandard Calendar.
 
 ## Installation
 
 ```bash
-bun add @calendraft/db
+bun add @appstandard/db
 ```
 
 ## Quick usage
 
 ```typescript
-import prisma from '@calendraft/db';
+import prisma from '@appstandard/db';
 
 // Example query
 const calendars = await prisma.calendar.findMany({
@@ -277,9 +277,9 @@ export type { Calendar, Event, Attendee, Alarm } from '../prisma/generated/clien
 ## See also
 
 - [ARCHITECTURE.md](../../ARCHITECTURE.md) - Global project architecture
-- [@calendraft/auth](../auth/README.md) - Better-Auth configuration
+- [@appstandard/auth](../auth/README.md) - Better-Auth configuration
 - [DEPLOYMENT.md](../../DEPLOYMENT.md) - Deployment guide
 
 ## License
 
-MIT
+AGPL-3.0

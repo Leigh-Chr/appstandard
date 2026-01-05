@@ -2,7 +2,7 @@
  * Event access verification utilities
  */
 
-import prisma from "@calendraft/db";
+import prisma from "@appstandard/db";
 import { TRPCError } from "@trpc/server";
 import type { Context } from "../../context";
 import { buildOwnershipFilter } from "../../middleware";

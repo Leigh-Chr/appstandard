@@ -1,7 +1,7 @@
 {
-	"name": "@calendraft/core",
+	"name": "@appstandard/core",
 	"version": "0.1.0",
-	"description": "Core domain logic and types for Calendraft calendar management",
+	"description": "Core domain logic and types for AppStandard Calendar calendar management",
 	"type": "module",
 	"exports": {
 		".": {
@@ -55,10 +55,10 @@
 		"dequal": "^2.0.3"
 	},
 	"devDependencies": {
-		"@calendraft/config": "workspace:*",
+		"@appstandard/config": "workspace:*",
 		"tsdown": "catalog:",
 		"typescript": "catalog:",
-		"vitest": "^4.0.15"
+		"vitest": "catalog:"
 	},
 	"publishConfig": {
 		"access": "public"

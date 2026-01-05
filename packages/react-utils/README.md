@@ -1,11 +1,11 @@
-# @calendraft/react-utils
+# @appstandard/react-utils
 
 React utilities: hooks, query keys, error handling.
 
 ## Installation
 
 ```bash
-bun add @calendraft/react-utils
+bun add @appstandard/react-utils
 ```
 
 **Peer deps:** `react` >= 18, `@tanstack/react-query` >= 5
@@ -20,7 +20,7 @@ import {
   createQueryKeys,
   cn,
   getErrorMessage,
-} from '@calendraft/react-utils';
+} from '@appstandard/react-utils';
 ```
 
 ## Hooks
@@ -46,7 +46,7 @@ const isMounted = useMounted();
 ## Query Keys
 
 ```typescript
-import { createQueryKeys } from '@calendraft/react-utils';
+import { createQueryKeys } from '@appstandard/react-utils';
 
 // Factory to create query keys by domain
 const userKeys = createQueryKeys('user');
@@ -62,7 +62,7 @@ useQuery({ queryKey: userKeys.detail(id) });
 ## Error handling
 
 ```typescript
-import { getErrorMessage, isNetworkError, logErrorInDev } from '@calendraft/react-utils';
+import { getErrorMessage, isNetworkError, logErrorInDev } from '@appstandard/react-utils';
 
 try {
   await api();
@@ -76,7 +76,7 @@ try {
 ## Styling
 
 ```typescript
-import { cn } from '@calendraft/react-utils';
+import { cn } from '@appstandard/react-utils';
 
 // Merge Tailwind classes with conflict resolution
 <div className={cn('px-4', isActive && 'bg-blue-500', className)} />
@@ -85,8 +85,8 @@ import { cn } from '@calendraft/react-utils';
 ## See also
 
 - [ARCHITECTURE.md](../../ARCHITECTURE.md) - Global project architecture
-- [@calendraft/core](../core/README.md) - Business logic and types
+- [@appstandard/core](../core/README.md) - Business logic and types
 
 ## License
 
-MIT
+AGPL-3.0

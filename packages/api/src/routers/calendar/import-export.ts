@@ -3,13 +3,13 @@
  * Extracted from calendar.ts for better maintainability
  */
 
-import prisma from "@calendraft/db";
+import { handlePrismaError } from "@appstandard/api-core";
+import prisma from "@appstandard/db";
 import { TRPCError } from "@trpc/server";
 import z from "zod";
 import { authOrAnonProcedure, router } from "../../index";
 import { parseIcsFile } from "../../lib/ics-parser";
 import { logger } from "../../lib/logger";
-import { handlePrismaError } from "../../lib/prisma-error-handler";
 import { verifyCalendarAccess } from "../../middleware";
 import { createEventFromParsed, validateFileSize } from "./helpers";
 

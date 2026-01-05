@@ -1,4 +1,4 @@
-import { auth } from "@calendraft/auth";
+import { auth } from "@appstandard/auth";
 import type { Context as HonoContext } from "hono";
 
 export type CreateContextOptions = {

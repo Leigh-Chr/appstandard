@@ -1,25 +1,25 @@
-# @calendraft/api
+# @appstandard/api
 
-tRPC API for Calendraft with routers, procedures, and authentication middleware.
+tRPC API for AppStandard Calendar with routers, procedures, and authentication middleware.
 
 ## Installation
 
 ```bash
-bun add @calendraft/api @hono/trpc-server
+bun add @appstandard/api @hono/trpc-server
 ```
 
 **Peer dependencies:**
 - `@trpc/server` ^11.5.0
 - `hono` ^4.0.0
-- `@calendraft/auth` (workspace package)
-- `@calendraft/db` (workspace package)
-- `@calendraft/core` (workspace package)
-- `@calendraft/schemas` (workspace package)
+- `@appstandard/auth` (workspace package)
+- `@appstandard/db` (workspace package)
+- `@appstandard/core` (workspace package)
+- `@appstandard/schemas` (workspace package)
 
 ## Quick usage
 
 ```typescript
-import { appRouter, createContext } from '@calendraft/api';
+import { appRouter, createContext } from '@appstandard/api';
 import { trpcServer } from '@hono/trpc-server';
 import { Hono } from 'hono';
 
@@ -51,7 +51,7 @@ app.use(
 ### Procedures
 
 ```typescript
-import { publicProcedure, protectedProcedure, authOrAnonProcedure, router } from '@calendraft/api';
+import { publicProcedure, protectedProcedure, authOrAnonProcedure, router } from '@appstandard/api';
 
 // Public procedure (accessible without auth)
 const myRouter = router({
@@ -424,20 +424,20 @@ trpc.calendar.group.updateMemberRole.mutate({
 - Members can leave groups (but owners cannot)
 
 **Group Limits:**
-- Anonymous users: 50 groups, 15 calendars per group
-- Authenticated users: 100 groups, 20 calendars per group
+- Anonymous users: 3 groups, 10 calendars per group
+- Authenticated users: 100 groups, 30 calendars per group
 
 ## Exports
 
 ```typescript
 // Main router
-export { appRouter, type AppRouter } from '@calendraft/api/routers';
+export { appRouter, type AppRouter } from '@appstandard/api/routers';
 
 // Context
-export { createContext, type Context } from '@calendraft/api/context';
+export { createContext, type Context } from '@appstandard/api/context';
 
 // Utilities
-export { t, router, publicProcedure, protectedProcedure, authOrAnonProcedure } from '@calendraft/api';
+export { t, router, publicProcedure, protectedProcedure, authOrAnonProcedure } from '@appstandard/api';
 
 // Middleware helpers
 export { 
@@ -447,20 +447,20 @@ export {
   checkCalendarLimit,
   checkEventLimit,
   getUserUsage
-} from '@calendraft/api/middleware';
+} from '@appstandard/api/middleware';
 ```
 
 ## Dependencies
 
 - `@trpc/server` - tRPC framework
-- `@calendraft/auth` - Authentication
-- `@calendraft/db` - Database
-- `@calendraft/schemas` - Zod validation
-- `@calendraft/ics-utils` - ICS parsing/generation
+- `@appstandard/auth` - Authentication
+- `@appstandard/db` - Database
+- `@appstandard/schemas` - Zod validation
+- `@appstandard/ics-utils` - ICS parsing/generation
 
 ## Calendar Refresh
 
-Calendraft supports manual refresh of calendars imported from remote URLs (WebCal/iCal format).
+AppStandard Calendar supports manual refresh of calendars imported from remote URLs (WebCal/iCal format).
 
 ### How it works
 
@@ -478,10 +478,10 @@ Calendraft supports manual refresh of calendars imported from remote URLs (WebCa
 ## See also
 
 - [ARCHITECTURE.md](../../ARCHITECTURE.md) - Global project architecture
-- [@calendraft/auth](../auth/README.md) - Better-Auth configuration
-- [@calendraft/db](../db/README.md) - Prisma client
-- [@calendraft/schemas](../schemas/README.md) - Validation schemas
+- [@appstandard/auth](../auth/README.md) - Better-Auth configuration
+- [@appstandard/db](../db/README.md) - Prisma client
+- [@appstandard/schemas](../schemas/README.md) - Validation schemas
 
 ## License
 
-MIT
+AGPL-3.0

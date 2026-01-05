@@ -3,12 +3,12 @@
  * Extracted from calendar.ts for better maintainability
  */
 
-import prisma from "@calendraft/db";
+import { handlePrismaError } from "@appstandard/api-core";
+import prisma from "@appstandard/db";
 import { TRPCError } from "@trpc/server";
 import z from "zod";
 import { authOrAnonProcedure, router } from "../../index";
 import { cleanupCalendarRelations } from "../../lib/cleanup-calendar-relations";
-import { handlePrismaError } from "../../lib/prisma-error-handler";
 import {
 	buildOwnershipFilter,
 	checkCalendarLimit,
@@ -226,7 +226,7 @@ export const calendarCoreRouter = router({
 					.optional(), // Now optional for partial updates
 				color: z
 					.string()
-					.regex(/^#[0-9A-Fa-f]6$/, "Invalid color (format: #RRGGBB)")
+					.regex(/^#[0-9A-Fa-f]{6}$/, "Invalid color (format: #RRGGBB)")
 					.optional()
 					.nullable(),
 			}),

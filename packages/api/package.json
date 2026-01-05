@@ -1,5 +1,5 @@
 {
-	"name": "@calendraft/api",
+	"name": "@appstandard/api",
 	"exports": {
 		".": {
 			"types": "./dist/index.d.ts",
@@ -20,22 +20,23 @@
 	},
 	"devDependencies": {
 		"tsdown": "catalog:",
-		"@calendraft/config": "workspace:*",
-		"vitest": "^4.0.15",
-		"@vitest/coverage-v8": "^4.0.15"
+		"@appstandard/config": "workspace:*",
+		"vitest": "catalog:",
+		"@vitest/coverage-v8": "catalog:"
 	},
 	"peerDependencies": {
 		"typescript": "^5"
 	},
 	"dependencies": {
-		"@calendraft/auth": "workspace:*",
-		"@calendraft/core": "workspace:*",
-		"@calendraft/db": "workspace:*",
-		"@calendraft/schemas": "workspace:*",
+		"@appstandard/api-core": "workspace:*",
+		"@appstandard/auth": "workspace:*",
+		"@appstandard/core": "workspace:*",
+		"@appstandard/db": "workspace:*",
+		"@appstandard/schemas": "workspace:*",
 		"@prisma/client": "catalog:",
 		"@trpc/client": "catalog:",
 		"@trpc/server": "catalog:",
-		"@types/node": "^24.10.1",
+		"@types/node": "^25.0.3",
 		"date-fns": "^4.1.0",
 		"dotenv": "catalog:",
 		"hono": "catalog:",

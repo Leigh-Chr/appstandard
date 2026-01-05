@@ -3,7 +3,8 @@
  * Extracted from calendar.ts for better maintainability
  */
 
-import prisma from "@calendraft/db";
+import { handlePrismaError } from "@appstandard/api-core";
+import prisma from "@appstandard/db";
 import { TRPCError } from "@trpc/server";
 import z from "zod";
 import { authOrAnonProcedure, router } from "../../index";
@@ -11,7 +12,6 @@ import {
 	deduplicateEvents,
 	getDuplicateIds,
 } from "../../lib/duplicate-detection";
-import { handlePrismaError } from "../../lib/prisma-error-handler";
 import { buildOwnershipFilter, verifyCalendarAccess } from "../../middleware";
 
 export const calendarMergeDuplicatesRouter = router({

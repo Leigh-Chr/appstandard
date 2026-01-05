@@ -1,5 +1,5 @@
 {
-	"name": "@calendraft/db",
+	"name": "@appstandard/db",
 	"type": "module",
 	"exports": {
 		".": {
@@ -13,7 +13,7 @@
 	},
 	"scripts": {
 		"build": "tsdown",
-		"typecheck": "echo 'Skipping typecheck for @calendraft/db (Prisma generated files)'",
+		"typecheck": "echo 'Skipping typecheck for @appstandard/db (Prisma generated files)'",
 		"clean": "rm -rf dist *.tsbuildinfo",
 		"db:push": "prisma db push",
 		"db:studio": "prisma studio",
@@ -25,8 +25,8 @@
 		"seed": "bun run prisma/seed.ts"
 	},
 	"devDependencies": {
-		"@calendraft/config": "workspace:*",
-		"prisma": "^7.1.0",
+		"@appstandard/config": "workspace:*",
+		"prisma": "^7.2.0",
 		"tsdown": "catalog:"
 	},
 	"peerDependencies": {
@@ -34,7 +34,7 @@
 	},
 	"dependencies": {
 		"@noble/hashes": "^2.0.1",
-		"@prisma/adapter-pg": "^7.1.0",
+		"@prisma/adapter-pg": "^7.2.0",
 		"@prisma/client": "catalog:",
 		"dotenv": "catalog:",
 		"zod": "catalog:"

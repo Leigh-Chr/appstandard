@@ -5,8 +5,8 @@
 import { TRPCError } from "@trpc/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-// Mock Prisma (must be before importing from @calendraft/db or middleware)
-vi.mock("@calendraft/db", () => ({
+// Mock Prisma (must be before importing from @appstandard/db or middleware)
+vi.mock("@appstandard/db", () => ({
 	default: {
 		calendarGroup: {
 			findUnique: vi.fn(),
@@ -19,7 +19,7 @@ vi.mock("@calendraft/db", () => ({
 }));
 
 // Import after mocks are set up
-import prisma from "@calendraft/db";
+import prisma from "@appstandard/db";
 import type { Context } from "../../context";
 import {
 	isGroupMember,

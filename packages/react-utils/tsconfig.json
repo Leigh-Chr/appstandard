@@ -1,5 +1,5 @@
 {
-	"extends": "@calendraft/config/tsconfig.base.json",
+	"extends": "@appstandard/config/tsconfig.base.json",
 	"compilerOptions": {
 		"composite": true,
 		"outDir": "./dist",

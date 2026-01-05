@@ -1,4 +1,4 @@
-import prisma from "@calendraft/db";
+import prisma from "@appstandard/db";
 import {
 	addDays,
 	addMonths,
@@ -84,11 +84,6 @@ function getDayLabel(date: Date): string {
 	return format(date, "EEEE d MMMM");
 }
 
-// Note: This query function has high cognitive complexity (101) due to the
-// comprehensive nature of dashboard analytics. It aggregates data from multiple
-// sources and performs various calculations. The complexity is acceptable here
-// as the function is well-structured with clear sections and the alternative
-// would be to split into many smaller functions which would reduce readability.
 export const dashboardRouter = router({
 	getStats: authOrAnonProcedure
 		.input(
@@ -96,7 +91,6 @@ export const dashboardRouter = router({
 				period: z.enum(["today", "week", "month", "year"]).default("week"),
 			}),
 		)
-		// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Dashboard query aggregates multiple data sources
 		.query(async ({ ctx, input }) => {
 			const userId = ctx.userId;
 			const now = new Date();
