@@ -1,6 +1,6 @@
-# Production Commands Guide - AppStandard Calendar
+# Production Commands Guide - AppStandard
 
-Guide to production scripts for managing AppStandard Calendar in production.
+Guide to production scripts for managing AppStandard apps in production.
 
 > 💡 **Quick start**: See `scripts/production/README.md` for a quick introduction.  
 > 📖 **Basic Docker commands**: See [DEPLOYMENT.md](./DEPLOYMENT.md) for standard Docker commands.

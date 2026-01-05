@@ -1,9 +1,9 @@
-# VPS Deployment Guide - AppStandard Calendar
+# VPS Deployment Guide - AppStandard
 
-> 📌 **First-time installation guide**: This document is for initial setup of a new VPS server.  
+> 📌 **First-time installation guide**: This document is for initial setup of a new VPS server.
 > For daily production management, see [`PRODUCTION_COMMANDS.md`](./PRODUCTION_COMMANDS.md) and scripts in [`scripts/production/`](./scripts/production/).
 
-Complete step-by-step guide to deploy AppStandard Calendar on a VPS with Docker Compose.
+Complete step-by-step guide to deploy AppStandard on a VPS with Docker Compose.
 
 **Estimated time**: 2-3 hours (first time)
 
@@ -166,16 +166,16 @@ nano .env
 POSTGRES_PASSWORD=YOUR_SECURE_PASSWORD_HERE
 
 # Backend
-CORS_ORIGIN=https://appstandard.com
+CORS_ORIGIN=https://calendar.appstandard.io
 BETTER_AUTH_SECRET=YOUR_32_CHARACTER_SECRET_HERE
-BETTER_AUTH_URL=https://api.appstandard.com
+BETTER_AUTH_URL=https://api.appstandard.io
 
 # Frontend
-VITE_SERVER_URL=https://api.appstandard.com
+VITE_SERVER_URL=https://api.appstandard.io
 
 # Email (optional but recommended)
 RESEND_API_KEY=re_xxxxxxxxxxxxx
-EMAIL_FROM=noreply@appstandard.com
+EMAIL_FROM=noreply@appstandard.io
 ```
 
 ### 3.3 Generate Secrets
@@ -239,7 +239,7 @@ Create `/etc/nginx/sites-available/appstandard`:
 server {
     listen 80;
     listen [::]:80;
-    server_name your-domain.com;
+    server_name calendar.appstandard.io;
 
     location / {
         proxy_pass http://localhost:3001;
@@ -274,11 +274,16 @@ A       api     YOUR_VPS_IP        3600
 ### 5.4 Obtain SSL Certificates
 
 ```bash
-# For frontend
-sudo certbot --nginx -d appstandard.com -d www.appstandard.com
-
-# For API
-sudo certbot --nginx -d api.appstandard.com
+# For all domains (recommended - single SAN certificate)
+sudo certbot --nginx \
+  -d appstandard.io \
+  -d www.appstandard.io \
+  -d calendar.appstandard.io \
+  -d api.appstandard.io \
+  -d tasks.appstandard.io \
+  -d api-tasks.appstandard.io \
+  -d contacts.appstandard.io \
+  -d api-contacts.appstandard.io
 
 # Verify automatic renewal
 sudo certbot renew --dry-run
@@ -294,9 +299,9 @@ nano .env
 Update with your production URLs:
 
 ```env
-CORS_ORIGIN=https://appstandard.com
-BETTER_AUTH_URL=https://api.appstandard.com
-VITE_SERVER_URL=https://api.appstandard.com
+CORS_ORIGIN=https://calendar.appstandard.io
+BETTER_AUTH_URL=https://api.appstandard.io
+VITE_SERVER_URL=https://api.appstandard.io
 ```
 
 Restart services:
@@ -315,15 +320,15 @@ DOCKER_BUILDKIT=1 docker compose up -d --build
 docker compose ps
 
 # Test endpoints
-curl https://api.appstandard.com/health
-curl -I https://appstandard.com
+curl https://api.appstandard.io/health
+curl -I https://appstandard.io
 
 # Check database
 docker compose exec db psql -U appstandard -d appstandard -c "\dt"
 ```
 
 **Test the application**:
-1. Open https://appstandard.com in a browser
+1. Open https://appstandard.io in a browser
 2. Check that there are no errors in the console (F12)
 3. Test account creation
 
@@ -356,19 +361,24 @@ docker compose exec db psql -U appstandard -d appstandard -c "\dt"
 
 ### Web Infrastructure
 - [ ] Nginx installed and configured
-- [ ] DNS configured (A records for appstandard.com and api.appstandard.com)
+- [ ] DNS configured (A records for appstandard.io and all subdomains)
 - [ ] SSL certificates obtained with Certbot
 - [ ] Nginx restarts correctly
 
 ### Configuration
-- [ ] `CORS_ORIGIN` = `https://appstandard.com`
-- [ ] `BETTER_AUTH_URL` = `https://api.appstandard.com`
-- [ ] `VITE_SERVER_URL` = `https://api.appstandard.com`
+- [ ] `CORS_ORIGIN` = `https://calendar.appstandard.io`
+- [ ] `BETTER_AUTH_URL` = `https://api.appstandard.io`
+- [ ] `VITE_SERVER_URL` = `https://api.appstandard.io`
 - [ ] Services redeployed after variable changes
 
 ### Verifications
-- [ ] Frontend accessible: `https://appstandard.com`
-- [ ] API accessible: `https://api.appstandard.com/health`
+- [ ] Landing accessible: `https://appstandard.io`
+- [ ] Calendar accessible: `https://calendar.appstandard.io`
+- [ ] Calendar API accessible: `https://api.appstandard.io/health`
+- [ ] Tasks accessible: `https://tasks.appstandard.io`
+- [ ] Tasks API accessible: `https://api-tasks.appstandard.io/health`
+- [ ] Contacts accessible: `https://contacts.appstandard.io`
+- [ ] Contacts API accessible: `https://api-contacts.appstandard.io/health`
 - [ ] Database functional
 - [ ] Logs without critical errors
 - [ ] Authentication tested (account creation)

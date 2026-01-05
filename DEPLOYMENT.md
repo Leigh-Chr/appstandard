@@ -7,8 +7,8 @@ This guide describes the steps to deploy all AppStandard products in production.
 AppStandard is a multi-product monorepo containing:
 - **AppStandard Landing** - Main landing page (appstandard.io)
 - **AppStandard Calendar** - ICS calendar management (production-ready)
-- **AppStandard Tasks** - Todo/task management (in development)
-- **AppStandard Contacts** - vCard contact management (in development)
+- **AppStandard Tasks** - Todo/task management (production-ready)
+- **AppStandard Contacts** - vCard contact management (production-ready)
 
 ### Domain Structure
 

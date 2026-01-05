@@ -21,10 +21,10 @@ api-contacts   → 185.158.132.190
 
 ```bash
 ssh root@185.158.132.190
-cd /root/calendraft  # or wherever your project is
+cd /root/appstandard  # or wherever your project is
 
 # Backup database first
-docker compose exec db pg_dump -U calendraft calendraft > backup_$(date +%Y%m%d_%H%M%S).sql
+docker compose exec db pg_dump -U appstandard appstandard > backup_$(date +%Y%m%d_%H%M%S).sql
 
 # Pull latest code
 git pull origin master

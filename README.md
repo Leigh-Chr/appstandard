@@ -144,7 +144,7 @@ REDIS_URL=redis://localhost:6379
 # Email Service Configuration (required for email verification)
 # Option A: Resend (Recommended)
 RESEND_API_KEY=re_xxxxxxxxxxxxx
-EMAIL_FROM=noreply@appstandard.com
+EMAIL_FROM=noreply@appstandard.io
 
 # Option B: SMTP (Alternative)
 # SMTP_HOST=smtp.example.com
@@ -281,16 +281,16 @@ For managing the application in production, a comprehensive set of scripts is av
   - Uses Redis for distributed rate limiting (optional, falls back to in-memory)
 - HTTP security headers configured automatically
 - Input validation (max file size: 5MB)
-- Anonymous user limitations: 
-  - 10 calendars
-  - 500 events per calendar
-  - 50 groups
-  - 15 calendars per group
+- Anonymous user limitations:
+  - 5 calendars (per product)
+  - 250 events per calendar
+  - 3 groups
+  - 10 calendars per group
 - Authenticated user limitations:
-  - 100 calendars
-  - 2,000 events per calendar
+  - 150 calendars (per product)
+  - 3,000 events per calendar
   - 100 groups
-  - 20 calendars per group
+  - 30 calendars per group
 
 
 ## Project Structure

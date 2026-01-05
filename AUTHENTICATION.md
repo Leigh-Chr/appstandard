@@ -1,8 +1,8 @@
-# Authentication System - AppStandard Calendar
+# Authentication System - AppStandard
 
 ## Overview
 
-AppStandard Calendar uses **Better-Auth** to manage user authentication. The system supports two modes:
+AppStandard uses **Better-Auth** to manage user authentication. The system supports two modes:
 
 1. **Anonymous mode**: Use without an account (data stored locally)
 2. **Authenticated mode**: Account with email/password (data synchronized in the cloud)
@@ -61,7 +61,7 @@ BETTER_AUTH_URL=http://localhost:3000
 # Email Service Configuration (required for email verification)
 # Option A: Resend (Recommended)
 RESEND_API_KEY=re_xxxxxxxxxxxxx
-EMAIL_FROM=AppStandard Calendar <noreply@appstandard.com>
+EMAIL_FROM=AppStandard <noreply@appstandard.io>
 
 # Option B: SMTP (Alternative - if using Nodemailer)
 # SMTP_HOST=smtp.example.com
