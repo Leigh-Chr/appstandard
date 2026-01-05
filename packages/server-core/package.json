@@ -1,0 +1,69 @@
+{
+	"name": "@appstandard/server-core",
+	"version": "0.1.0",
+	"description": "Shared server infrastructure for AppStandard Calendar applications",
+	"type": "module",
+	"main": "./dist/index.js",
+	"module": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"default": "./src/index.ts"
+		},
+		"./lib/logger": {
+			"types": "./dist/lib/logger.d.ts",
+			"default": "./src/lib/logger.ts"
+		},
+		"./lib/secrets": {
+			"types": "./dist/lib/secrets.d.ts",
+			"default": "./src/lib/secrets.ts"
+		},
+		"./middleware/rate-limit": {
+			"types": "./dist/middleware/rate-limit.d.ts",
+			"default": "./src/middleware/rate-limit.ts"
+		},
+		"./middleware/env": {
+			"types": "./dist/middleware/env.d.ts",
+			"default": "./src/middleware/env.ts"
+		},
+		"./app": {
+			"types": "./dist/app.d.ts",
+			"default": "./src/app.ts"
+		}
+	},
+	"files": [
+		"dist",
+		"README.md"
+	],
+	"scripts": {
+		"build": "tsdown",
+		"dev": "tsdown --watch",
+		"typecheck": "tsc --noEmit",
+		"clean": "rm -rf dist *.tsbuildinfo"
+	},
+	"keywords": [
+		"server",
+		"hono",
+		"middleware",
+		"infrastructure"
+	],
+	"author": "",
+	"license": "AGPL-3.0",
+	"dependencies": {
+		"@sentry/bun": "catalog:",
+		"hono": "catalog:",
+		"ioredis": "catalog:",
+		"zod": "catalog:"
+	},
+	"peerDependencies": {
+		"@appstandard/auth": "workspace:*",
+		"@appstandard/db": "workspace:*"
+	},
+	"devDependencies": {
+		"@appstandard/config": "workspace:*",
+		"@types/bun": "^1.3.5",
+		"tsdown": "catalog:",
+		"typescript": "catalog:"
+	}
+}

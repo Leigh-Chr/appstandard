@@ -1,0 +1,59 @@
+{
+	"name": "@appstandard/api-core",
+	"version": "0.1.0",
+	"description": "Shared API infrastructure for AppStandard Calendar applications",
+	"type": "module",
+	"main": "./dist/index.js",
+	"module": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"default": "./src/index.ts"
+		},
+		"./trpc": {
+			"types": "./dist/trpc.d.ts",
+			"default": "./src/trpc.ts"
+		},
+		"./context": {
+			"types": "./dist/context.d.ts",
+			"default": "./src/context.ts"
+		}
+	},
+	"files": [
+		"dist",
+		"README.md"
+	],
+	"scripts": {
+		"build": "tsdown",
+		"dev": "tsdown --watch",
+		"typecheck": "tsc --noEmit",
+		"clean": "rm -rf dist *.tsbuildinfo",
+		"test": "vitest run --passWithNoTests",
+		"test:watch": "vitest"
+	},
+	"keywords": [
+		"api",
+		"trpc",
+		"middleware",
+		"infrastructure"
+	],
+	"author": "",
+	"license": "AGPL-3.0",
+	"dependencies": {
+		"@appstandard/db": "workspace:*",
+		"@trpc/server": "catalog:",
+		"hono": "catalog:",
+		"zod": "catalog:"
+	},
+	"peerDependencies": {
+		"@appstandard/auth": "workspace:*"
+	},
+	"devDependencies": {
+		"@appstandard/config": "workspace:*",
+		"@types/bun": "^1.3.5",
+		"tsdown": "catalog:",
+		"typescript": "catalog:",
+		"vitest": "catalog:"
+	}
+}
