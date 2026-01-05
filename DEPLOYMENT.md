@@ -315,8 +315,8 @@ server {
     listen [::]:443 ssl http2;
     server_name tasks.appstandard.io;
 
-    ssl_certificate /etc/letsencrypt/live/appstandard.io/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/appstandard.io/privkey.pem;
+    ssl_certificate /etc/letsencrypt/live/tasks.appstandard.io/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/tasks.appstandard.io/privkey.pem;
     include /etc/letsencrypt/options-ssl-nginx.conf;
     ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
 
@@ -338,8 +338,9 @@ server {
     listen [::]:443 ssl http2;
     server_name api-tasks.appstandard.io;
 
-    ssl_certificate /etc/letsencrypt/live/appstandard.io/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/appstandard.io/privkey.pem;
+    # Uses same SAN certificate as tasks.appstandard.io
+    ssl_certificate /etc/letsencrypt/live/tasks.appstandard.io/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/tasks.appstandard.io/privkey.pem;
     include /etc/letsencrypt/options-ssl-nginx.conf;
     ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
 
@@ -364,8 +365,9 @@ server {
     listen [::]:443 ssl http2;
     server_name contacts.appstandard.io;
 
-    ssl_certificate /etc/letsencrypt/live/appstandard.io/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/appstandard.io/privkey.pem;
+    # Uses same SAN certificate as tasks.appstandard.io
+    ssl_certificate /etc/letsencrypt/live/tasks.appstandard.io/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/tasks.appstandard.io/privkey.pem;
     include /etc/letsencrypt/options-ssl-nginx.conf;
     ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
 
@@ -387,8 +389,9 @@ server {
     listen [::]:443 ssl http2;
     server_name api-contacts.appstandard.io;
 
-    ssl_certificate /etc/letsencrypt/live/appstandard.io/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/appstandard.io/privkey.pem;
+    # Uses same SAN certificate as tasks.appstandard.io
+    ssl_certificate /etc/letsencrypt/live/tasks.appstandard.io/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/tasks.appstandard.io/privkey.pem;
     include /etc/letsencrypt/options-ssl-nginx.conf;
     ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
 
