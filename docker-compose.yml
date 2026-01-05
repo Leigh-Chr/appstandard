@@ -22,7 +22,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-appstandard} -d ${POSTGRES_DB:-appstandard}"]
       interval: 10s
@@ -70,7 +70,7 @@ services:
     volumes:
       - redis_data:/data
     ports:
-      - "${REDIS_PORT:-6379}:6379"
+      - "127.0.0.1:${REDIS_PORT:-6379}:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -110,7 +110,7 @@ services:
     container_name: appstandard-landing
     restart: unless-stopped
     ports:
-      - "${LANDING_PORT:-3010}:8080"
+      - "127.0.0.1:${LANDING_PORT:-3010}:8080"
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/"]
       interval: 30s
@@ -181,7 +181,7 @@ services:
       SMTP_USER: ${SMTP_USER:-}
       SMTP_PASSWORD: ${SMTP_PASSWORD:-}
     ports:
-      - "${CALENDAR_SERVER_PORT:-3000}:3000"
+      - "127.0.0.1:${CALENDAR_SERVER_PORT:-3000}:3000"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
       interval: 30s
@@ -225,7 +225,7 @@ services:
       calendar-server:
         condition: service_healthy
     ports:
-      - "${CALENDAR_WEB_PORT:-3001}:8080"
+      - "127.0.0.1:${CALENDAR_WEB_PORT:-3001}:8080"
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/"]
       interval: 30s
@@ -291,7 +291,7 @@ services:
       RESEND_API_KEY: ${RESEND_API_KEY:-}
       EMAIL_FROM: ${EMAIL_FROM:-AppStandard <noreply@appstandard.io>}
     ports:
-      - "${TASKS_SERVER_PORT:-3002}:3002"
+      - "127.0.0.1:${TASKS_SERVER_PORT:-3002}:3002"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3002/health"]
       interval: 30s
@@ -335,7 +335,7 @@ services:
       tasks-server:
         condition: service_healthy
     ports:
-      - "${TASKS_WEB_PORT:-3004}:8080"
+      - "127.0.0.1:${TASKS_WEB_PORT:-3004}:8080"
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/"]
       interval: 30s
@@ -401,7 +401,7 @@ services:
       RESEND_API_KEY: ${RESEND_API_KEY:-}
       EMAIL_FROM: ${EMAIL_FROM:-AppStandard <noreply@appstandard.io>}
     ports:
-      - "${CONTACTS_SERVER_PORT:-3003}:3003"
+      - "127.0.0.1:${CONTACTS_SERVER_PORT:-3003}:3003"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3003/health"]
       interval: 30s
@@ -445,7 +445,7 @@ services:
       contacts-server:
         condition: service_healthy
     ports:
-      - "${CONTACTS_WEB_PORT:-3005}:8080"
+      - "127.0.0.1:${CONTACTS_WEB_PORT:-3005}:8080"
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/"]
       interval: 30s
