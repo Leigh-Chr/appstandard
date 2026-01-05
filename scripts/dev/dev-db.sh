@@ -1,28 +1,27 @@
-#!/bin/bash
-# Script de gestion de la base de données pour Calendraft (développement)
+#!/usr/bin/env bash
+# Database management script for AppStandard (development)
 # Usage: ./scripts/dev/dev-db.sh [push|seed|studio|reset|status]
 
-set -euo pipefail  # Arrêter en cas d'erreur, variable non définie, ou erreur dans un pipe
+set -euo pipefail
 
 # Configuration
-# Utiliser le répertoire courant si docker-compose.dev.yml est présent, sinon utiliser le chemin relatif au script
 if [ -f "docker-compose.dev.yml" ] || [ -f "package.json" ]; then
     PROJECT_DIR="$(pwd)"
 else
     SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-    PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+    PROJECT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 fi
 
 cd "$PROJECT_DIR" || exit 1
 
-# Couleurs pour les messages
+# Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+NC='\033[0m'
 
-# Fonctions
+# Functions
 log() {
     echo -e "${GREEN}[$(date +'%Y-%m-%d %H:%M:%S')]${NC} $1"
 }
@@ -36,38 +35,28 @@ warning() {
     echo -e "${YELLOW}[WARNING]${NC} $1"
 }
 
-# Vérifier/créer packages/db/.env si nécessaire
+# Ensure packages/db/.env exists
 ensure_db_env() {
     if [ ! -f "packages/db/.env" ]; then
-        warning "packages/db/.env non trouvé. Création..."
-        if [ -f "apps/server/.env" ]; then
-            SERVER_DB_URL=$(grep "^DATABASE_URL=" apps/server/.env | cut -d'=' -f2- | tr -d '"' || echo "")
-            if [ -n "$SERVER_DB_URL" ]; then
-                echo "DATABASE_URL=\"$SERVER_DB_URL\"" > packages/db/.env
-                log "✅ packages/db/.env créé avec DATABASE_URL depuis apps/server/.env"
-            else
-                echo 'DATABASE_URL="postgresql://calendraft:calendraft_dev@localhost:5432/calendraft_dev"' > packages/db/.env
-                log "✅ packages/db/.env créé avec valeurs par défaut"
+        warning "packages/db/.env not found. Creating..."
+        # Try to get DATABASE_URL from any server .env
+        for server_env in apps/calendar-server/.env apps/tasks-server/.env apps/contacts-server/.env; do
+            if [ -f "$server_env" ]; then
+                SERVER_DB_URL=$(grep "^DATABASE_URL=" "$server_env" | cut -d'=' -f2- | tr -d '"' || echo "")
+                if [ -n "$SERVER_DB_URL" ]; then
+                    echo "DATABASE_URL=\"$SERVER_DB_URL\"" > packages/db/.env
+                    log "✅ packages/db/.env created with DATABASE_URL from $server_env"
+                    return
+                fi
             fi
-        else
-            echo 'DATABASE_URL="postgresql://calendraft:calendraft_dev@localhost:5432/calendraft_dev"' > packages/db/.env
-            log "✅ packages/db/.env créé avec valeurs par défaut"
-        fi
+        done
+        # Use default values
+        echo 'DATABASE_URL="postgresql://appstandard:appstandard_dev@localhost:5432/appstandard_dev"' > packages/db/.env
+        log "✅ packages/db/.env created with default values"
     elif grep -q "placeholder" packages/db/.env 2>/dev/null; then
-        warning "packages/db/.env contient des valeurs placeholder. Correction..."
-        if [ -f "apps/server/.env" ]; then
-            SERVER_DB_URL=$(grep "^DATABASE_URL=" apps/server/.env | cut -d'=' -f2- | tr -d '"' || echo "")
-            if [ -n "$SERVER_DB_URL" ]; then
-                echo "DATABASE_URL=\"$SERVER_DB_URL\"" > packages/db/.env
-                log "✅ packages/db/.env corrigé"
-            else
-                echo 'DATABASE_URL="postgresql://calendraft:calendraft_dev@localhost:5432/calendraft_dev"' > packages/db/.env
-                log "✅ packages/db/.env corrigé avec valeurs par défaut"
-            fi
-        else
-            echo 'DATABASE_URL="postgresql://calendraft:calendraft_dev@localhost:5432/calendraft_dev"' > packages/db/.env
-            log "✅ packages/db/.env corrigé avec valeurs par défaut"
-        fi
+        warning "packages/db/.env contains placeholder values. Fixing..."
+        echo 'DATABASE_URL="postgresql://appstandard:appstandard_dev@localhost:5432/appstandard_dev"' > packages/db/.env
+        log "✅ packages/db/.env fixed with default values"
     fi
 }
 
@@ -77,85 +66,84 @@ COMMAND="${1:-help}"
 case "$COMMAND" in
     push)
         ensure_db_env
-        log "📦 Application des changements de schéma à la base de données..."
+        log "📦 Applying schema changes to database..."
         bun run db:push
-        log "✅ Schéma appliqué"
+        log "✅ Schema applied"
         ;;
-    
+
     seed)
         ensure_db_env
-        log "🌱 Remplissage de la base de données avec des données de test..."
+        log "🌱 Seeding database with test data..."
         bun run db:seed
-        log "✅ Base de données remplie"
+        log "✅ Database seeded"
         ;;
-    
+
     studio)
         ensure_db_env
-        log "🎨 Ouverture de Prisma Studio..."
-        warning "Prisma Studio va s'ouvrir dans votre navigateur"
+        log "🎨 Opening Prisma Studio..."
+        warning "Prisma Studio will open in your browser"
         bun run db:studio
         ;;
-    
+
     reset)
-        warning "Cette opération va supprimer toutes les données de la base de données de développement !"
-        read -p "Êtes-vous sûr ? (yes/no): " -r
+        warning "This operation will DELETE all data from the development database!"
+        read -p "Are you sure? (yes/no): " -r
         if [[ ! $REPLY =~ ^[Yy][Ee][Ss]$ ]]; then
-            echo "Opération annulée"
+            echo "Operation cancelled"
             exit 0
         fi
-        
+
         ensure_db_env
-        log "🗑️  Réinitialisation de la base de données..."
-        
-        # Arrêter les apps si elles tournent (elles pourraient utiliser la DB)
-        warning "Assurez-vous d'arrêter toutes les applications en cours d'exécution (Ctrl+C)"
+        log "🗑️  Resetting database..."
+
+        # Warn about running apps
+        warning "Make sure to stop all running applications (Ctrl+C)"
         sleep 2
-        
-        # Supprimer et recréer la base de données
-        docker-compose -f docker-compose.dev.yml exec -T db psql -U calendraft -d calendraft_dev -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;" > /dev/null 2>&1 || true
-        
-        # Appliquer le schéma
+
+        # Drop and recreate the database schema
+        docker compose -f docker-compose.dev.yml exec -T db psql -U appstandard -d appstandard_dev -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;" > /dev/null 2>&1 || true
+
+        # Apply schema
         bun run db:push
-        
-        log "✅ Base de données réinitialisée"
+
+        log "✅ Database reset"
         ;;
-    
+
     status)
-        log "📊 État de la base de données"
+        log "📊 Database status"
         echo ""
-        
-        # Vérifier si les services Docker sont en cours d'exécution
-        if ! docker-compose -f docker-compose.dev.yml ps db | grep -q "Up"; then
-            error "Le conteneur PostgreSQL n'est pas en cours d'exécution. Démarrez-le avec: docker-compose -f docker-compose.dev.yml up -d"
+
+        # Check if Docker services are running
+        if ! docker compose -f docker-compose.dev.yml ps db | grep -q "Up"; then
+            error "PostgreSQL container is not running. Start it with: docker compose -f docker-compose.dev.yml up -d"
         fi
-        
-        # Vérifier la connexion
-        if docker-compose -f docker-compose.dev.yml exec -T db pg_isready -U calendraft > /dev/null 2>&1; then
-            log "✅ PostgreSQL est en cours d'exécution et accessible"
+
+        # Check connection
+        if docker compose -f docker-compose.dev.yml exec -T db pg_isready -U appstandard > /dev/null 2>&1; then
+            log "✅ PostgreSQL is running and accessible"
         else
-            error "PostgreSQL n'est pas prêt"
+            error "PostgreSQL is not ready"
         fi
-        
-        # Lister les tables
+
+        # List tables
         echo ""
-        echo -e "${BLUE}📋 Tables de la base de données:${NC}"
-        docker-compose -f docker-compose.dev.yml exec -T db psql -U calendraft -d calendraft_dev -c "\dt" 2>/dev/null || echo "  Aucune table trouvée ou schéma non initialisé"
+        echo -e "${BLUE}📋 Database tables:${NC}"
+        docker compose -f docker-compose.dev.yml exec -T db psql -U appstandard -d appstandard_dev -c "\dt" 2>/dev/null || echo "  No tables found or schema not initialized"
         ;;
-    
+
     help|*)
         echo "Usage: $0 [command]"
         echo ""
-        echo "Commandes:"
-        echo "  push     Appliquer les changements de schéma à la base de données"
-        echo "  seed     Remplir la base de données avec des données de test"
-        echo "  studio   Ouvrir Prisma Studio (interface graphique de la base de données)"
-        echo "  reset    Supprimer et recréer la base de données (⚠️  destructif)"
-        echo "  status   Afficher l'état de la base de données et les tables"
+        echo "Commands:"
+        echo "  push     Apply schema changes to database"
+        echo "  seed     Seed database with test data"
+        echo "  studio   Open Prisma Studio (database GUI)"
+        echo "  reset    Drop and recreate database (⚠️ destructive)"
+        echo "  status   Show database status and tables"
         echo ""
-        echo "Exemples:"
+        echo "Examples:"
         echo "  ./scripts/dev/dev-db.sh push"
         echo "  ./scripts/dev/dev-db.sh studio"
         echo "  ./scripts/dev/dev-db.sh status"
         ;;
 esac
-

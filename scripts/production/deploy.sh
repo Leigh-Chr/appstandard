@@ -1,26 +1,25 @@
-#!/bin/bash
-# Script de déploiement pour Calendraft
+#!/usr/bin/env bash
+# Deployment script for AppStandard
 # Usage: ./deploy.sh [--backup] [--migrate] [--service=SERVICE]
 
-set -euo pipefail  # Arrêter en cas d'erreur, variable non définie, ou erreur dans un pipe
+set -euo pipefail
 
-# Couleurs pour les messages
+# Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
+NC='\033[0m'
 
 # Configuration
-# Utiliser le répertoire courant si docker-compose.yml est présent, sinon utiliser la variable d'environnement
 if [ -f "docker-compose.yml" ]; then
     PROJECT_DIR="$(pwd)"
 else
-    PROJECT_DIR="${PROJECT_DIR:-$HOME/calendraft}"
+    PROJECT_DIR="${PROJECT_DIR:-$HOME/appstandard}"
 fi
 BACKUP_DIR="${BACKUP_DIR:-$HOME/backups}"
 LOG_FILE="${LOG_FILE:-$HOME/deploy.log}"
 
-# Fonctions
+# Functions
 log() {
     echo -e "${GREEN}[$(date +'%Y-%m-%d %H:%M:%S')]${NC} $1" | tee -a "$LOG_FILE"
 }
@@ -34,26 +33,26 @@ warning() {
     echo -e "${YELLOW}[WARNING]${NC} $1" | tee -a "$LOG_FILE"
 }
 
-# Vérifier qu'on est dans le bon répertoire
+# Check we're in the correct directory
 if [ ! -f "docker-compose.yml" ]; then
-    error "docker-compose.yml non trouvé. Êtes-vous dans le répertoire du projet ?"
+    error "docker-compose.yml not found. Are you in the project directory?"
 fi
 
-# Vérifier les prérequis
+# Check prerequisites
 if ! command -v docker > /dev/null 2>&1; then
-    error "Docker n'est pas installé ou n'est pas dans le PATH"
+    error "Docker is not installed or not in PATH"
 fi
 
 if ! docker info > /dev/null 2>&1; then
-    error "Docker n'est pas en cours d'exécution. Démarrez le service Docker."
+    error "Docker is not running. Start the Docker service."
 fi
 
 if ! command -v git > /dev/null 2>&1; then
-    error "Git n'est pas installé ou n'est pas dans le PATH"
+    error "Git is not installed or not in PATH"
 fi
 
 if ! git rev-parse --git-dir > /dev/null 2>&1; then
-    error "Ce répertoire n'est pas un dépôt Git valide"
+    error "This directory is not a valid Git repository"
 fi
 
 # Options
@@ -73,74 +72,83 @@ while [[ $# -gt 0 ]]; do
             ;;
         --service=*)
             SERVICE="${1#*=}"
-            # Valider que le service est valide (sécurité)
+            # Validate service name (security)
             if [[ ! "$SERVICE" =~ ^[a-zA-Z0-9_-]+$ ]]; then
-                error "Nom de service invalide: $SERVICE (caractères alphanumériques, tirets et underscores uniquement)"
+                error "Invalid service name: $SERVICE (alphanumeric, dashes and underscores only)"
             fi
             shift
             ;;
         *)
-            error "Option inconnue: $1"
+            error "Unknown option: $1"
             ;;
     esac
 done
 
-log "🚀 Démarrage du déploiement..."
+log "🚀 Starting deployment..."
 
-# Sauvegarde optionnelle
+# Optional backup
 if [ "$DO_BACKUP" = true ]; then
-    log "💾 Création d'une sauvegarde..."
+    log "💾 Creating backup..."
     SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     if [ -f "$SCRIPT_DIR/backup.sh" ]; then
         bash "$SCRIPT_DIR/backup.sh"
     else
-        warning "Script de sauvegarde non trouvé, passage de la sauvegarde"
+        warning "Backup script not found, skipping backup"
     fi
 fi
 
-# Récupérer les dernières modifications
-log "📥 Récupération des modifications Git..."
+# Pull latest changes
+log "📥 Pulling Git changes..."
 if ! git pull; then
-    error "Échec du git pull"
+    error "Git pull failed"
 fi
 
-# Migrations optionnelles
+# Optional migrations
 if [ "$DO_MIGRATE" = true ]; then
-    log "🗄️  Application des migrations de base de données..."
-    docker compose run --rm server bun run db:push || warning "Échec des migrations"
+    log "🗄️  Applying database migrations..."
+    docker compose run --rm calendar-server bun run db:push || warning "Migration failed"
 fi
 
-# Déploiement
-log "🔨 Construction et démarrage des services..."
+# Deployment
+log "🔨 Building and starting services..."
 
 if [ -n "$SERVICE" ]; then
-    log "Déploiement du service: $SERVICE"
+    log "Deploying service: $SERVICE"
     DOCKER_BUILDKIT=1 docker compose up -d --build "$SERVICE"
 else
-    log "Déploiement de tous les services"
+    log "Deploying all services"
     docker compose down
     DOCKER_BUILDKIT=1 docker compose up -d --build
 fi
 
-# Attendre que les services soient prêts
-log "⏳ Attente du démarrage des services..."
+# Wait for services to be ready
+log "⏳ Waiting for services to start..."
 sleep 5
 
-# Vérification de santé
-log "🏥 Vérification de la santé des services..."
+# Health check
+log "🏥 Checking service health..."
 if docker compose ps | grep -q "unhealthy"; then
-    error "Certains services sont unhealthy. Vérifiez les logs: docker compose logs"
+    error "Some services are unhealthy. Check logs: docker compose logs"
 fi
 
-# Test du health check
-log "🔍 Test du health check..."
-if curl -f -s http://localhost:3000/health > /dev/null 2>&1; then
-    log "✅ Health check OK"
+# Test health endpoints for all apps
+log "🔍 Testing health endpoints..."
+HEALTH_OK=true
+
+for port in 3000 3002 3003; do
+    if curl -f -s "http://localhost:${port}/health" > /dev/null 2>&1; then
+        log "✅ Health check OK on port ${port}"
+    else
+        warning "Health check failed on port ${port}"
+        HEALTH_OK=false
+    fi
+done
+
+if [ "$HEALTH_OK" = true ]; then
+    log "✅ Deployment completed successfully!"
 else
-    warning "Health check échoué, mais le déploiement continue"
+    warning "Deployment completed with some health check failures"
 fi
 
-log "✅ Déploiement terminé avec succès !"
-log "📊 Statut des services:"
+log "📊 Service status:"
 docker compose ps
-

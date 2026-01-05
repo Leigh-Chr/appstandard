@@ -1,28 +1,28 @@
-#!/bin/bash
-# Script de démarrage de l'environnement de développement pour Calendraft
+#!/usr/bin/env bash
+# Development environment startup script for AppStandard
+# Supports: Calendar, Contacts, Tasks applications
 # Usage: ./scripts/dev/dev.sh [--no-db] [--no-apps]
 
-set -euo pipefail  # Arrêter en cas d'erreur, variable non définie, ou erreur dans un pipe
+set -euo pipefail
 
 # Configuration
-# Utiliser le répertoire courant si docker-compose.dev.yml est présent, sinon utiliser le chemin relatif au script
 if [ -f "docker-compose.dev.yml" ] || [ -f "package.json" ]; then
     PROJECT_DIR="$(pwd)"
 else
     SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-    PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+    PROJECT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 fi
 
 cd "$PROJECT_DIR" || exit 1
 
-# Couleurs pour les messages
+# Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+NC='\033[0m'
 
-# Fonctions
+# Functions
 log() {
     echo -e "${GREEN}[$(date +'%Y-%m-%d %H:%M:%S')]${NC} $1"
 }
@@ -51,120 +51,116 @@ while [[ $# -gt 0 ]]; do
             shift
             ;;
         *)
-            error "Option inconnue: $1"
+            error "Unknown option: $1"
             ;;
     esac
 done
 
-log "🚀 Démarrage de l'environnement de développement Calendraft..."
+log "🚀 Starting AppStandard development environment..."
 
-# Vérifier les prérequis
+# Check prerequisites
 if ! command -v bun &> /dev/null 2>&1; then
-    error "Bun n'est pas installé ou n'est pas dans le PATH. Installez Bun: https://bun.sh"
+    error "Bun is not installed or not in PATH. Install Bun: https://bun.sh"
 fi
 
 if ! command -v docker &> /dev/null 2>&1; then
-    error "Docker n'est pas installé ou n'est pas dans le PATH"
+    error "Docker is not installed or not in PATH"
 fi
 
 if ! docker info > /dev/null 2>&1; then
-    error "Docker n'est pas en cours d'exécution. Démarrez le service Docker."
+    error "Docker is not running. Start the Docker service."
 fi
 
-# Démarrer les services Docker
+# Start Docker services
 if [ "$START_DB" = true ]; then
-    log "📦 Démarrage des services Docker (PostgreSQL + Redis)..."
-    
-    if ! docker-compose -f docker-compose.dev.yml up -d; then
-        error "Échec du démarrage des services Docker"
+    log "📦 Starting Docker services (PostgreSQL + Redis)..."
+
+    if ! docker compose -f docker-compose.dev.yml up -d; then
+        error "Failed to start Docker services"
     fi
-    
-    log "⏳ Attente de la disponibilité de PostgreSQL..."
-    until docker-compose -f docker-compose.dev.yml exec -T db pg_isready -U calendraft > /dev/null 2>&1; do
+
+    log "⏳ Waiting for PostgreSQL to be ready..."
+    until docker compose -f docker-compose.dev.yml exec -T db pg_isready -U appstandard > /dev/null 2>&1; do
         sleep 1
     done
-    
-    log "⏳ Attente de la disponibilité de Redis..."
-    until docker-compose -f docker-compose.dev.yml exec -T redis redis-cli ping > /dev/null 2>&1; do
+
+    log "⏳ Waiting for Redis to be ready..."
+    until docker compose -f docker-compose.dev.yml exec -T redis redis-cli ping > /dev/null 2>&1; do
         sleep 1
     done
-    
-    log "✅ Services Docker prêts"
+
+    log "✅ Docker services ready"
 fi
 
-# Vérifier/créer packages/db/.env si nécessaire
+# Ensure packages/db/.env exists
 ensure_db_env() {
     if [ ! -f "packages/db/.env" ]; then
-        warning "packages/db/.env non trouvé. Création..."
-        if [ -f "apps/server/.env" ]; then
-            SERVER_DB_URL=$(grep "^DATABASE_URL=" apps/server/.env | cut -d'=' -f2- | tr -d '"' || echo "")
-            if [ -n "$SERVER_DB_URL" ]; then
-                echo "DATABASE_URL=\"$SERVER_DB_URL\"" > packages/db/.env
-                log "✅ packages/db/.env créé avec DATABASE_URL depuis apps/server/.env"
-            else
-                echo 'DATABASE_URL="postgresql://calendraft:calendraft_dev@localhost:5432/calendraft_dev"' > packages/db/.env
-                log "✅ packages/db/.env créé avec valeurs par défaut"
+        warning "packages/db/.env not found. Creating..."
+        # Try to get DATABASE_URL from any server .env
+        for server_env in apps/calendar-server/.env apps/tasks-server/.env apps/contacts-server/.env; do
+            if [ -f "$server_env" ]; then
+                SERVER_DB_URL=$(grep "^DATABASE_URL=" "$server_env" | cut -d'=' -f2- | tr -d '"' || echo "")
+                if [ -n "$SERVER_DB_URL" ]; then
+                    echo "DATABASE_URL=\"$SERVER_DB_URL\"" > packages/db/.env
+                    log "✅ packages/db/.env created with DATABASE_URL from $server_env"
+                    return
+                fi
             fi
-        else
-            echo 'DATABASE_URL="postgresql://calendraft:calendraft_dev@localhost:5432/calendraft_dev"' > packages/db/.env
-            log "✅ packages/db/.env créé avec valeurs par défaut"
-        fi
+        done
+        # Use default values
+        echo 'DATABASE_URL="postgresql://appstandard:appstandard_dev@localhost:5432/appstandard_dev"' > packages/db/.env
+        log "✅ packages/db/.env created with default values"
     elif grep -q "placeholder" packages/db/.env 2>/dev/null; then
-        warning "packages/db/.env contient des valeurs placeholder. Correction..."
-        if [ -f "apps/server/.env" ]; then
-            SERVER_DB_URL=$(grep "^DATABASE_URL=" apps/server/.env | cut -d'=' -f2- | tr -d '"' || echo "")
-            if [ -n "$SERVER_DB_URL" ]; then
-                echo "DATABASE_URL=\"$SERVER_DB_URL\"" > packages/db/.env
-                log "✅ packages/db/.env corrigé"
-            else
-                echo 'DATABASE_URL="postgresql://calendraft:calendraft_dev@localhost:5432/calendraft_dev"' > packages/db/.env
-                log "✅ packages/db/.env corrigé avec valeurs par défaut"
-            fi
-        else
-            echo 'DATABASE_URL="postgresql://calendraft:calendraft_dev@localhost:5432/calendraft_dev"' > packages/db/.env
-            log "✅ packages/db/.env corrigé avec valeurs par défaut"
-        fi
+        warning "packages/db/.env contains placeholder values. Fixing..."
+        echo 'DATABASE_URL="postgresql://appstandard:appstandard_dev@localhost:5432/appstandard_dev"' > packages/db/.env
+        log "✅ packages/db/.env fixed with default values"
     fi
 }
 
-# Vérifier l'initialisation de la base de données
+# Check database initialization
 if [ "$START_DB" = true ] && [ "$START_APPS" = true ]; then
-    log "🔍 Vérification de l'initialisation de la base de données..."
-    
-    # S'assurer que packages/db/.env existe et est correct
+    log "🔍 Checking database initialization..."
+
+    # Ensure packages/db/.env exists and is correct
     ensure_db_env
-    
-    # Vérifier si le client Prisma est généré
+
+    # Check if Prisma client is generated
     if [ ! -d "packages/db/node_modules/.prisma" ]; then
-        warning "Client Prisma non généré. Génération en cours..."
+        warning "Prisma client not generated. Generating..."
         bun run db:generate
     fi
-    
-    # Vérifier si la base de données a des tables
-    TABLE_COUNT=$(docker-compose -f docker-compose.dev.yml exec -T db psql -U calendraft -d calendraft_dev -t -c "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public';" 2>/dev/null | tr -d ' ' || echo "0")
+
+    # Check if database has tables
+    TABLE_COUNT=$(docker compose -f docker-compose.dev.yml exec -T db psql -U appstandard -d appstandard_dev -t -c "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public';" 2>/dev/null | tr -d ' ' || echo "0")
     if [ -z "$TABLE_COUNT" ] || [ "$TABLE_COUNT" = "0" ]; then
-        warning "Schéma de base de données non initialisé. Application du schéma..."
+        warning "Database schema not initialized. Applying schema..."
         bun run db:push
     else
-        log "✅ Base de données initialisée (${TABLE_COUNT} tables trouvées)"
+        log "✅ Database initialized (${TABLE_COUNT} tables found)"
     fi
 fi
 
-# Démarrer les applications
+# Start applications
 if [ "$START_APPS" = true ]; then
-    log "🎨 Démarrage des serveurs de développement..."
+    log "🎨 Starting development servers..."
     echo ""
-    echo -e "${GREEN}✅ Backend: http://localhost:3000${NC}"
-    echo -e "${GREEN}✅ Frontend: http://localhost:3001${NC}"
+    echo -e "${BLUE}Development Ports:${NC}"
+    echo -e "  ${GREEN}Calendar:${NC}  Frontend http://localhost:3001  |  Backend http://localhost:3000"
+    echo -e "  ${GREEN}Tasks:${NC}     Frontend http://localhost:3004  |  Backend http://localhost:3002"
+    echo -e "  ${GREEN}Contacts:${NC}  Frontend http://localhost:3005  |  Backend http://localhost:3003"
+    echo -e "  ${GREEN}Landing:${NC}   http://localhost:3010"
     echo ""
-    echo -e "${YELLOW}Appuyez sur Ctrl+C pour arrêter tous les services${NC}"
+    echo -e "${YELLOW}Press Ctrl+C to stop all services${NC}"
     echo ""
-    
+
     bun run dev
 else
-    log "✅ Services Docker en cours d'exécution"
+    log "✅ Docker services running"
     echo ""
-    echo "Pour démarrer les applications, exécutez:"
-    echo "  bun run dev"
+    echo "To start applications, run:"
+    echo "  bun run dev           # All apps"
+    echo "  bun run dev:calendar  # Calendar only"
+    echo "  bun run dev:tasks     # Tasks only"
+    echo "  bun run dev:contacts  # Contacts only"
 fi
 

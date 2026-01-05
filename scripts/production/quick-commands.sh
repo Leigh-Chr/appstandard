@@ -1,12 +1,12 @@
-#!/bin/bash
-# Script de commandes rapides pour Calendraft
+#!/usr/bin/env bash
+# Quick commands for AppStandard
 # Usage: ./quick-commands.sh [command]
 
-# Utiliser le répertoire courant si docker-compose.yml est présent, sinon utiliser la variable d'environnement
+# Configuration
 if [ -f "docker-compose.yml" ]; then
     PROJECT_DIR="$(pwd)"
 else
-    PROJECT_DIR="${PROJECT_DIR:-$HOME/calendraft}"
+    PROJECT_DIR="${PROJECT_DIR:-$HOME/appstandard}"
 fi
 
 cd "$PROJECT_DIR" || exit 1
@@ -28,7 +28,7 @@ case "${1:-}" in
         docker compose start "${2:-}"
         ;;
     shell-db)
-        docker compose exec db psql -U calendraft -d calendraft
+        docker compose exec db psql -U appstandard -d appstandard
         ;;
     shell-server)
         docker compose exec server sh
@@ -46,27 +46,26 @@ case "${1:-}" in
         docker compose config
         ;;
     ""|*)
-        echo "Commandes rapides pour Calendraft"
+        echo "Quick commands for AppStandard"
         echo ""
         echo "Usage: $0 [command] [service]"
         echo ""
-        echo "Commandes disponibles:"
-        echo "  status, ps          Afficher le statut des services"
-        echo "  logs [service]      Afficher les logs (tous ou un service)"
-        echo "  restart [service]   Redémarrer un service ou tous"
-        echo "  stop [service]      Arrêter un service ou tous"
-        echo "  start [service]     Démarrer un service ou tous"
-        echo "  shell-db            Ouvrir un shell PostgreSQL"
-        echo "  shell-server        Ouvrir un shell dans le conteneur server"
-        echo "  shell-web           Ouvrir un shell dans le conteneur web"
-        echo "  stats               Afficher les statistiques des conteneurs"
-        echo "  top                 Afficher les processus des conteneurs"
-        echo "  env                 Afficher la configuration Docker Compose"
+        echo "Available commands:"
+        echo "  status, ps          Show service status"
+        echo "  logs [service]      Show logs (all or specific service)"
+        echo "  restart [service]   Restart service or all"
+        echo "  stop [service]      Stop service or all"
+        echo "  start [service]     Start service or all"
+        echo "  shell-db            Open PostgreSQL shell"
+        echo "  shell-server        Open shell in server container"
+        echo "  shell-web           Open shell in web container"
+        echo "  stats               Show container statistics"
+        echo "  top                 Show container processes"
+        echo "  env                 Show Docker Compose configuration"
         echo ""
-        echo "Exemples:"
-        echo "  $0 logs server      # Logs du backend"
-        echo "  $0 restart web      # Redémarrer le frontend"
-        echo "  $0 shell-db         # Accéder à PostgreSQL"
+        echo "Examples:"
+        echo "  $0 logs server        # Backend logs"
+        echo "  $0 restart web        # Restart frontend"
+        echo "  $0 shell-db           # Access PostgreSQL"
         ;;
 esac
-

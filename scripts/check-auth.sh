@@ -1,17 +1,19 @@
-#!/bin/bash
-# Script de diagnostic pour l'authentification Calendraft
+#!/usr/bin/env bash
+# Authentication diagnostic script for AppStandard
+# Supports: Calendar, Contacts, Tasks applications
 
-echo "🔍 Diagnostic du système d'authentification Calendraft"
-echo "=================================================="
+echo "🔍 AppStandard Authentication Diagnostic"
+echo "=========================================="
 echo ""
 
-# Couleurs
+# Colors
 GREEN='\033[0;32m'
 RED='\033[0;31m'
 YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
+BLUE='\033[0;34m'
+NC='\033[0m'
 
-# Fonction pour vérifier
+# Check function
 check() {
     if [ $? -eq 0 ]; then
         echo -e "${GREEN}✅${NC} $1"
@@ -23,172 +25,192 @@ check() {
 }
 
 warn() {
-    echo -e "${YELLOW}⚠️${NC} $1"
+    echo -e "${YELLOW}⚠️${NC}  $1"
 }
 
-# 1. Vérifier les fichiers .env
-echo "1. Vérification des fichiers .env"
+# Application configurations
+declare -A APPS=(
+    ["calendar"]="apps/calendar-server:3000:3001"
+    ["tasks"]="apps/tasks-server:3002:3004"
+    ["contacts"]="apps/contacts-server:3003:3005"
+)
+
+# 1. Check .env files
+echo "1. Checking .env files"
 echo "-----------------------------------"
-if [ -f "apps/server/.env" ]; then
-    check "apps/server/.env existe"
-else
-    warn "apps/server/.env manquant - Créez-le avec les variables requises"
-fi
 
-if [ -f "apps/web/.env" ]; then
-    check "apps/web/.env existe"
-else
-    warn "apps/web/.env manquant - Créez-le avec VITE_SERVER_URL"
-fi
-
+# Check packages/db/.env
 if [ -f "packages/db/.env" ]; then
-    check "packages/db/.env existe"
-    # Vérifier si le fichier contient des valeurs placeholder
+    check "packages/db/.env exists"
     if grep -q "placeholder" packages/db/.env 2>/dev/null; then
-        warn "packages/db/.env contient des valeurs placeholder - doit être corrigé"
-    else
-        # Vérifier que DATABASE_URL correspond à apps/server/.env
-        if [ -f "apps/server/.env" ]; then
-            SERVER_DB_URL=$(grep "^DATABASE_URL=" apps/server/.env | cut -d'=' -f2- | tr -d '"' || echo "")
-            DB_DB_URL=$(grep "^DATABASE_URL=" packages/db/.env | cut -d'=' -f2- | tr -d '"' || echo "")
-            if [ -n "$SERVER_DB_URL" ] && [ -n "$DB_DB_URL" ] && [ "$SERVER_DB_URL" != "$DB_DB_URL" ]; then
-                warn "packages/db/.env DATABASE_URL ne correspond pas à apps/server/.env"
-            fi
-        fi
+        warn "packages/db/.env contains placeholder values - must be fixed"
     fi
 else
-    warn "packages/db/.env manquant - Nécessaire pour Prisma (sera créé automatiquement par dev-setup.sh)"
+    warn "packages/db/.env missing - required for Prisma (will be auto-created by dev-setup.sh)"
 fi
+
+# Check each server .env
+for app in calendar tasks contacts; do
+    server_dir="apps/${app}-server"
+    web_dir="apps/${app}-web"
+
+    if [ -f "${server_dir}/.env" ]; then
+        check "${server_dir}/.env exists"
+    else
+        warn "${server_dir}/.env missing - create from .env.example"
+    fi
+
+    if [ -f "${web_dir}/.env" ]; then
+        check "${web_dir}/.env exists"
+    else
+        warn "${web_dir}/.env missing - create from .env.example"
+    fi
+done
 echo ""
 
-# 2. Vérifier les variables d'environnement backend
-echo "2. Vérification des variables backend (apps/server/.env)"
-echo "--------------------------------------------------------"
-if [ -f "apps/server/.env" ]; then
-    if grep -q "^DATABASE_URL=" apps/server/.env; then
-        check "DATABASE_URL défini"
-        DB_URL=$(grep "^DATABASE_URL=" apps/server/.env | cut -d'=' -f2-)
+# 2. Check backend environment variables (using calendar-server as reference)
+echo "2. Checking backend variables (apps/calendar-server/.env)"
+echo "-----------------------------------------------------------"
+if [ -f "apps/calendar-server/.env" ]; then
+    if grep -q "^DATABASE_URL=" apps/calendar-server/.env; then
+        check "DATABASE_URL defined"
+        DB_URL=$(grep "^DATABASE_URL=" apps/calendar-server/.env | cut -d'=' -f2-)
         if [[ "$DB_URL" == *"localhost"* ]] || [[ "$DB_URL" == *"127.0.0.1"* ]]; then
-            warn "DATABASE_URL pointe vers localhost - vérifiez que PostgreSQL est démarré"
+            warn "DATABASE_URL points to localhost - ensure PostgreSQL is running"
         fi
     else
-        warn "DATABASE_URL non défini"
+        warn "DATABASE_URL not defined"
     fi
-    
-    if grep -q "^BETTER_AUTH_SECRET=" apps/server/.env; then
-        SECRET=$(grep "^BETTER_AUTH_SECRET=" apps/server/.env | cut -d'=' -f2-)
+
+    if grep -q "^BETTER_AUTH_SECRET=" apps/calendar-server/.env; then
+        SECRET=$(grep "^BETTER_AUTH_SECRET=" apps/calendar-server/.env | cut -d'=' -f2-)
         if [ ${#SECRET} -ge 32 ]; then
-            check "BETTER_AUTH_SECRET défini (${#SECRET} caractères)"
+            check "BETTER_AUTH_SECRET defined (${#SECRET} characters)"
         else
-            warn "BETTER_AUTH_SECRET trop court (${#SECRET} caractères, minimum 32 requis)"
+            warn "BETTER_AUTH_SECRET too short (${#SECRET} characters, minimum 32 required)"
         fi
     else
-        warn "BETTER_AUTH_SECRET non défini"
+        warn "BETTER_AUTH_SECRET not defined"
     fi
-    
-    if grep -q "^CORS_ORIGIN=" apps/server/.env; then
-        check "CORS_ORIGIN défini"
-        CORS=$(grep "^CORS_ORIGIN=" apps/server/.env | cut -d'=' -f2-)
-        echo "   Valeur: $CORS"
+
+    if grep -q "^CORS_ORIGIN=" apps/calendar-server/.env; then
+        check "CORS_ORIGIN defined"
+        CORS=$(grep "^CORS_ORIGIN=" apps/calendar-server/.env | cut -d'=' -f2-)
+        echo "   Value: $CORS"
     else
-        warn "CORS_ORIGIN non défini (utilisera http://localhost:3001 par défaut)"
+        warn "CORS_ORIGIN not defined (will use http://localhost:3001 by default)"
     fi
-    
-    if grep -q "^BETTER_AUTH_URL=" apps/server/.env; then
-        check "BETTER_AUTH_URL défini"
+
+    if grep -q "^BETTER_AUTH_URL=" apps/calendar-server/.env; then
+        check "BETTER_AUTH_URL defined"
     else
-        warn "BETTER_AUTH_URL non défini (optionnel mais recommandé)"
+        warn "BETTER_AUTH_URL not defined (optional but recommended)"
     fi
 else
-    warn "Impossible de vérifier - apps/server/.env n'existe pas"
+    warn "Cannot check - apps/calendar-server/.env does not exist"
 fi
 echo ""
 
-# 3. Vérifier les variables d'environnement frontend
-echo "3. Vérification des variables frontend (apps/web/.env)"
-echo "-----------------------------------------------------"
-if [ -f "apps/web/.env" ]; then
-    if grep -q "^VITE_SERVER_URL=" apps/web/.env; then
-        check "VITE_SERVER_URL défini"
-        SERVER_URL=$(grep "^VITE_SERVER_URL=" apps/web/.env | cut -d'=' -f2-)
-        echo "   Valeur: $SERVER_URL"
+# 3. Check frontend environment variables
+echo "3. Checking frontend variables (apps/calendar-web/.env)"
+echo "--------------------------------------------------------"
+if [ -f "apps/calendar-web/.env" ]; then
+    if grep -q "^VITE_SERVER_URL=" apps/calendar-web/.env; then
+        check "VITE_SERVER_URL defined"
+        SERVER_URL=$(grep "^VITE_SERVER_URL=" apps/calendar-web/.env | cut -d'=' -f2-)
+        echo "   Value: $SERVER_URL"
     else
-        warn "VITE_SERVER_URL non défini (utilisera http://localhost:3000 par défaut)"
+        warn "VITE_SERVER_URL not defined (will use http://localhost:3000 by default)"
     fi
 else
-    warn "Impossible de vérifier - apps/web/.env n'existe pas"
+    warn "Cannot check - apps/calendar-web/.env does not exist"
 fi
 echo ""
 
-# 4. Vérifier que le serveur répond
-echo "4. Vérification du serveur backend"
+# 4. Check backend server health
+echo "4. Checking backend servers"
 echo "----------------------------------"
-if curl -s -f http://localhost:3000/health > /dev/null 2>&1; then
-    check "Serveur backend accessible sur http://localhost:3000"
-    HEALTH=$(curl -s http://localhost:3000/health)
-    echo "   Réponse: $HEALTH"
-else
-    warn "Serveur backend non accessible sur http://localhost:3000"
-    echo "   Vérifiez que le serveur est démarré: bun run dev:server"
-fi
+for app in calendar tasks contacts; do
+    case $app in
+        calendar) port=3000 ;;
+        tasks) port=3002 ;;
+        contacts) port=3003 ;;
+    esac
+
+    if curl -s -f "http://localhost:${port}/health" > /dev/null 2>&1; then
+        check "${app^} backend accessible on http://localhost:${port}"
+        HEALTH=$(curl -s "http://localhost:${port}/health")
+        echo "   Response: $HEALTH"
+    else
+        warn "${app^} backend not accessible on http://localhost:${port}"
+        echo "   Start it with: bun run dev:${app}-server"
+    fi
+done
 echo ""
 
-# 5. Vérifier les endpoints Better-Auth
-echo "5. Vérification des endpoints Better-Auth"
+# 5. Check Better-Auth endpoints
+echo "5. Checking Better-Auth endpoints"
 echo "------------------------------------------"
-if curl -s -f http://localhost:3000/api/auth/get-session > /dev/null 2>&1; then
-    check "Endpoint /api/auth/get-session accessible"
-    SESSION=$(curl -s http://localhost:3000/api/auth/get-session)
-    echo "   Réponse: $SESSION"
-else
-    warn "Endpoint /api/auth/get-session non accessible"
-    echo "   Vérifiez que le serveur est démarré et que la route est configurée"
-fi
+for app in calendar tasks contacts; do
+    case $app in
+        calendar) port=3000 ;;
+        tasks) port=3002 ;;
+        contacts) port=3003 ;;
+    esac
+
+    if curl -s -f "http://localhost:${port}/api/auth/get-session" > /dev/null 2>&1; then
+        check "${app^} /api/auth/get-session accessible"
+    else
+        warn "${app^} /api/auth/get-session not accessible"
+        echo "   Check that the server is started and auth routes are configured"
+    fi
+done
 echo ""
 
-# 6. Vérifier la base de données
-echo "6. Vérification de la base de données"
+# 6. Check database
+echo "6. Checking database"
 echo "--------------------------------------"
-if command -v psql &> /dev/null && [ -f "apps/server/.env" ]; then
-    DB_URL=$(grep "^DATABASE_URL=" apps/server/.env | cut -d'=' -f2-)
-    if [ -n "$DB_URL" ]; then
-        # Extraire les informations de connexion (simplifié)
-        if psql "$DB_URL" -c "SELECT 1;" > /dev/null 2>&1; then
-            check "Connexion à la base de données réussie"
-            
-            # Vérifier les tables Better-Auth
-            TABLES=$(psql "$DB_URL" -t -c "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public' AND table_name IN ('user', 'session', 'account', 'verification');" 2>/dev/null | tr -d ' ')
-            if [ "$TABLES" = "4" ]; then
-                check "Tables Better-Auth présentes (user, session, account, verification)"
-            else
-                warn "Tables Better-Auth manquantes ou incomplètes (trouvé: $TABLES/4)"
-                echo "   Exécutez: bun run db:push"
-            fi
+# Use Docker if running dev setup
+if docker compose -f docker-compose.dev.yml ps db 2>/dev/null | grep -q "Up"; then
+    check "PostgreSQL container is running"
+
+    if docker compose -f docker-compose.dev.yml exec -T db pg_isready -U appstandard > /dev/null 2>&1; then
+        check "PostgreSQL connection successful"
+
+        # Check Better-Auth tables
+        TABLES=$(docker compose -f docker-compose.dev.yml exec -T db psql -U appstandard -d appstandard_dev -t -c "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public' AND table_name IN ('user', 'session', 'account', 'verification');" 2>/dev/null | tr -d ' ' || echo "0")
+        if [ "$TABLES" = "4" ]; then
+            check "Better-Auth tables present (user, session, account, verification)"
         else
-            warn "Impossible de se connecter à la base de données"
-            echo "   Vérifiez DATABASE_URL et que PostgreSQL est démarré"
+            warn "Better-Auth tables missing or incomplete (found: $TABLES/4)"
+            echo "   Run: bun run db:push"
         fi
     else
-        warn "DATABASE_URL non défini"
+        warn "Cannot connect to PostgreSQL"
+        echo "   Check DATABASE_URL and that PostgreSQL is started"
     fi
 else
-    warn "psql non disponible ou DATABASE_URL non trouvé - impossible de vérifier la base de données"
-    echo "   Vérifiez manuellement que PostgreSQL est démarré et accessible"
+    warn "PostgreSQL container not running"
+    echo "   Start it with: docker compose -f docker-compose.dev.yml up -d"
 fi
 echo ""
 
-# 7. Résumé et recommandations
-echo "=================================================="
-echo "📋 Résumé et recommandations"
-echo "=================================================="
+# 7. Summary and recommendations
+echo "=========================================="
+echo "📋 Summary and Recommendations"
+echo "=========================================="
 echo ""
-echo "Si vous rencontrez des problèmes de connexion/inscription:"
+echo "If you're experiencing login/registration issues:"
 echo ""
-echo "1. Vérifiez que toutes les variables d'environnement sont définies"
-echo "2. Vérifiez que le serveur backend est démarré: bun run dev:server"
-echo "3. Vérifiez que la base de données est accessible et initialisée: bun run db:push"
-echo "4. Vérifiez la console du navigateur pour les erreurs CORS ou réseau"
-echo "5. Vérifiez les logs du serveur pour les erreurs d'authentification"
+echo "1. Ensure all environment variables are defined"
+echo "2. Start the backend servers: bun run dev"
+echo "3. Initialize the database: bun run db:push"
+echo "4. Check browser console for CORS or network errors"
+echo "5. Check server logs for authentication errors"
 echo ""
-echo "Pour plus d'informations, consultez: AUTHENTICATION.md"
-
+echo "Development Ports:"
+echo "  Calendar:  Frontend 3001  |  Backend 3000"
+echo "  Tasks:     Frontend 3004  |  Backend 3002"
+echo "  Contacts:  Frontend 3005  |  Backend 3003"
+echo ""
+echo "For more information, see: AUTHENTICATION.md"

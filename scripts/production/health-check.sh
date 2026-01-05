@@ -1,14 +1,14 @@
-#!/bin/bash
-# Script de vérification de santé pour Calendraft
+#!/usr/bin/env bash
+# Health check script for AppStandard
 # Usage: ./health-check.sh [--verbose]
 
 set -e
 
-# Utiliser le répertoire courant si docker-compose.yml est présent, sinon utiliser la variable d'environnement
+# Configuration
 if [ -f "docker-compose.yml" ]; then
     PROJECT_DIR="$(pwd)"
 else
-    PROJECT_DIR="${PROJECT_DIR:-$HOME/calendraft}"
+    PROJECT_DIR="${PROJECT_DIR:-$HOME/appstandard}"
 fi
 
 VERBOSE=false
@@ -28,20 +28,21 @@ done
 
 cd "$PROJECT_DIR" || exit 1
 
-# Couleurs
+# Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
 NC='\033[0m'
 
-# Compteurs
+# Counters
 PASSED=0
 FAILED=0
 
 check() {
     local name="$1"
     local command="$2"
-    
+
     if eval "$command" > /dev/null 2>&1; then
         echo -e "${GREEN}✅${NC} $name"
         ((PASSED++))
@@ -50,67 +51,88 @@ check() {
         echo -e "${RED}❌${NC} $name"
         ((FAILED++))
         if [ "$VERBOSE" = true ]; then
-            echo "   Commande: $command"
+            echo "   Command: $command"
         fi
         return 1
     fi
 }
 
-echo "🏥 Vérification de santé - Calendraft"
+echo "🏥 Health Check - AppStandard"
 echo "======================================"
 echo ""
 
-# Vérifications Docker
-echo "🐳 Services Docker:"
-check "Conteneurs en cours d'exécution" "docker compose ps | grep -q 'Up'"
-check "Aucun conteneur unhealthy" "! docker compose ps | grep -q 'unhealthy'"
+# Docker checks
+echo "🐳 Docker Services:"
+check "Containers running" "docker compose ps | grep -q 'Up'"
+check "No unhealthy containers" "! docker compose ps | grep -q 'unhealthy'"
 
-# Vérifications de santé
+# Health endpoints for all apps
 echo ""
-echo "🔍 Health Checks:"
-check "Backend health endpoint" "curl -f -s --max-time 5 http://localhost:3000/health"
-check "Frontend health endpoint" "curl -f -s --max-time 5 http://localhost:3001/nginx-health"
+echo "🔍 Health Endpoints:"
 
-# Vérifications de base de données
+# App configurations: name:backend_port:frontend_port
+declare -A APPS=(
+    ["Calendar"]="3000:3001"
+    ["Tasks"]="3002:3004"
+    ["Contacts"]="3003:3005"
+)
+
+for app in "${!APPS[@]}"; do
+    IFS=':' read -r backend_port frontend_port <<< "${APPS[$app]}"
+    check "$app backend (port $backend_port)" "curl -f -s --max-time 5 http://localhost:${backend_port}/health"
+done
+
+# Check nginx health on frontends (if deployed)
+for app in "${!APPS[@]}"; do
+    IFS=':' read -r backend_port frontend_port <<< "${APPS[$app]}"
+    if curl -f -s --max-time 2 "http://localhost:${frontend_port}/nginx-health" > /dev/null 2>&1; then
+        check "$app frontend (port $frontend_port)" "curl -f -s --max-time 5 http://localhost:${frontend_port}/nginx-health"
+    fi
+done
+
+# Database checks
 echo ""
-echo "🗄️  Base de données:"
-check "PostgreSQL accessible" "docker compose exec -T db pg_isready -U calendraft"
-check "Connexion à la base" "docker compose exec -T db psql -U calendraft -d calendraft -c 'SELECT 1' > /dev/null"
+echo "🗄️  Database:"
+check "PostgreSQL accessible" "docker compose exec -T db pg_isready -U appstandard"
+check "Database connection" "docker compose exec -T db psql -U appstandard -d appstandard -c 'SELECT 1' > /dev/null"
 
-# Vérifications réseau (via Docker)
+# Network checks
 echo ""
-echo "🌐 Réseau:"
-check "Port 3000 (backend) accessible" "docker compose ps | grep -q '3000->3000'"
-check "Port 3001 (frontend) accessible" "docker compose ps | grep -q '3001->8080'"
-check "Port 5432 (database) accessible" "docker compose ps | grep -q '5432->5432'"
+echo "🌐 Network:"
+check "Backend port 3000 accessible" "docker compose ps | grep -q '3000'"
+check "Database port 5432 accessible" "docker compose ps | grep -q '5432'"
 
-# Vérifications HTTPS (si configuré)
-if [ -f "/etc/nginx/sites-available/calendraft" ]; then
+# HTTPS checks (if configured)
+if [ -f "/etc/nginx/sites-available/appstandard" ]; then
     echo ""
     echo "🔒 HTTPS:"
-    check "Certificat SSL valide" "curl -f -s https://calendraft.app > /dev/null"
-    check "HSTS header présent" "curl -sI https://calendraft.app | grep -q 'Strict-Transport-Security'"
+    # Use configured domain from environment or default
+    DOMAIN="${APPSTANDARD_DOMAIN:-localhost}"
+    if [ "$DOMAIN" != "localhost" ]; then
+        check "SSL certificate valid" "curl -f -s https://${DOMAIN} > /dev/null"
+        check "HSTS header present" "curl -sI https://${DOMAIN} | grep -q 'Strict-Transport-Security'"
+    fi
 fi
 
-# Vérifications de ressources
+# Resource checks
 echo ""
-echo "💻 Ressources:"
+echo "💻 Resources:"
 if command -v df > /dev/null 2>&1; then
     DISK_USAGE=$(df -h / 2>/dev/null | awk 'NR==2 {print $5}' | sed 's/%//' || echo "0")
     if [ -n "$DISK_USAGE" ] && [ "$DISK_USAGE" -gt 0 ] 2>/dev/null; then
         if [ "$DISK_USAGE" -lt 80 ]; then
-            echo -e "${GREEN}✅${NC} Espace disque OK (${DISK_USAGE}% utilisé)"
+            echo -e "${GREEN}✅${NC} Disk space OK (${DISK_USAGE}% used)"
             ((PASSED++))
         else
-            echo -e "${YELLOW}⚠️${NC}  Espace disque élevé (${DISK_USAGE}% utilisé)"
+            echo -e "${YELLOW}⚠️${NC}  Disk space high (${DISK_USAGE}% used)"
             ((FAILED++))
         fi
     else
-        echo -e "${YELLOW}⚠️${NC}  Impossible de vérifier l'espace disque"
+        echo -e "${YELLOW}⚠️${NC}  Unable to check disk space"
         ((FAILED++))
     fi
 else
-    echo -e "${YELLOW}⚠️${NC}  Commande 'df' non disponible"
+    echo -e "${YELLOW}⚠️${NC}  'df' command not available"
     ((FAILED++))
 fi
 
@@ -118,29 +140,28 @@ if command -v free > /dev/null 2>&1; then
     MEM_USAGE=$(free 2>/dev/null | awk 'NR==2{printf "%.0f", $3*100/$2}' || echo "0")
     if [ -n "$MEM_USAGE" ] && [ "$MEM_USAGE" -gt 0 ] 2>/dev/null; then
         if [ "$MEM_USAGE" -lt 90 ]; then
-            echo -e "${GREEN}✅${NC} Mémoire OK (${MEM_USAGE}% utilisée)"
+            echo -e "${GREEN}✅${NC} Memory OK (${MEM_USAGE}% used)"
             ((PASSED++))
         else
-            echo -e "${YELLOW}⚠️${NC}  Mémoire élevée (${MEM_USAGE}% utilisée)"
+            echo -e "${YELLOW}⚠️${NC}  Memory high (${MEM_USAGE}% used)"
             ((FAILED++))
         fi
     else
-        echo -e "${YELLOW}⚠️${NC}  Impossible de vérifier la mémoire"
+        echo -e "${YELLOW}⚠️${NC}  Unable to check memory"
         ((FAILED++))
     fi
 else
-    echo -e "${YELLOW}⚠️${NC}  Commande 'free' non disponible"
+    echo -e "${YELLOW}⚠️${NC}  'free' command not available"
     ((FAILED++))
 fi
 
-# Résumé
+# Summary
 echo ""
 echo "======================================"
-echo "Résumé: ${GREEN}$PASSED${NC} réussis, ${RED}$FAILED${NC} échecs"
+echo "Summary: ${GREEN}$PASSED${NC} passed, ${RED}$FAILED${NC} failed"
 
 if [ $FAILED -gt 0 ]; then
     exit 1
 else
     exit 0
 fi
-

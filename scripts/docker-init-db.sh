@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Script to initialize the database in Docker (Production)
 # Note: For development, use ./scripts/dev/dev-db.sh push instead
 #
@@ -6,7 +6,7 @@
 
 set -e
 
-echo "🚀 Initializing Calendraft database..."
+echo "🚀 Initializing AppStandard Calendar database..."
 
 # Check that PostgreSQL is started
 if ! docker compose ps db | grep -q "Up"; then
@@ -16,7 +16,7 @@ fi
 
 # Wait for PostgreSQL to be ready
 echo "⏳ Waiting for PostgreSQL to be ready..."
-until docker compose exec -T db pg_isready -U ${POSTGRES_USER:-calendraft} > /dev/null 2>&1; do
+until docker compose exec -T db pg_isready -U ${POSTGRES_USER:-appstandard} > /dev/null 2>&1; do
     sleep 1
 done
 

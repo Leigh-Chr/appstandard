@@ -83,6 +83,21 @@ Manage database operations during development.
 - `reset` - Drop all data and recreate schema (asks for confirmation)
 - `status` - Show database connection status and tables
 
+### `check-web-apps.sh` - Configuration Validator
+
+Validates critical configurations across all web apps.
+
+```bash
+./scripts/dev/check-web-apps.sh
+```
+
+**What it checks:**
+- `@source` directive in `index.css` (required for shared UI components)
+- `vite.config.ts` presence
+- `@appstandard/ui` dependency
+
+Run this after creating a new web app or if UI components display incorrectly.
+
 ### `dev-clean.sh` - Cleanup
 
 Clean up development environment.
@@ -108,7 +123,7 @@ Clean up development environment.
 ./scripts/dev/dev-setup.sh
 
 # 2. Review and update .env files if needed
-# Edit apps/server/.env and apps/web/.env
+# Edit apps/calendar-server/.env and apps/calendar-web/.env
 
 # 3. Start development
 ./scripts/dev/dev.sh
@@ -153,12 +168,18 @@ docker compose -f docker-compose.dev.yml up -d
 # Initialize database
 bun run db:push
 
-# Start apps
+# Start all apps
 bun run dev
 
-# Or separately
-bun run dev:server  # Backend only
-bun run dev:web     # Frontend only
+# Or by product
+bun run dev:calendar       # Calendar web + server
+bun run dev:tasks          # Tasks web + server
+bun run dev:contacts       # Contacts web + server
+bun run dev:landing        # Landing page only
+
+# Or individual apps
+bun run dev:calendar-web      # Calendar frontend only
+bun run dev:calendar-server   # Calendar backend only
 ```
 
 ## Troubleshooting
@@ -183,7 +204,7 @@ docker compose -f docker-compose.dev.yml restart
 ./scripts/dev/dev-db.sh status
 
 # Verify .env file
-cat apps/server/.env | grep DATABASE_URL
+cat apps/calendar-server/.env | grep DATABASE_URL
 
 # Restart database
 docker compose -f docker-compose.dev.yml restart db

@@ -1,27 +1,26 @@
-#!/bin/bash
-# Script de rollback pour Calendraft
+#!/usr/bin/env bash
+# Rollback script for AppStandard
 # Usage: ./rollback.sh [--commit=HASH] [--no-backup] [--no-db]
 
-set -euo pipefail  # Arrêter en cas d'erreur, variable non définie, ou erreur dans un pipe
+set -euo pipefail
 
 # Configuration
-# Utiliser le répertoire courant si docker-compose.yml est présent, sinon utiliser la variable d'environnement
 if [ -f "docker-compose.yml" ]; then
     PROJECT_DIR="$(pwd)"
 else
-    PROJECT_DIR="${PROJECT_DIR:-$HOME/calendraft}"
+    PROJECT_DIR="${PROJECT_DIR:-$HOME/appstandard}"
 fi
 
 BACKUP_DIR="${BACKUP_DIR:-$HOME/backups}"
 LOG_FILE="${LOG_FILE:-$HOME/rollback.log}"
 
-# Couleurs
+# Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
 
-# Fonctions
+# Functions
 log() {
     echo -e "${GREEN}[$(date +'%Y-%m-%d %H:%M:%S')]${NC} $1" | tee -a "$LOG_FILE"
 }
@@ -35,11 +34,11 @@ warning() {
     echo -e "${YELLOW}[WARNING]${NC} $1" | tee -a "$LOG_FILE"
 }
 
-cd "$PROJECT_DIR" || error "Impossible d'accéder au répertoire du projet"
+cd "$PROJECT_DIR" || error "Cannot access project directory"
 
-# Vérifier qu'on est dans un repo Git
+# Check we're in a Git repo
 if ! git rev-parse --git-dir > /dev/null 2>&1; then
-    error "Ce répertoire n'est pas un dépôt Git"
+    error "This directory is not a Git repository"
 fi
 
 # Options
@@ -62,123 +61,131 @@ while [[ $# -gt 0 ]]; do
             shift
             ;;
         *)
-            error "Option inconnue: $1"
+            error "Unknown option: $1"
             ;;
     esac
 done
 
-log "🔄 Démarrage du rollback..."
+log "🔄 Starting rollback..."
 
-# Sauvegarde optionnelle
+# Optional backup
 if [ "$DO_BACKUP" = true ]; then
-    log "💾 Création d'une sauvegarde avant rollback..."
+    log "💾 Creating backup before rollback..."
     SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     if [ -f "$SCRIPT_DIR/backup.sh" ]; then
-        bash "$SCRIPT_DIR/backup.sh" || warning "Échec de la sauvegarde, continuation du rollback"
+        bash "$SCRIPT_DIR/backup.sh" || warning "Backup failed, continuing with rollback"
     fi
 fi
 
-# Obtenir le commit cible
+# Get target commit
 if [ -z "$COMMIT_HASH" ]; then
-    log "📋 Derniers commits disponibles:"
+    log "📋 Recent commits:"
     git log --oneline -10
     echo ""
-    read -p "Entrez le hash du commit (ou 'HEAD~1' pour le précédent): " COMMIT_HASH
-    
+    read -p "Enter commit hash (or 'HEAD~1' for previous): " COMMIT_HASH
+
     if [ -z "$COMMIT_HASH" ]; then
-        error "Aucun commit spécifié"
+        error "No commit specified"
     fi
 fi
 
-# Valider le format du commit (sécurité)
+# Validate commit format (security)
 if [[ ! "$COMMIT_HASH" =~ ^[a-f0-9]{7,40}$|^HEAD(~[0-9]+)?$ ]]; then
-    error "Format de commit invalide: $COMMIT_HASH"
+    error "Invalid commit format: $COMMIT_HASH"
 fi
 
-# Vérifier que le commit existe
+# Check commit exists
 if ! git rev-parse --verify "$COMMIT_HASH" > /dev/null 2>&1; then
-    error "Commit '$COMMIT_HASH' introuvable"
+    error "Commit '$COMMIT_HASH' not found"
 fi
 
-# Vérifier qu'il n'y a pas de modifications non commitées
+# Check for uncommitted changes
 if ! git diff-index --quiet HEAD -- 2>/dev/null; then
-    warning "Des modifications non commitées sont présentes"
-    warning "Elles seront perdues lors du rollback"
-    read -p "Continuer quand même ? (yes/no): " confirm_unsaved
+    warning "There are uncommitted changes"
+    warning "They will be lost during rollback"
+    read -p "Continue anyway? (yes/no): " confirm_unsaved
     if [ "$confirm_unsaved" != "yes" ]; then
-        log "Rollback annulé"
+        log "Rollback cancelled"
         exit 0
     fi
 fi
 
-# Afficher les informations du commit
-log "📌 Commit cible:"
+# Show target commit info
+log "📌 Target commit:"
 git log -1 --oneline "$COMMIT_HASH"
 echo ""
 
 # Confirmation
-echo "⚠️  ATTENTION: Cette opération va revenir au commit $COMMIT_HASH"
-echo "   Les modifications non commitées seront perdues !"
-read -p "Continuer ? (yes/no): " confirm
+echo "⚠️  WARNING: This operation will revert to commit $COMMIT_HASH"
+echo "   Uncommitted changes will be lost!"
+read -p "Continue? (yes/no): " confirm
 
 if [ "$confirm" != "yes" ]; then
-    log "Rollback annulé"
+    log "Rollback cancelled"
     exit 0
 fi
 
-# Sauvegarder l'état actuel (optionnel, pour pouvoir revenir)
+# Save current state (for potential recovery)
 CURRENT_COMMIT=$(git rev-parse HEAD)
-log "📍 Commit actuel sauvegardé: $CURRENT_COMMIT"
+log "📍 Current commit saved: $CURRENT_COMMIT"
 
-# Vérifier que docker-compose.yml existe dans le commit cible
+# Check that docker-compose.yml exists in target commit
 TARGET_COMPOSE=$(git show "$COMMIT_HASH:docker-compose.yml" 2>/dev/null)
 if [ -z "$TARGET_COMPOSE" ]; then
-    error "Le commit $COMMIT_HASH ne contient pas de docker-compose.yml"
+    error "Commit $COMMIT_HASH does not contain docker-compose.yml"
 fi
 
-# Rollback Git
-log "🔄 Retour au commit $COMMIT_HASH..."
+# Git rollback
+log "🔄 Reverting to commit $COMMIT_HASH..."
 if ! git checkout "$COMMIT_HASH"; then
-    error "Échec du checkout. Vérifiez les conflits ou les modifications non sauvegardées."
+    error "Checkout failed. Check for conflicts or unsaved changes."
 fi
 
-# Rollback de la base de données (si nécessaire et si pas skip)
+# Database rollback (if needed and not skipped)
 if [ "$SKIP_DB" = false ]; then
-    log "🗄️  Vérification des migrations de base de données..."
-    # Note: En production, on ne rollback généralement pas la DB automatiquement
-    # car cela peut causer des pertes de données. On laisse l'admin décider.
-    warning "Rollback de la base de données non effectué automatiquement pour des raisons de sécurité."
-    warning "Si nécessaire, restaurez manuellement depuis une sauvegarde avec: ./backup.sh --restore=FILE"
+    log "🗄️  Checking database migrations..."
+    # Note: In production, we don't rollback DB automatically
+    # as this can cause data loss. Admin must decide.
+    warning "Database rollback not performed automatically for safety."
+    warning "If needed, restore manually with: ./backup.sh --restore=FILE"
 fi
 
-# Reconstruire et redémarrer
-log "🔨 Reconstruction et redémarrage des services..."
+# Rebuild and restart
+log "🔨 Rebuilding and restarting services..."
 docker compose down
 DOCKER_BUILDKIT=1 docker compose up -d --build
 
-# Attendre que les services soient prêts
-log "⏳ Attente du démarrage des services..."
+# Wait for services to be ready
+log "⏳ Waiting for services to start..."
 sleep 5
 
-# Vérification de santé
-log "🏥 Vérification de la santé des services..."
+# Health check
+log "🏥 Checking service health..."
 if docker compose ps | grep -q "unhealthy"; then
-    error "Certains services sont unhealthy après le rollback. Vérifiez les logs."
+    error "Some services are unhealthy after rollback. Check logs."
 fi
 
-# Test du health check
-log "🔍 Test du health check..."
-if curl -f -s http://localhost:3000/health > /dev/null 2>&1; then
-    log "✅ Health check OK"
+# Test health endpoints
+log "🔍 Testing health endpoints..."
+HEALTH_OK=true
+for port in 3000 3002 3003; do
+    if curl -f -s "http://localhost:${port}/health" > /dev/null 2>&1; then
+        log "✅ Health check OK on port ${port}"
+    else
+        warning "Health check failed on port ${port}"
+        HEALTH_OK=false
+    fi
+done
+
+if [ "$HEALTH_OK" = true ]; then
+    log "✅ Rollback completed successfully!"
 else
-    warning "Health check échoué après rollback"
+    warning "Rollback completed with some health check failures"
 fi
 
-log "✅ Rollback terminé avec succès !"
-log "📊 Statut des services:"
+log "📊 Service status:"
 docker compose ps
 
 echo ""
-log "💡 Pour revenir au commit précédent ($CURRENT_COMMIT):"
+log "💡 To revert to previous commit ($CURRENT_COMMIT):"
 log "   git checkout $CURRENT_COMMIT && ./deploy.sh"
-

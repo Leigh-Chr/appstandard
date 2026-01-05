@@ -1,5 +1,5 @@
-#!/bin/bash
-# Script d'installation des scripts de production sur le serveur
+#!/usr/bin/env bash
+# Script to install production scripts on a remote server
 # Usage: ./install.sh [user@server]
 
 set -e
@@ -9,39 +9,38 @@ PROJECT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
 if [ -z "$1" ]; then
     echo "Usage: $0 user@server"
-    echo "Exemple: $0 root@185.158.132.190"
+    echo "Example: $0 root@185.158.132.190"
     exit 1
 fi
 
 SERVER="$1"
-REMOTE_DIR="~/calendraft/scripts/production"
+REMOTE_DIR="~/appstandard/scripts/production"
 
-echo "📦 Installation des scripts de production sur $SERVER..."
+echo "📦 Installing production scripts on $SERVER..."
 echo ""
 
-# Créer le répertoire distant
+# Create remote directory
 ssh "$SERVER" "mkdir -p $REMOTE_DIR"
 
-# Copier tous les scripts
-echo "📋 Copie des scripts..."
+# Copy all scripts
+echo "📋 Copying scripts..."
 scp "$SCRIPT_DIR"/*.sh "$SERVER:$REMOTE_DIR/"
 
-# Rendre les scripts exécutables
-echo "🔧 Rendre les scripts exécutables..."
+# Make scripts executable
+echo "🔧 Making scripts executable..."
 ssh "$SERVER" "chmod +x $REMOTE_DIR/*.sh"
 
-# Copier le guide de commandes
-echo "📚 Copie du guide de commandes..."
-scp "$PROJECT_DIR/PRODUCTION_COMMANDS.md" "$SERVER:~/calendraft/"
+# Copy command guide
+echo "📚 Copying command guide..."
+scp "$PROJECT_DIR/PRODUCTION_COMMANDS.md" "$SERVER:~/appstandard/"
 
 echo ""
-echo "✅ Installation terminée !"
+echo "✅ Installation complete!"
 echo ""
-echo "Les scripts sont disponibles dans: $REMOTE_DIR"
-echo "Le guide est disponible dans: ~/calendraft/PRODUCTION_COMMANDS.md"
+echo "Scripts available in: $REMOTE_DIR"
+echo "Guide available in: ~/appstandard/PRODUCTION_COMMANDS.md"
 echo ""
-echo "Exemple d'utilisation:"
+echo "Usage example:"
 echo "  ssh $SERVER"
-echo "  cd ~/calendraft"
+echo "  cd ~/appstandard"
 echo "  ./scripts/production/deploy.sh"
-

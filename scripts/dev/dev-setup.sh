@@ -1,28 +1,28 @@
-#!/bin/bash
-# Script de configuration initiale de l'environnement de développement pour Calendraft
+#!/usr/bin/env bash
+# Development environment setup script for AppStandard
+# Supports: Calendar, Contacts, Tasks applications
 # Usage: ./scripts/dev/dev-setup.sh
 
-set -euo pipefail  # Arrêter en cas d'erreur, variable non définie, ou erreur dans un pipe
+set -euo pipefail
 
 # Configuration
-# Utiliser le répertoire courant si docker-compose.dev.yml est présent, sinon utiliser le chemin relatif au script
 if [ -f "docker-compose.dev.yml" ] || [ -f "package.json" ]; then
     PROJECT_DIR="$(pwd)"
 else
     SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-    PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+    PROJECT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 fi
 
 cd "$PROJECT_DIR" || exit 1
 
-# Couleurs pour les messages
+# Colors for messages
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# Fonctions
+# Functions
 log() {
     echo -e "${GREEN}[$(date +'%Y-%m-%d %H:%M:%S')]${NC} $1"
 }
@@ -36,10 +36,44 @@ warning() {
     echo -e "${YELLOW}[WARNING]${NC} $1"
 }
 
-log "🔧 Configuration initiale de l'environnement de développement Calendraft..."
+info() {
+    echo -e "${BLUE}[INFO]${NC} $1"
+}
 
-# Vérifier les prérequis
-log "📋 Vérification des prérequis..."
+# Generate auth secret
+generate_auth_secret() {
+    if command -v openssl &> /dev/null 2>&1; then
+        openssl rand -hex 32
+    else
+        echo "change-me-in-production-min-32-characters-long"
+    fi
+}
+
+# Create .env file if missing
+create_env_if_missing() {
+    local app_path="$1"
+    local env_content="$2"
+    local app_name="$3"
+
+    if [ ! -f "$app_path/.env" ]; then
+        if [ -f "$app_path/.env.example" ]; then
+            warning "$app_name/.env not found. Creating from template..."
+            echo "$env_content" > "$app_path/.env"
+            log "Created $app_name/.env"
+        else
+            warning "$app_name/.env.example not found, skipping..."
+        fi
+    else
+        log "$app_name/.env already exists"
+    fi
+}
+
+log "Setting up AppStandard development environment..."
+
+# ============================================================================
+# PREREQUISITES CHECK
+# ============================================================================
+log "Checking prerequisites..."
 
 MISSING_DEPS=()
 
@@ -56,149 +90,155 @@ if ! command -v git &> /dev/null 2>&1; then
 fi
 
 if [ ${#MISSING_DEPS[@]} -gt 0 ]; then
-    error "Dépendances manquantes: ${MISSING_DEPS[*]}. Installez-les: Bun (https://bun.sh), Docker (https://docs.docker.com/get-docker/), Git (https://git-scm.com/)"
+    error "Missing dependencies: ${MISSING_DEPS[*]}. Please install: Bun (https://bun.sh), Docker (https://docs.docker.com/get-docker/), Git (https://git-scm.com/)"
 fi
 
-log "✅ Tous les prérequis sont installés"
+log "All prerequisites installed"
 
-# Installer les dépendances
-log "📦 Installation des dépendances..."
+# ============================================================================
+# INSTALL DEPENDENCIES
+# ============================================================================
+log "Installing dependencies..."
 bun install
-log "✅ Dépendances installées"
+log "Dependencies installed"
 
-# Vérifier/créer les fichiers .env
-log "🔐 Vérification de la configuration de l'environnement..."
+# ============================================================================
+# ENVIRONMENT FILES SETUP
+# ============================================================================
+log "Setting up environment files..."
 
-# Server .env
-if [ ! -f "apps/server/.env" ]; then
-    warning "apps/server/.env non trouvé. Création du template..."
-    
-    # Générer BETTER_AUTH_SECRET si openssl est disponible
-    if command -v openssl &> /dev/null 2>&1; then
-        AUTH_SECRET=$(openssl rand -hex 32)
-    else
-        AUTH_SECRET="change-me-in-production-min-32-characters-long"
-        warning "openssl non trouvé, utilisation d'un secret placeholder. Veuillez le mettre à jour !"
-    fi
-    
-    cat > apps/server/.env << EOF
-# PostgreSQL database (required)
-DATABASE_URL="postgresql://calendraft:calendraft_dev@localhost:5432/calendraft_dev"
+# Generate shared auth secret for all backends
+AUTH_SECRET=$(generate_auth_secret)
+if [ "$AUTH_SECRET" = "change-me-in-production-min-32-characters-long" ]; then
+    warning "openssl not found, using placeholder secret. Please update in production!"
+fi
 
-# Backend server port (default: 3000)
+# Default database URL
+DEFAULT_DB_URL="postgresql://appstandard:appstandard_dev@localhost:5432/appstandard_dev"
+
+# ----------------------------------------------------------------------------
+# Calendar Server (Port 3000, CORS: 3001)
+# ----------------------------------------------------------------------------
+create_env_if_missing "apps/calendar-server" "# PostgreSQL database (required)
+DATABASE_URL=\"$DEFAULT_DB_URL\"
+
+# Backend server port
 PORT=3000
 
-# Frontend URL for CORS (default: http://localhost:3001)
+# Frontend URL for CORS (must match calendar-web port)
 CORS_ORIGIN=http://localhost:3001
 
 # Better-Auth configuration
-BETTER_AUTH_SECRET=${AUTH_SECRET}
-BETTER_AUTH_URL=http://localhost:3000
-EOF
-    log "✅ apps/server/.env créé"
-    warning "Veuillez examiner et mettre à jour apps/server/.env avec vos valeurs"
-else
-    log "✅ apps/server/.env existe"
-fi
+BETTER_AUTH_SECRET=$AUTH_SECRET
+BETTER_AUTH_URL=http://localhost:3000" "apps/calendar-server"
 
-# Web .env
-if [ ! -f "apps/web/.env" ]; then
-    warning "apps/web/.env non trouvé. Création du template..."
-    cat > apps/web/.env << 'EOF'
-# Backend server URL (default: http://localhost:3000)
-VITE_SERVER_URL=http://localhost:3000
-EOF
-    log "✅ apps/web/.env créé"
-else
-    log "✅ apps/web/.env existe"
-fi
+# ----------------------------------------------------------------------------
+# Calendar Web (Port 3001)
+# ----------------------------------------------------------------------------
+create_env_if_missing "apps/calendar-web" "# Backend server URL
+VITE_SERVER_URL=http://localhost:3000" "apps/calendar-web"
 
-# DB package .env (nécessaire pour Prisma)
-# Ce fichier doit pointer vers la même DATABASE_URL que apps/server/.env
+# ----------------------------------------------------------------------------
+# Contacts Server (Port 3003, CORS: 3005)
+# ----------------------------------------------------------------------------
+create_env_if_missing "apps/contacts-server" "# PostgreSQL database (required)
+DATABASE_URL=\"$DEFAULT_DB_URL\"
+
+# Backend server port
+PORT=3003
+
+# Frontend URL for CORS (must match contacts-web port)
+CORS_ORIGIN=http://localhost:3005" "apps/contacts-server"
+
+# ----------------------------------------------------------------------------
+# Contacts Web (Port 3005)
+# ----------------------------------------------------------------------------
+create_env_if_missing "apps/contacts-web" "# Backend server URL
+VITE_SERVER_URL=http://localhost:3003" "apps/contacts-web"
+
+# ----------------------------------------------------------------------------
+# Tasks Server (Port 3002, CORS: 3004)
+# ----------------------------------------------------------------------------
+create_env_if_missing "apps/tasks-server" "# PostgreSQL database (required)
+DATABASE_URL=\"$DEFAULT_DB_URL\"
+
+# Backend server port
+PORT=3002
+
+# Frontend URL for CORS (must match tasks-web port)
+CORS_ORIGIN=http://localhost:3004" "apps/tasks-server"
+
+# ----------------------------------------------------------------------------
+# Tasks Web (Port 3004)
+# ----------------------------------------------------------------------------
+create_env_if_missing "apps/tasks-web" "# Backend server URL
+VITE_SERVER_URL=http://localhost:3002" "apps/tasks-web"
+
+# ----------------------------------------------------------------------------
+# Prisma Database Package
+# ----------------------------------------------------------------------------
 if [ ! -f "packages/db/.env" ]; then
-    warning "packages/db/.env non trouvé. Création du template..."
-    # Lire DATABASE_URL depuis apps/server/.env si disponible
-    if [ -f "apps/server/.env" ]; then
-        SERVER_DB_URL=$(grep "^DATABASE_URL=" apps/server/.env | cut -d'=' -f2- | tr -d '"' || echo "")
-        if [ -n "$SERVER_DB_URL" ]; then
-            echo "DATABASE_URL=\"$SERVER_DB_URL\"" > packages/db/.env
-            log "✅ packages/db/.env créé avec DATABASE_URL depuis apps/server/.env"
-        else
-            cat > packages/db/.env << 'EOF'
-DATABASE_URL="postgresql://calendraft:calendraft_dev@localhost:5432/calendraft_dev"
-EOF
-            log "✅ packages/db/.env créé avec valeurs par défaut"
-        fi
-    else
-        cat > packages/db/.env << 'EOF'
-DATABASE_URL="postgresql://calendraft:calendraft_dev@localhost:5432/calendraft_dev"
-EOF
-        log "✅ packages/db/.env créé avec valeurs par défaut"
-    fi
+    warning "packages/db/.env not found. Creating..."
+    echo "DATABASE_URL=\"$DEFAULT_DB_URL\"" > packages/db/.env
+    log "Created packages/db/.env"
 else
-    # Vérifier si le fichier contient des valeurs placeholder
-    if grep -q "placeholder" packages/db/.env 2>/dev/null; then
-        warning "packages/db/.env contient des valeurs placeholder. Correction..."
-        if [ -f "apps/server/.env" ]; then
-            SERVER_DB_URL=$(grep "^DATABASE_URL=" apps/server/.env | cut -d'=' -f2- | tr -d '"' || echo "")
-            if [ -n "$SERVER_DB_URL" ]; then
-                echo "DATABASE_URL=\"$SERVER_DB_URL\"" > packages/db/.env
-                log "✅ packages/db/.env corrigé avec DATABASE_URL depuis apps/server/.env"
-            else
-                cat > packages/db/.env << 'EOF'
-DATABASE_URL="postgresql://calendraft:calendraft_dev@localhost:5432/calendraft_dev"
-EOF
-                log "✅ packages/db/.env corrigé avec valeurs par défaut"
-            fi
-        else
-            cat > packages/db/.env << 'EOF'
-DATABASE_URL="postgresql://calendraft:calendraft_dev@localhost:5432/calendraft_dev"
-EOF
-            log "✅ packages/db/.env corrigé avec valeurs par défaut"
-        fi
-    else
-        log "✅ packages/db/.env existe et semble correct"
-    fi
+    log "packages/db/.env already exists"
 fi
 
-# Générer le client Prisma
-log "🗄️  Génération du client Prisma..."
+# ============================================================================
+# PRISMA CLIENT GENERATION
+# ============================================================================
+log "Generating Prisma client..."
 bun run db:generate
-log "✅ Client Prisma généré"
+log "Prisma client generated"
 
-# Démarrer les services Docker
-log "🐳 Démarrage des services Docker..."
-docker-compose -f docker-compose.dev.yml up -d
+# ============================================================================
+# DOCKER SERVICES
+# ============================================================================
+log "Starting Docker services..."
+docker compose -f docker-compose.dev.yml up -d
 
-log "⏳ Attente de la disponibilité des services..."
-until docker-compose -f docker-compose.dev.yml exec -T db pg_isready -U calendraft > /dev/null 2>&1; do
+log "Waiting for services to be ready..."
+until docker compose -f docker-compose.dev.yml exec -T db pg_isready -U appstandard > /dev/null 2>&1; do
     sleep 1
 done
 
-until docker-compose -f docker-compose.dev.yml exec -T redis redis-cli ping > /dev/null 2>&1; do
+until docker compose -f docker-compose.dev.yml exec -T redis redis-cli ping > /dev/null 2>&1; do
     sleep 1
 done
 
-log "✅ Services Docker prêts"
+log "Docker services ready"
 
-# Initialiser la base de données
-log "🗄️  Initialisation du schéma de base de données..."
+# ============================================================================
+# DATABASE INITIALIZATION
+# ============================================================================
+log "Initializing database schema..."
 bun run db:push
-log "✅ Base de données initialisée"
+log "Database initialized"
 
-# Résumé
-log "✅ Configuration terminée !"
+# ============================================================================
+# SUMMARY
+# ============================================================================
+log "Setup complete!"
 echo ""
-echo "Prochaines étapes:"
-echo "  1. Examiner et mettre à jour les fichiers .env si nécessaire:"
-echo "     - apps/server/.env"
-echo "     - apps/web/.env"
-echo "     - packages/db/.env (généré automatiquement depuis apps/server/.env)"
+echo "Development Ports:"
+echo "  Calendar:  Frontend http://localhost:3001  |  Backend http://localhost:3000"
+echo "  Tasks:     Frontend http://localhost:3004  |  Backend http://localhost:3002"
+echo "  Contacts:  Frontend http://localhost:3005  |  Backend http://localhost:3003"
+echo "  Landing:   http://localhost:3010"
 echo ""
-echo "  2. Démarrer le développement:"
-echo "     ./scripts/dev.sh"
+echo "Environment files created:"
+echo "  - apps/calendar-server/.env"
+echo "  - apps/calendar-web/.env"
+echo "  - apps/contacts-server/.env"
+echo "  - apps/contacts-web/.env"
+echo "  - apps/tasks-server/.env"
+echo "  - apps/tasks-web/.env"
+echo "  - packages/db/.env"
 echo ""
-echo "  3. Ou démarrer manuellement:"
-echo "     bun run dev"
+echo "To start development:"
+echo "  bun run dev           # All apps"
+echo "  bun run dev:calendar  # Calendar only"
+echo "  bun run dev:contacts  # Contacts only"
+echo "  bun run dev:tasks     # Tasks only"
 echo ""
-

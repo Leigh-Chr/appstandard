@@ -1,40 +1,39 @@
-#!/bin/bash
-# Script de sauvegarde pour Calendraft
+#!/usr/bin/env bash
+# Backup script for AppStandard
 # Usage: ./backup.sh [--list] [--restore=FILE]
 
-set -euo pipefail  # Arrêter en cas d'erreur, variable non définie, ou erreur dans un pipe
+set -euo pipefail
 
 # Configuration
-# Utiliser le répertoire courant si docker-compose.yml est présent, sinon utiliser la variable d'environnement
 if [ -f "docker-compose.yml" ]; then
     PROJECT_DIR="$(pwd)"
 else
-    PROJECT_DIR="${PROJECT_DIR:-$HOME/calendraft}"
+    PROJECT_DIR="${PROJECT_DIR:-$HOME/appstandard}"
 fi
 BACKUP_DIR="${BACKUP_DIR:-$HOME/backups}"
 RETENTION_DAYS="${RETENTION_DAYS:-30}"
 
-# Créer le répertoire de sauvegarde
+# Create backup directory
 mkdir -p "$BACKUP_DIR"
 
-# Fonctions
+# Functions
 backup_database() {
     local timestamp=$(date +%Y%m%d-%H%M%S)
     local backup_file="$BACKUP_DIR/db-backup-$timestamp.sql"
-    
-    echo "💾 Sauvegarde de la base de données..."
+
+    echo "💾 Backing up database..."
     cd "$PROJECT_DIR" || exit 1
-    
-    if docker compose exec -T db pg_dump -U calendraft calendraft > "$backup_file"; then
-        # Compresser la sauvegarde
+
+    if docker compose exec -T db pg_dump -U appstandard appstandard > "$backup_file"; then
+        # Compress backup
         gzip "$backup_file"
-        echo "✅ Sauvegarde créée: ${backup_file}.gz"
-        
-        # Nettoyer les anciennes sauvegardes
+        echo "✅ Backup created: ${backup_file}.gz"
+
+        # Clean old backups
         find "$BACKUP_DIR" -name "db-backup-*.sql.gz" -mtime +$RETENTION_DAYS -delete
-        echo "🧹 Anciennes sauvegardes supprimées (> $RETENTION_DAYS jours)"
+        echo "🧹 Old backups removed (> $RETENTION_DAYS days)"
     else
-        echo "❌ Échec de la sauvegarde"
+        echo "❌ Backup failed"
         exit 1
     fi
 }
@@ -42,56 +41,56 @@ backup_database() {
 restore_database() {
     local backup_file="$1"
     local non_interactive="${2:-false}"
-    
-    # Validation du chemin (sécurité)
+
+    # Path validation (security)
     if [[ "$backup_file" != /* ]] && [[ "$backup_file" != ~* ]]; then
-        # Chemin relatif - convertir en absolu
+        # Relative path - convert to absolute
         backup_file="$(realpath "$backup_file" 2>/dev/null || echo "$backup_file")"
     fi
-    
+
     if [ ! -f "$backup_file" ]; then
-        echo "❌ Fichier de sauvegarde non trouvé: $backup_file"
+        echo "❌ Backup file not found: $backup_file"
         return 1
     fi
-    
-    # Vérifier que le conteneur db est en cours d'exécution
+
+    # Check that db container is running
     cd "$PROJECT_DIR" || return 1
     if ! docker compose ps db | grep -q "Up"; then
-        echo "❌ Le conteneur de base de données n'est pas en cours d'exécution"
+        echo "❌ Database container is not running"
         return 1
     fi
-    
+
     if [ "$non_interactive" != "true" ]; then
-        echo "⚠️  ATTENTION: Cette opération va écraser la base de données actuelle !"
-        read -p "Continuer ? (yes/no): " confirm
-        
+        echo "⚠️  WARNING: This operation will overwrite the current database!"
+        read -p "Continue? (yes/no): " confirm
+
         if [ "$confirm" != "yes" ]; then
-            echo "Opération annulée"
+            echo "Operation cancelled"
             return 0
         fi
     fi
-    
-    # Décompresser si nécessaire
+
+    # Decompress if necessary
     if [[ "$backup_file" == *.gz ]]; then
-        echo "📦 Décompression de la sauvegarde..."
-        if ! gunzip -c "$backup_file" | docker compose exec -T db psql -U calendraft calendraft; then
-            echo "❌ Échec de la restauration"
+        echo "📦 Decompressing backup..."
+        if ! gunzip -c "$backup_file" | docker compose exec -T db psql -U appstandard appstandard; then
+            echo "❌ Restore failed"
             return 1
         fi
     else
-        if ! docker compose exec -T db psql -U calendraft calendraft < "$backup_file"; then
-            echo "❌ Échec de la restauration"
+        if ! docker compose exec -T db psql -U appstandard appstandard < "$backup_file"; then
+            echo "❌ Restore failed"
             return 1
         fi
     fi
-    
-    echo "✅ Base de données restaurée"
+
+    echo "✅ Database restored"
     return 0
 }
 
 list_backups() {
-    echo "📋 Sauvegardes disponibles:"
-    ls -lh "$BACKUP_DIR"/db-backup-*.sql.gz 2>/dev/null | awk '{print $9, "(" $5 ")"}'
+    echo "📋 Available backups:"
+    ls -lh "$BACKUP_DIR"/db-backup-*.sql.gz 2>/dev/null | awk '{print $9, "(" $5 ")"}' || echo "  No backups found"
 }
 
 # Main
@@ -108,4 +107,3 @@ else
     echo "Usage: $0 [--list] [--restore=FILE]"
     exit 1
 fi
-

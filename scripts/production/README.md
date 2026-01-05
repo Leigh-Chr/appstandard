@@ -1,6 +1,6 @@
-# Production Scripts - Calendraft
+# Production Scripts - AppStandard Calendar
 
-Collection of scripts to manage Calendraft in production securely and efficiently.
+Collection of scripts to manage AppStandard Calendar in production securely and efficiently.
 
 > 📚 **Complete documentation**: See `PRODUCTION_COMMANDS.md` at the project root for the complete reference guide.
 
@@ -42,7 +42,7 @@ chmod +x scripts/production/*.sh
 Scripts use environment variables with default values:
 
 ```bash
-PROJECT_DIR=~/calendraft      # Auto-detected if docker-compose.yml present
+PROJECT_DIR=~/appstandard      # Auto-detected if docker-compose.yml present
 BACKUP_DIR=~/backups          # Backup directory
 LOG_FILE=~/deploy.log         # Log file for deploy.sh
 RETENTION_DAYS=30             # Backup retention (days)

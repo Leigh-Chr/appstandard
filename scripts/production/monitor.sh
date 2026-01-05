@@ -1,79 +1,91 @@
-#!/bin/bash
-# Script de monitoring pour Calendraft
+#!/usr/bin/env bash
+# Monitoring script for AppStandard
 # Usage: ./monitor.sh [--all|--health|--stats|--logs|--errors]
 
 set -e
 
-# Utiliser le répertoire courant si docker-compose.yml est présent, sinon utiliser la variable d'environnement
+# Configuration
 if [ -f "docker-compose.yml" ]; then
     PROJECT_DIR="$(pwd)"
 else
-    PROJECT_DIR="${PROJECT_DIR:-$HOME/calendraft}"
+    PROJECT_DIR="${PROJECT_DIR:-$HOME/appstandard}"
 fi
 
 cd "$PROJECT_DIR" || exit 1
 
+# Colors
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
 show_health() {
-    echo "🏥 État de santé des services:"
+    echo "🏥 Service Health:"
     echo "================================"
     docker compose ps
     echo ""
-    
+
     echo "🔍 Health checks:"
-    if curl -f -s http://localhost:3000/health > /dev/null 2>&1; then
-        echo "✅ Backend: OK"
-    else
-        echo "❌ Backend: FAILED"
-    fi
-    
-    if curl -f -s http://localhost:3001/nginx-health > /dev/null 2>&1; then
-        echo "✅ Frontend: OK"
-    else
-        echo "❌ Frontend: FAILED"
-    fi
+
+    # Check all backend services
+    declare -A APPS=(
+        ["Calendar"]="3000"
+        ["Tasks"]="3002"
+        ["Contacts"]="3003"
+    )
+
+    for app in "${!APPS[@]}"; do
+        port="${APPS[$app]}"
+        if curl -f -s "http://localhost:${port}/health" > /dev/null 2>&1; then
+            echo -e "${GREEN}✅${NC} $app backend (port $port): OK"
+        else
+            echo -e "${RED}❌${NC} $app backend (port $port): FAILED"
+        fi
+    done
+
+    # Check frontends if running
+    for port in 3001 3004 3005; do
+        if curl -f -s "http://localhost:${port}/nginx-health" > /dev/null 2>&1; then
+            echo -e "${GREEN}✅${NC} Frontend (port $port): OK"
+        fi
+    done
     echo ""
 }
 
 show_stats() {
-    echo "📊 Utilisation des ressources:"
+    echo "📊 Resource Usage:"
     echo "=============================="
     docker stats --no-stream --format "table {{.Name}}\t{{.CPUPerc}}\t{{.MemUsage}}\t{{.NetIO}}\t{{.BlockIO}}"
     echo ""
-    
-    echo "💾 Utilisation du disque:"
+
+    echo "💾 Disk Usage:"
     df -h | grep -E "Filesystem|/dev/"
     echo ""
-    
-    echo "🧠 Utilisation de la mémoire:"
+
+    echo "🧠 Memory Usage:"
     free -h
     echo ""
 }
 
 show_logs() {
-    echo "📋 Dernières lignes des logs (50 lignes par service):"
+    echo "📋 Recent logs (50 lines per service):"
     echo "====================================================="
-    
-    echo "🔵 Backend:"
-    docker compose logs --tail=50 server
-    echo ""
-    
-    echo "🟢 Frontend:"
-    docker compose logs --tail=50 web
-    echo ""
-    
-    echo "🟡 Database:"
-    docker compose logs --tail=50 db
-    echo ""
-    
-    echo "🔴 Redis:"
-    docker compose logs --tail=50 redis
+
+    # Get all running services
+    SERVICES=$(docker compose ps --services 2>/dev/null)
+
+    for service in $SERVICES; do
+        echo ""
+        echo -e "${BLUE}📌 $service:${NC}"
+        docker compose logs --tail=50 "$service" 2>/dev/null || echo "  No logs available"
+    done
     echo ""
 }
 
 show_errors() {
-    echo "🚨 Erreurs récentes:"
+    echo "🚨 Recent errors:"
     echo "===================="
-    docker compose logs --tail=100 | grep -i "error\|fail\|exception" | tail -20
+    docker compose logs --tail=100 2>/dev/null | grep -i "error\|fail\|exception" | tail -20 || echo "No recent errors found"
     echo ""
 }
 
@@ -95,4 +107,3 @@ else
     echo "Usage: $0 [--health|--stats|--logs|--errors|--all]"
     exit 1
 fi
-

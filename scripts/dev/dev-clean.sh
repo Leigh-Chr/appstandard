@@ -1,28 +1,26 @@
-#!/bin/bash
-# Script de nettoyage de l'environnement de développement pour Calendraft
+#!/usr/bin/env bash
+# Development environment cleanup script for AppStandard
 # Usage: ./scripts/dev/dev-clean.sh [--all] [--volumes] [--cache]
 
-set -euo pipefail  # Arrêter en cas d'erreur, variable non définie, ou erreur dans un pipe
+set -euo pipefail
 
 # Configuration
-# Utiliser le répertoire courant si docker-compose.dev.yml est présent, sinon utiliser le chemin relatif au script
 if [ -f "docker-compose.dev.yml" ] || [ -f "package.json" ]; then
     PROJECT_DIR="$(pwd)"
 else
     SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-    PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+    PROJECT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 fi
 
 cd "$PROJECT_DIR" || exit 1
 
-# Couleurs pour les messages
+# Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+NC='\033[0m'
 
-# Fonctions
+# Functions
 log() {
     echo -e "${GREEN}[$(date +'%Y-%m-%d %H:%M:%S')]${NC} $1"
 }
@@ -56,55 +54,54 @@ while [[ $# -gt 0 ]]; do
             shift
             ;;
         *)
-            error "Option inconnue: $1"
+            error "Unknown option: $1"
             ;;
     esac
 done
 
-log "🧹 Nettoyage de l'environnement de développement..."
+log "🧹 Cleaning development environment..."
 
-# Arrêter les services Docker
-log "🛑 Arrêt des services Docker..."
+# Stop Docker services
+log "🛑 Stopping Docker services..."
 if [ "$CLEAN_VOLUMES" = true ]; then
-    # Si nettoyage des volumes, utiliser down -v directement
-    warning "Cette opération va supprimer toutes les données de la base de données !"
-    read -p "Êtes-vous sûr ? (yes/no): " -r
+    # If cleaning volumes, use down -v directly
+    warning "This operation will DELETE all database data!"
+    read -p "Are you sure? (yes/no): " -r
     if [[ ! $REPLY =~ ^[Yy][Ee][Ss]$ ]]; then
-        echo "Nettoyage des volumes ignoré"
-        docker-compose -f docker-compose.dev.yml down
+        echo "Volume cleanup skipped"
+        docker compose -f docker-compose.dev.yml down
     else
-        log "🗑️  Arrêt des services et suppression des volumes..."
-        docker-compose -f docker-compose.dev.yml down -v
-        log "✅ Services arrêtés et volumes supprimés"
+        log "🗑️  Stopping services and removing volumes..."
+        docker compose -f docker-compose.dev.yml down -v
+        log "✅ Services stopped and volumes removed"
     fi
 else
-    docker-compose -f docker-compose.dev.yml down
-    log "✅ Services Docker arrêtés"
+    docker compose -f docker-compose.dev.yml down
+    log "✅ Docker services stopped"
 fi
 
-# Nettoyer les caches
+# Clean caches
 if [ "$CLEAN_CACHE" = true ]; then
-    log "🗑️  Nettoyage des caches..."
-    
-    # Cache Turborepo
+    log "🗑️  Cleaning caches..."
+
+    # Turborepo cache
     if [ -d ".turbo" ]; then
         rm -rf .turbo
-        log "✅ Cache Turborepo nettoyé"
+        log "✅ Turborepo cache cleaned"
     fi
-    
-    # Cache node_modules
+
+    # node_modules cache
     if [ -d "node_modules/.cache" ]; then
         rm -rf node_modules/.cache
-        log "✅ Cache node_modules nettoyé"
+        log "✅ node_modules cache cleaned"
     fi
-    
-    # Artéfacts de build
+
+    # Build artifacts
     bun run clean 2>/dev/null || true
-    log "✅ Artéfacts de build nettoyés"
+    log "✅ Build artifacts cleaned"
 fi
 
-log "✅ Nettoyage terminé !"
+log "✅ Cleanup complete!"
 echo ""
-echo "Pour repartir de zéro:"
-echo "  ./scripts/dev-setup.sh"
-
+echo "To start fresh:"
+echo "  ./scripts/dev/dev-setup.sh"
