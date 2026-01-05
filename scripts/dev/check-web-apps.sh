@@ -69,7 +69,7 @@ done
 
 if [ $ERRORS -gt 0 ]; then
     echo -e "${RED}Found $ERRORS configuration issue(s)${NC}"
-    echo "See  section 'Critical CSS Requirements' for details"
+    echo "See ARCHITECTURE.md for details on CSS configuration"
     exit 1
 else
     echo -e "${GREEN}All web app configurations are correct${NC}"

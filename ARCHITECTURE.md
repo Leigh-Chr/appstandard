@@ -240,7 +240,6 @@ protectedProcedure.query(...)   // ctx.session guaranteed
 ## See Also
 
 - [README.md](README.md) - Project overview
-- []() - Claude Code guidance
 - [DEPLOYMENT.md](DEPLOYMENT.md) - Deployment guide
 - [CONTRIBUTING.md](CONTRIBUTING.md) - Contribution guidelines
 - Package documentation in `packages/*/README.md`
