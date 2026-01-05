@@ -8,7 +8,7 @@
 
 ## Reporting a Vulnerability
 
-AppStandard Calendar takes security very seriously. If you discover a security vulnerability, please report it responsibly.
+AppStandard takes security very seriously. If you discover a security vulnerability, please report it responsibly.
 
 ### How to Report
 
@@ -125,17 +125,17 @@ base-uri 'none';
 To prevent abuse, limits are applied to all users:
 
 **Anonymous users:**
-- Maximum 10 calendars
-- Maximum 500 events per calendar
-- Maximum 50 groups
-- Maximum 15 calendars per group
+- Maximum 5 collections (calendars, address books, or task lists)
+- Maximum 250 items per collection
+- Maximum 3 groups
+- Maximum 10 collections per group
 - Automatic deletion after 60 days of inactivity
 
 **Authenticated users:**
-- Maximum 100 calendars
-- Maximum 2,000 events per calendar
+- Maximum 150 collections (calendars, address books, or task lists)
+- Maximum 3,000 items per collection
 - Maximum 100 groups
-- Maximum 20 calendars per group
+- Maximum 30 collections per group
 - No automatic deletion
 
 ### Security Logging
@@ -177,15 +177,15 @@ Dependencies are regularly updated to include security patches. We use:
 
 This policy covers:
 
-- The AppStandard Calendar web application
-- The backend API
-- Internal packages (`@appstandard/*`)
+- All AppStandard web applications (Calendar, Tasks, Contacts)
+- The backend APIs
+- Internal packages (`@appstandard/*`, `@appstandard-contacts/*`, `@appstandard-tasks/*`)
 - Third-party deployments or forks are not covered
 
 ## Acknowledgments
 
-We thank security researchers who contribute to AppStandard Calendar's security. Contributors will be recognized here (with their permission).
+We thank security researchers who contribute to AppStandard's security. Contributors will be recognized here (with their permission).
 
 ---
 
-Thank you for helping keep AppStandard Calendar secure!
+Thank you for helping keep AppStandard secure!

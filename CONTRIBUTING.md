@@ -1,6 +1,6 @@
 # Contribution Guide
 
-Thank you for your interest in contributing to AppStandard Calendar! This guide will help you get started.
+Thank you for your interest in contributing to AppStandard! This guide will help you get started.
 
 ## Table of Contents
 
@@ -223,5 +223,5 @@ If you have questions, open an issue with the `question` label.
 
 ---
 
-Thank you for contributing to AppStandard Calendar! 🎉
+Thank you for contributing to AppStandard!
 
