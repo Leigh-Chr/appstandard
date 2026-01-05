@@ -73,7 +73,7 @@ const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any).lazy(() => import('./routes/dashboard.lazy').then((d) => d.Route))
 const CheckEmailRoute = CheckEmailRouteImport.update({
   id: '/check-email',
   path: '/check-email',
@@ -88,7 +88,7 @@ const CalendarsRoute = CalendarsRouteImport.update({
   id: '/calendars',
   path: '/calendars',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any).lazy(() => import('./routes/calendars.lazy').then((d) => d.Route))
 const AccountRoute = AccountRouteImport.update({
   id: '/account',
   path: '/account',
@@ -128,7 +128,9 @@ const CalendarsCalendarIdRoute = CalendarsCalendarIdRouteImport.update({
   id: '/$calendarId',
   path: '/$calendarId',
   getParentRoute: () => CalendarsRoute,
-} as any)
+} as any).lazy(() =>
+  import('./routes/calendars/$calendarId.lazy').then((d) => d.Route),
+)
 const GroupsGroupIdAcceptInvitationRoute =
   GroupsGroupIdAcceptInvitationRouteImport.update({
     id: '/groups/$groupId/accept-invitation',
@@ -151,13 +153,21 @@ const CalendarsCalendarIdEventsNewRoute =
     id: '/events/new',
     path: '/events/new',
     getParentRoute: () => CalendarsCalendarIdRoute,
-  } as any)
+  } as any).lazy(() =>
+    import('./routes/calendars/$calendarId/events/new.lazy').then(
+      (d) => d.Route,
+    ),
+  )
 const CalendarsCalendarIdEventsEventIdRoute =
   CalendarsCalendarIdEventsEventIdRouteImport.update({
     id: '/events/$eventId',
     path: '/events/$eventId',
     getParentRoute: () => CalendarsCalendarIdRoute,
-  } as any)
+  } as any).lazy(() =>
+    import('./routes/calendars/$calendarId/events/$eventId.lazy').then(
+      (d) => d.Route,
+    ),
+  )
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute

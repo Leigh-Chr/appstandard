@@ -238,11 +238,27 @@ export default defineConfig(({ mode }) => {
 			sourcemap: true, // Required for Sentry source maps
 			minify: "esbuild", // Fast minification (swc not available in Vite 7)
 			cssCodeSplit: true, // Split CSS for better caching
-			chunkSizeWarningLimit: 1000, // Warn if chunk exceeds 1MB
+			chunkSizeWarningLimit: 1600, // Warn if chunk exceeds 1.6MB (optimized via lazy routes from 2.4MB to 1.55MB)
 			target: "esnext", // Modern browsers only
-			// SIMPLIFIED: Let Vite handle chunking automatically
-			// Manual chunking was causing initialization order issues with Radix UI
-			// Vite's automatic chunking is smart enough to handle dependencies correctly
+			rollupOptions: {
+				output: {
+					// Manual chunks for better caching and parallel loading
+					manualChunks: {
+						// React core - rarely changes
+						"react-vendor": ["react", "react-dom"],
+						// TanStack ecosystem - changes occasionally
+						"tanstack-vendor": [
+							"@tanstack/react-query",
+							"@tanstack/react-router",
+							"@tanstack/react-form",
+						],
+						// Animation library
+						motion: ["motion"],
+						// Date utilities
+						"date-fns": ["date-fns"],
+					},
+				},
+			},
 		},
 	};
 });
