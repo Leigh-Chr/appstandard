@@ -40,11 +40,12 @@ function parsePropertyLine(line: string): ParsedProperty | null {
 
 	// Parse property name and parameters
 	const parts = beforeColon.split(";");
-	const name = parts[0].toUpperCase();
+	const name = (parts[0] ?? "").toUpperCase();
 	const params: Record<string, string> = {};
 
 	for (let i = 1; i < parts.length; i++) {
 		const param = parts[i];
+		if (!param) continue;
 		const eqIndex = param.indexOf("=");
 		if (eqIndex !== -1) {
 			const paramName = param.substring(0, eqIndex).toUpperCase();
@@ -192,7 +193,7 @@ function parseGeo(value: string): {
 		parts = coords.split(";");
 	}
 
-	if (parts.length === 2) {
+	if (parts.length === 2 && parts[0] !== undefined && parts[1] !== undefined) {
 		const lat = Number.parseFloat(parts[0]);
 		const lon = Number.parseFloat(parts[1]);
 		if (!Number.isNaN(lat) && !Number.isNaN(lon)) {
@@ -209,7 +210,7 @@ function parseGeo(value: string): {
  */
 function parseGender(value: string): GenderValue | undefined {
 	const parts = value.split(";");
-	const genderCode = parts[0].toUpperCase();
+	const genderCode = (parts[0] ?? "").toUpperCase();
 	if (["M", "F", "O", "N", "U"].includes(genderCode)) {
 		return genderCode as GenderValue;
 	}
@@ -404,7 +405,7 @@ function handleOrg(
 	prop: ParsedProperty,
 ): void {
 	// ORG can have multiple components separated by ;
-	contact.organization = unescapeVCardText(prop.value.split(";")[0]);
+	contact.organization = unescapeVCardText(prop.value.split(";")[0] ?? "");
 }
 
 /**
