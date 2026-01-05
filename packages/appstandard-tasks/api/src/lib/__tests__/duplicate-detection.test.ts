@@ -21,8 +21,8 @@ describe("deduplicateTasks", () => {
 			const result = deduplicateTasks(tasks);
 			expect(result.unique).toHaveLength(1);
 			expect(result.duplicates).toHaveLength(1);
-			expect(result.unique[0].id).toBe("1");
-			expect(result.duplicates[0].id).toBe("2");
+			expect(result.unique[0]?.id).toBe("1");
+			expect(result.duplicates[0]?.id).toBe("2");
 		});
 
 		it("should not match different UIDs", () => {
@@ -262,7 +262,7 @@ describe("deduplicateTasks", () => {
 
 			const result = deduplicateTasks(tasks);
 			expect(result.unique).toHaveLength(1);
-			expect(result.unique[0].id).toBe("first");
+			expect(result.unique[0]?.id).toBe("first");
 			expect(result.duplicates).toHaveLength(2);
 		});
 
@@ -322,9 +322,9 @@ describe("findDuplicatesAgainstExisting", () => {
 
 		const result = findDuplicatesAgainstExisting(newTasks, existing);
 		expect(result.unique).toHaveLength(1);
-		expect(result.unique[0].id).toBe("n2");
+		expect(result.unique[0]?.id).toBe("n2");
 		expect(result.duplicates).toHaveLength(1);
-		expect(result.duplicates[0].id).toBe("n1");
+		expect(result.duplicates[0]?.id).toBe("n1");
 	});
 
 	it("should not modify existing tasks", () => {
