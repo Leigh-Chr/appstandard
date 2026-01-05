@@ -118,13 +118,11 @@ RUN bun install --frozen-lockfile --production --ignore-scripts
 COPY --from=builder /app/packages/config ./packages/config
 
 # Copy built packages needed by server
-COPY --from=builder /app/packages/core/dist ./packages/core/dist
-COPY --from=builder /app/packages/schemas/dist ./packages/schemas/dist
+# Note: Only contacts-specific packages - no calendar packages (core, schemas, api)
 COPY --from=builder /app/packages/db/dist ./packages/db/dist
 COPY --from=builder /app/packages/db/prisma ./packages/db/prisma
 COPY --from=builder /app/packages/db/prisma.config.ts ./packages/db/prisma.config.ts
 COPY --from=builder /app/packages/auth/dist ./packages/auth/dist
-COPY --from=builder /app/packages/api/dist ./packages/api/dist
 COPY --from=builder /app/packages/api-core/dist ./packages/api-core/dist
 COPY --from=builder /app/packages/server-core/dist ./packages/server-core/dist
 COPY --from=builder /app/packages/appstandard-contacts/api/dist ./packages/appstandard-contacts/api/dist
@@ -136,13 +134,11 @@ COPY --from=builder /app/packages/appstandard-contacts/vcard-utils/dist ./packag
 COPY --from=builder /app/apps/contacts-server/dist ./apps/contacts-server/dist
 
 # Create workspace links for packages used at runtime
+# Note: Only contacts-specific packages - no calendar packages (core, schemas, api)
 RUN mkdir -p node_modules/@appstandard && \
     ln -s /app/packages/config node_modules/@appstandard/config && \
-    ln -s /app/packages/core node_modules/@appstandard/core && \
-    ln -s /app/packages/schemas node_modules/@appstandard/schemas && \
     ln -s /app/packages/db node_modules/@appstandard/db && \
     ln -s /app/packages/auth node_modules/@appstandard/auth && \
-    ln -s /app/packages/api node_modules/@appstandard/api && \
     ln -s /app/packages/api-core node_modules/@appstandard/api-core && \
     ln -s /app/packages/server-core node_modules/@appstandard/server-core && \
     mkdir -p node_modules/@appstandard-contacts && \
