@@ -1,1 +1,4 @@
-v24.11.1
+# This project uses Bun, not Node.js
+# See package.json "packageManager" field
+# This file is kept for compatibility with tools that require it
+lts/*

@@ -1,1 +1,19 @@
+#!/bin/sh
+
+# Check for .env files being committed (security protection)
+ENV_FILES=$(git diff --cached --name-only | grep -E '\.env($|\.local|\.production|\.development)' || true)
+if [ -n "$ENV_FILES" ]; then
+    echo "❌ ERROR: Attempting to commit .env files!"
+    echo ""
+    echo "The following environment files are staged:"
+    echo "$ENV_FILES"
+    echo ""
+    echo "These files may contain secrets and should NOT be committed."
+    echo "Remove them from staging with: git reset HEAD <file>"
+    echo ""
+    echo "If you're sure you want to commit these files, use --no-verify"
+    exit 1
+fi
+
+# Run lint-staged for code quality checks
 lint-staged
