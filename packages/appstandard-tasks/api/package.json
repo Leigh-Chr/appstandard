@@ -1,0 +1,44 @@
+{
+	"name": "@appstandard-tasks/api",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"default": "./src/index.ts"
+		},
+		"./*": {
+			"types": "./dist/*.d.ts",
+			"default": "./src/*.ts"
+		}
+	},
+	"type": "module",
+	"scripts": {
+		"build": "tsdown",
+		"typecheck": "tsc --noEmit",
+		"clean": "rm -rf dist *.tsbuildinfo",
+		"test": "vitest run --passWithNoTests",
+		"test:watch": "vitest"
+	},
+	"devDependencies": {
+		"tsdown": "catalog:",
+		"@appstandard/config": "workspace:*",
+		"vitest": "catalog:"
+	},
+	"peerDependencies": {
+		"typescript": "^5"
+	},
+	"dependencies": {
+		"@appstandard/api-core": "workspace:*",
+		"@appstandard/auth": "workspace:*",
+		"@appstandard/db": "workspace:*",
+		"@appstandard-tasks/core": "workspace:*",
+		"@appstandard-tasks/schemas": "workspace:*",
+		"@appstandard-tasks/todo-utils": "workspace:*",
+		"@prisma/client": "catalog:",
+		"@trpc/server": "catalog:",
+		"date-fns": "catalog:",
+		"dotenv": "catalog:",
+		"hono": "catalog:",
+		"zod": "catalog:"
+	},
+	"license": "AGPL-3.0"
+}

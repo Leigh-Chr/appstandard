@@ -1,0 +1,64 @@
+{
+	"name": "@appstandard-tasks/todo-utils",
+	"version": "0.1.0",
+	"description": "Pure VTODO utilities for parsing and generating task files (RFC 5545)",
+	"type": "module",
+	"main": "./dist/index.mjs",
+	"module": "./dist/index.mjs",
+	"types": "./dist/index.d.mts",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.mts",
+			"import": "./dist/index.mjs"
+		},
+		"./parser": {
+			"types": "./dist/parser/index.d.mts",
+			"import": "./dist/parser/index.mjs"
+		},
+		"./generator": {
+			"types": "./dist/generator/index.d.mts",
+			"import": "./dist/generator/index.mjs"
+		},
+		"./utils": {
+			"types": "./dist/utils/index.d.mts",
+			"import": "./dist/utils/index.mjs"
+		}
+	},
+	"files": [
+		"dist",
+		"README.md"
+	],
+	"scripts": {
+		"build": "rm -rf dist && tsdown",
+		"dev": "tsdown --watch",
+		"typecheck": "tsc --noEmit",
+		"test": "vitest run --passWithNoTests",
+		"test:watch": "vitest",
+		"clean": "rm -rf dist *.tsbuildinfo"
+	},
+	"keywords": [
+		"vtodo",
+		"ics",
+		"icalendar",
+		"tasks",
+		"rfc5545",
+		"caldav",
+		"parser",
+		"generator"
+	],
+	"author": "",
+	"license": "AGPL-3.0",
+	"dependencies": {
+		"ical.js": "catalog:"
+	},
+	"devDependencies": {
+		"@appstandard/config": "workspace:*",
+		"tsdown": "catalog:",
+		"typescript": "catalog:",
+		"vitest": "catalog:"
+	},
+	"peerDependencies": {},
+	"publishConfig": {
+		"access": "public"
+	}
+}
