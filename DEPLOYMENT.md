@@ -1,45 +1,150 @@
 # Deployment Guide - AppStandard
 
-This guide describes the steps to deploy AppStandard products in production.
+This guide describes the steps to deploy all AppStandard products in production.
 
 ## Architecture Overview
 
 AppStandard is a multi-product monorepo containing:
+- **AppStandard Landing** - Main landing page (appstandard.io)
 - **AppStandard Calendar** - ICS calendar management (production-ready)
-- **AppStandard Contacts** - vCard contact management (in development)
 - **AppStandard Tasks** - Todo/task management (in development)
+- **AppStandard Contacts** - vCard contact management (in development)
 
-### Current Production Setup
+### Domain Structure
 
-| Component | Container Name | Image | Port | Public URL |
-|-----------|----------------|-------|------|------------|
-| PostgreSQL | appstandard-db | postgres:16-alpine | 5432 | - |
-| Redis | appstandard-redis | redis:7-alpine | 6379 | - |
-| Calendar Backend | appstandard-server | calendraft-server | 3000 | api.calendraft.app |
-| Calendar Frontend | appstandard-web | calendraft-web | 3001→8080 | calendraft.app |
+| App | Frontend URL | API URL | Internal Ports |
+|-----|--------------|---------|----------------|
+| Landing | appstandard.io | - | 3010 → 8080 |
+| Calendar | calendar.appstandard.io | api.appstandard.io | 3001 → 8080, 3000 |
+| Tasks | tasks.appstandard.io | api-tasks.appstandard.io | 3004 → 8080, 3002 |
+| Contacts | contacts.appstandard.io | api-contacts.appstandard.io | 3005 → 8080, 3003 |
+
+### Infrastructure
+
+| Component | Container Name | Image | Port |
+|-----------|----------------|-------|------|
+| PostgreSQL | appstandard-db | postgres:16-alpine | 5432 |
+| Redis | appstandard-redis | redis:7-alpine | 6379 |
+| Landing | appstandard-landing | nginx-unprivileged | 3010 |
+| Calendar Backend | appstandard-calendar-server | bun:alpine | 3000 |
+| Calendar Frontend | appstandard-calendar-web | nginx-unprivileged | 3001 |
+| Tasks Backend | appstandard-tasks-server | bun:alpine | 3002 |
+| Tasks Frontend | appstandard-tasks-web | nginx-unprivileged | 3004 |
+| Contacts Backend | appstandard-contacts-server | bun:alpine | 3003 |
+| Contacts Frontend | appstandard-contacts-web | nginx-unprivileged | 3005 |
 
 ## Prerequisites
 
-- Node.js 18+ or Bun 1.3.1+
-- PostgreSQL database
-- Web server (Nginx, Caddy, etc.) for reverse proxy (recommended)
+- Docker and Docker Compose
+- Domain name configured (appstandard.io with subdomains)
 - SSL/TLS certificate (Let's Encrypt recommended)
+- Nginx or Caddy for reverse proxy
+
+## Quick Start
+
+### 1. Configure Environment Variables
+
+```bash
+# Copy example configuration
+cp deploy/.env.example .env
+
+# Edit with your values
+nano .env
+```
+
+### 2. Build and Deploy All Services
+
+```bash
+# Build and start everything
+DOCKER_BUILDKIT=1 docker compose up -d --build
+
+# Verify all services are healthy
+docker compose ps
+```
+
+### 3. Configure Reverse Proxy (Nginx)
+
+See the [Nginx Configuration](#nginx-reverse-proxy) section below.
 
 ## Environment Variables
 
+### Full Configuration (`.env`)
+
+```env
+# ===================================
+# Database (PostgreSQL)
+# ===================================
+POSTGRES_USER=appstandard
+POSTGRES_PASSWORD=your-secure-password-here
+POSTGRES_DB=appstandard
+POSTGRES_PORT=5432
+
+# ===================================
+# Redis (Rate Limiting)
+# ===================================
+REDIS_PASSWORD=your-redis-password-here
+REDIS_PORT=6379
+
+# ===================================
+# Authentication (shared across all apps)
+# ===================================
+# Generate: openssl rand -base64 32
+BETTER_AUTH_SECRET=your-32-char-minimum-secret-here
+
+# ===================================
+# Email Configuration
+# ===================================
+RESEND_API_KEY=re_xxxxxxxxxxxxx
+EMAIL_FROM=AppStandard <noreply@appstandard.io>
+
+# ===================================
+# Sentry (Error Tracking - optional)
+# ===================================
+SENTRY_DSN=
+VITE_SENTRY_DSN=
+
+# ===================================
+# Landing Page (appstandard.io)
+# ===================================
+LANDING_PORT=3010
+
+# ===================================
+# Calendar (calendar.appstandard.io)
+# ===================================
+CALENDAR_API_URL=https://api.appstandard.io
+CALENDAR_CORS_ORIGIN=https://calendar.appstandard.io
+CALENDAR_SERVER_PORT=3000
+CALENDAR_WEB_PORT=3001
+
+# ===================================
+# Tasks (tasks.appstandard.io)
+# ===================================
+TASKS_API_URL=https://api-tasks.appstandard.io
+TASKS_CORS_ORIGIN=https://tasks.appstandard.io
+TASKS_SERVER_PORT=3002
+TASKS_WEB_PORT=3004
+
+# ===================================
+# Contacts (contacts.appstandard.io)
+# ===================================
+CONTACTS_API_URL=https://api-contacts.appstandard.io
+CONTACTS_CORS_ORIGIN=https://contacts.appstandard.io
+CONTACTS_SERVER_PORT=3003
+CONTACTS_WEB_PORT=3005
+
+# ===================================
+# Environment
+# ===================================
+NODE_ENV=production
+```
+
 ### Docker Secrets Support
 
-AppStandard Calendar supports Docker secrets for sensitive configuration (production best practice). Secrets are read from `/run/secrets/` with fallback to environment variables.
+AppStandard supports Docker secrets for sensitive configuration:
 
-**Supported secrets** (can use Docker secrets or env vars):
-- `BETTER_AUTH_SECRET`
-- `RESEND_API_KEY`
-- `SMTP_PASSWORD`
-
-**Docker Compose example:**
 ```yaml
 services:
-  server:
+  calendar-server:
     secrets:
       - better_auth_secret
       - resend_api_key
@@ -50,573 +155,412 @@ secrets:
     file: ./secrets/resend_api_key.txt
 ```
 
-### Backend (`apps/calendar-server/.env`)
+## Docker Compose Services
 
-Create a `.env` file in `apps/calendar-server/` with the following variables:
-
-```env
-NODE_ENV=production
-PORT=3000
-
-# PostgreSQL database (required)
-DATABASE_URL=postgresql://USER:PASSWORD@HOST:PORT/DATABASE
-
-CORS_ORIGIN=https://your-domain.com
-BETTER_AUTH_SECRET=your-secret-key-min-32-characters
-BETTER_AUTH_URL=https://api.your-domain.com
-
-# Sentry (optional - error monitoring)
-SENTRY_DSN=https://xxx@xxx.ingest.sentry.io/xxx
-
-# Redis (optional - for distributed rate limiting)
-# If not set, rate limiting falls back to in-memory (single instance only)
-REDIS_URL=redis://redis:6379
-
-# Email Service Configuration (required for email verification)
-# Option A: Resend (Recommended)
-RESEND_API_KEY=re_xxxxxxxxxxxxx
-EMAIL_FROM=noreply@your-domain.com
-
-# Option B: SMTP (Alternative)
-# SMTP_HOST=smtp.example.com
-# SMTP_PORT=587
-# SMTP_SECURE=false
-# SMTP_USER=your-email@example.com
-# SMTP_PASSWORD=your-password
-```
-
-**Important**:
-- `CORS_ORIGIN`: MUST be defined in production, do not use `*`
-- `BETTER_AUTH_SECRET`: Generate a secure key (e.g., `openssl rand -base64 32`)
-- `SENTRY_DSN`: Optional, retrieve it from your Sentry project
-- `REDIS_URL`: Optional, but recommended for distributed rate limiting in production
-- `RESEND_API_KEY` or SMTP config: Required for email verification
-- Never commit the `.env` file to the repository
-
-### Frontend (`apps/calendar-web/.env`)
-
-Create a `.env` file in `apps/calendar-web/`:
-
-```env
-VITE_SERVER_URL=https://api.your-domain.com
-
-# Sentry (optional - error monitoring)
-VITE_SENTRY_DSN=https://xxx@xxx.ingest.sentry.io/xxx
-```
-
-### Build Variables (CI/CD)
-
-For uploading Sentry source maps during build:
-
-```env
-SENTRY_ORG=your-sentry-organization
-SENTRY_PROJECT=appstandard-web
-SENTRY_AUTH_TOKEN=sntrys_xxx
-```
-
-## Deployment with Docker (recommended)
-
-The easiest way to deploy AppStandard Calendar is using Docker.
-
-### Quick Start
-
-#### Development (PostgreSQL Docker + Local Apps)
-
+### Deploy All Apps
 ```bash
-# 1. Start PostgreSQL
-docker compose -f docker-compose.dev.yml up -d
-
-# 2. Configure environment
-echo 'DATABASE_URL="postgresql://appstandard:appstandard_dev@localhost:5432/appstandard_dev"
-PORT=3000
-CORS_ORIGIN=http://localhost:3001
-BETTER_AUTH_SECRET=dev-secret-key-min-32-characters-long
-BETTER_AUTH_URL=http://localhost:3000' > apps/calendar-server/.env
-
-# 3. Initialize the database
-bun run db:push
-
-# 4. Launch apps locally (hot reload)
-bun run dev
-```
-
-**Access:**
-- Frontend: http://localhost:3001
-- Backend: http://localhost:3000
-- PostgreSQL: localhost:5432
-
-#### Production (Everything in Docker)
-
-```bash
-# 1. Configure environment variables
-cp docker.env.example .env
-# Edit .env with your production values
-
-# 2. Build and start all services
 docker compose up -d --build
-
-# 3. Verify everything works
-docker compose ps
-docker compose logs -f
 ```
 
-**Access:**
-- Frontend: http://localhost:3001
-- Backend: http://localhost:3000
-- PostgreSQL: localhost:5432
+### Deploy Specific Apps
 
-### Docker Services
+```bash
+# Only Calendar
+docker compose up -d db redis calendar-server calendar-web
 
-| Service | Port | Description |
-|---------|------|-------------|
-| `db` | 5432 | PostgreSQL 16 |
-| `redis` | 6379 | Redis (Rate limiting - optional, falls back to in-memory) |
-| `server` | 3000 | Calendar Backend API (Bun + Hono) |
-| `web` | 3001 | Calendar Frontend (Nginx) |
+# Only Landing + Calendar
+docker compose up -d landing db redis calendar-server calendar-web
 
-> **Note**: Service names are `server` and `web` in docker-compose.yml. Use these names with Docker commands.
-
-### Environment Variables
-
-Copy `docker.env.example` to `.env` and configure:
-
-```env
-# Database
-POSTGRES_USER=appstandard
-POSTGRES_PASSWORD=your_secure_password
-POSTGRES_DB=appstandard
-
-# Backend
-CORS_ORIGIN=https://your-domain.com
-BETTER_AUTH_SECRET=$(openssl rand -base64 32)
-BETTER_AUTH_URL=https://api.your-domain.com
-
-# Redis (optional - for distributed rate limiting)
-REDIS_URL=redis://redis:6379
-
-# Email Service (required for email verification)
-RESEND_API_KEY=re_xxxxxxxxxxxxx
-EMAIL_FROM=noreply@your-domain.com
-
-# Frontend
-VITE_SERVER_URL=https://api.your-domain.com
+# All apps
+docker compose up -d --build
 ```
 
-### Ports
+### Useful Commands
 
-By default:
-- **3000**: Backend API
-- **3001**: Frontend Web
-- **5432**: PostgreSQL
+```bash
+# View logs
+docker compose logs -f                    # All services
+docker compose logs -f calendar-server    # Specific service
 
-Modify in `.env` if necessary:
-```env
-SERVER_PORT=3000
-WEB_PORT=3001
-POSTGRES_PORT=5432
+# Restart service
+docker compose restart calendar-server
+
+# Rebuild specific service
+docker compose up -d --build calendar-web
+
+# Database backup
+docker compose exec db pg_dump -U appstandard appstandard > backup_$(date +%Y%m%d).sql
+
+# Database restore
+docker compose exec -T db psql -U appstandard appstandard < backup.sql
+
+# Shell access
+docker compose exec calendar-server sh
+docker compose exec db psql -U appstandard -d appstandard
 ```
 
-### Updating Production Deployments
+## Nginx Reverse Proxy
 
-When deploying updates to production, follow these steps:
+### Full Configuration
+
+```nginx
+# ===================================
+# Upstream definitions
+# ===================================
+upstream landing {
+    server 127.0.0.1:3010;
+}
+
+upstream calendar_web {
+    server 127.0.0.1:3001;
+}
+
+upstream calendar_api {
+    server 127.0.0.1:3000;
+}
+
+upstream tasks_web {
+    server 127.0.0.1:3004;
+}
+
+upstream tasks_api {
+    server 127.0.0.1:3002;
+}
+
+upstream contacts_web {
+    server 127.0.0.1:3005;
+}
+
+upstream contacts_api {
+    server 127.0.0.1:3003;
+}
+
+# ===================================
+# Landing Page - appstandard.io
+# ===================================
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name appstandard.io www.appstandard.io;
+
+    ssl_certificate /etc/letsencrypt/live/appstandard.io/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/appstandard.io/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+
+    location / {
+        proxy_pass http://landing;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+
+# ===================================
+# Calendar Frontend - calendar.appstandard.io
+# ===================================
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name calendar.appstandard.io;
+
+    ssl_certificate /etc/letsencrypt/live/appstandard.io/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/appstandard.io/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+
+    location / {
+        proxy_pass http://calendar_web;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+
+# ===================================
+# Calendar API - api.appstandard.io
+# ===================================
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name api.appstandard.io;
+
+    ssl_certificate /etc/letsencrypt/live/appstandard.io/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/appstandard.io/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+
+    location / {
+        proxy_pass http://calendar_api;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+
+# ===================================
+# Tasks Frontend - tasks.appstandard.io
+# ===================================
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name tasks.appstandard.io;
+
+    ssl_certificate /etc/letsencrypt/live/appstandard.io/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/appstandard.io/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+
+    location / {
+        proxy_pass http://tasks_web;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+
+# ===================================
+# Tasks API - api-tasks.appstandard.io
+# ===================================
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name api-tasks.appstandard.io;
+
+    ssl_certificate /etc/letsencrypt/live/appstandard.io/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/appstandard.io/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+
+    location / {
+        proxy_pass http://tasks_api;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+
+# ===================================
+# Contacts Frontend - contacts.appstandard.io
+# ===================================
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name contacts.appstandard.io;
+
+    ssl_certificate /etc/letsencrypt/live/appstandard.io/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/appstandard.io/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+
+    location / {
+        proxy_pass http://contacts_web;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+
+# ===================================
+# Contacts API - api-contacts.appstandard.io
+# ===================================
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name api-contacts.appstandard.io;
+
+    ssl_certificate /etc/letsencrypt/live/appstandard.io/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/appstandard.io/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+
+    location / {
+        proxy_pass http://contacts_api;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+
+# ===================================
+# HTTP to HTTPS redirect
+# ===================================
+server {
+    listen 80;
+    listen [::]:80;
+    server_name appstandard.io www.appstandard.io
+                calendar.appstandard.io api.appstandard.io
+                tasks.appstandard.io api-tasks.appstandard.io
+                contacts.appstandard.io api-contacts.appstandard.io;
+
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+```
+
+## SSL Certificate Setup
+
+### Initial Setup with Let's Encrypt
+
+```bash
+# Install certbot
+apt install certbot python3-certbot-nginx
+
+# Get wildcard certificate for all subdomains
+certbot certonly --nginx \
+  -d appstandard.io \
+  -d www.appstandard.io \
+  -d calendar.appstandard.io \
+  -d api.appstandard.io \
+  -d tasks.appstandard.io \
+  -d api-tasks.appstandard.io \
+  -d contacts.appstandard.io \
+  -d api-contacts.appstandard.io
+```
+
+### Auto-renewal
+
+```bash
+# Test renewal
+certbot renew --dry-run
+
+# Renewal is automatic via systemd timer
+systemctl status certbot.timer
+```
+
+## DNS Configuration
+
+Configure these DNS records for appstandard.io:
+
+| Type | Name | Value |
+|------|------|-------|
+| A | @ | YOUR_VPS_IP |
+| A | www | YOUR_VPS_IP |
+| A | calendar | YOUR_VPS_IP |
+| A | api | YOUR_VPS_IP |
+| A | tasks | YOUR_VPS_IP |
+| A | api-tasks | YOUR_VPS_IP |
+| A | contacts | YOUR_VPS_IP |
+| A | api-contacts | YOUR_VPS_IP |
+
+## Updating Production
 
 ```bash
 # 1. SSH to VPS
 ssh root@YOUR_VPS_IP
 
 # 2. Navigate to project
-cd /root/calendraft  # or your installation path
+cd /root/appstandard
 
-# 3. Backup database (IMPORTANT - always backup before updates)
-docker compose exec db pg_dump -U calendraft calendraft > backup_$(date +%Y%m%d_%H%M%S).sql
+# 3. Backup database
+docker compose exec db pg_dump -U appstandard appstandard > backup_$(date +%Y%m%d_%H%M%S).sql
 
 # 4. Pull latest code
 git pull origin master
 
-# 5. Rebuild and restart services
+# 5. Rebuild and restart
 DOCKER_BUILDKIT=1 docker compose up -d --build
 
 # 6. Verify health
-curl http://localhost:3000/health
 docker compose ps
+curl https://api.appstandard.io/health
 ```
 
-**Important Notes:**
-- The Dockerfiles include ALL workspace package.json files for bun lockfile validation
-- If adding new packages to the monorepo, update both server and web Dockerfiles
-- Database migrations are typically not needed for minor updates
+## Troubleshooting
 
-### Useful Docker Commands
+### Bun Lockfile Frozen Error
 
-```bash
-# View logs
-docker compose logs -f              # All services
-docker compose logs -f server       # Specific service
-docker compose logs -f web
-docker compose logs -f db
-
-# Stop services
-docker compose down                  # Stop (keep data)
-docker compose down -v               # Stop and remove volumes (⚠️ deletes data)
-
-# Restart a service
-docker compose restart server
-docker compose restart web
-
-# Rebuild a service
-docker compose up -d --build server
-docker compose up -d --build web
-
-# Access PostgreSQL
-docker compose exec db psql -U appstandard -d appstandard
-
-# Database backup
-docker compose exec db pg_dump -U appstandard appstandard > backup.sql
-
-# Restore database
-docker compose exec -T db psql -U appstandard appstandard < backup.sql
-
-# Update
-git pull
-docker compose up -d --build
-```
-
-### Docker Troubleshooting
-
-#### Docker Build Fails
-
-```bash
-# Rebuild without cache
-docker compose build --no-cache
-
-# Check logs
-docker compose logs
-```
-
-#### Bun Lockfile Frozen Error
-
-If you see this error during Docker build:
+If Docker build fails with:
 ```
 error: lockfile had changes, but lockfile is frozen
 ```
 
-**Cause**: Bun validates the lockfile against ALL workspace packages. The Dockerfiles must include every `package.json` from the monorepo.
+**Solution**: Ensure all Dockerfiles include every workspace `package.json`:
+- All `packages/*`
+- All `packages/appstandard-contacts/*`
+- All `packages/appstandard-tasks/*`
+- All `apps/*`
 
-**Solution**: Update the Dockerfile to include all workspace packages:
-```dockerfile
-# In the builder stage, add ALL package.json files:
-COPY packages/appstandard-contacts/api/package.json ./packages/appstandard-contacts/api/
-COPY packages/appstandard-contacts/core/package.json ./packages/appstandard-contacts/core/
-# ... etc for all packages
-```
+### CSP Errors in Browser Console
 
-Both `apps/calendar-server/Dockerfile` and `apps/calendar-web/Dockerfile` must include:
-- All `packages/*` package.json files
-- All `packages/appstandard-contacts/*` package.json files
-- All `packages/appstandard-tasks/*` package.json files
-- All `apps/*` package.json files
+Check that nginx.conf and index.html have matching CSP headers with the correct API domain.
 
-#### Database Won't Start
+### Service Health Check Failing
 
 ```bash
-# Check logs
-docker compose logs db
+# Check service logs
+docker compose logs calendar-server
 
-# Check that port is not already in use
-lsof -i :5432
-```
-
-#### Server Cannot Connect to Database
-
-```bash
-# Check that database is healthy
-docker compose ps
-
-# Test connection
-docker compose exec server wget -O- http://localhost:3000/health
-```
-
-#### Data Doesn't Persist
-
-Check that the volume is created:
-```bash
-docker volume ls | grep postgres
-```
-
-### Service Structure
-
-```
-┌─────────────────────────────────────────┐
-│         docker-compose.yml              │
-├─────────────────────────────────────────┤
-│  ┌──────────┐  ┌──────────┐  ┌──────┐ │
-│  │    db    │  │  server  │  │ web  │ │
-│  │PostgreSQL│◄─│ Bun+Hono │◄─│Nginx │ │
-│  │  :5432   │  │  :3000   │  │ :80  │ │
-│  └──────────┘  └──────────┘  └──────┘ │
-│       │            │                    │
-│  ┌────┴────────────┴────┐              │
-│  │      redis           │              │
-│  │   (Rate Limiting)    │              │
-│  │      :6379           │              │
-│  └──────────────────────┘              │
-│       │                                  │
-│  postgres_data, redis_data (volumes)    │
-└─────────────────────────────────────────┘
-```
-
----
-
-## Manual Deployment (without Docker)
-
-### 1. Install Dependencies
-
-```bash
-bun install
-```
-
-### 2. Generate Prisma Client
-
-```bash
-bun run db:generate
-```
-
-### 3. Push Database Schema
-
-```bash
-bun run db:push
-```
-
-### 4. Build Application
-
-```bash
-bun run build
-```
-
-This will:
-- Build the frontend in `apps/calendar-web/dist/`
-- Build the backend in `apps/calendar-server/dist/`
-
-## Starting (without Docker)
-
-### Backend
-
-```bash
-cd apps/calendar-server
-bun run dist/index.js
-```
-
-Or with PM2 (recommended for production):
-
-```bash
-pm2 start apps/calendar-server/dist/index.js --name appstandard-api
-```
-
-### Frontend
-
-The frontend can be served with any static web server:
-
-- **Nginx**: Configure to serve `apps/calendar-web/dist/`
-- **Vercel/Netlify**: Deploy the `apps/calendar-web/dist/` folder
-- **Cloudflare Pages**: Deploy the `apps/calendar-web/dist/` folder
-
-## Nginx Configuration (example)
-
-```nginx
-# Frontend
-server {
-    listen 80;
-    server_name your-domain.com;
-    
-    root /path/to/apps/calendar-web/dist;
-    index index.html;
-    
-    location / {
-        try_files $uri $uri/ /index.html;
-    }
-}
-
-# Backend API
-server {
-    listen 80;
-    server_name api.your-domain.com;
-    
-    location / {
-        proxy_pass http://localhost:3000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
-        proxy_cache_bypass $http_upgrade;
-    }
-}
-```
-
-## Pre-deployment Checklist
-
-### Docker
-- [ ] `.env` file created from `docker.env.example`
-- [ ] `POSTGRES_PASSWORD` changed with a secure password
-- [ ] `BETTER_AUTH_SECRET` generated (min 32 characters): `openssl rand -base64 32`
-- [ ] `CORS_ORIGIN` defined with frontend URL
-- [ ] Docker and Docker Compose installed
-- [ ] Ports 3000 and 3001 available (or customized in `.env`)
-
-### General
-- [ ] Environment variables configured
-- [ ] `CORS_ORIGIN` defined and does not contain `*` or `localhost`
-- [ ] `BETTER_AUTH_SECRET` generated and secured (min 32 characters)
-- [ ] Database initialized
-- [ ] SSL/TLS certificate configured (HTTPS)
-- [ ] Health check accessible (`/health`)
-- [ ] Rate limiting tested
-- [ ] Security headers verified
-- [ ] Logs configured and accessible
-- [ ] Database backup configured
-- [ ] Sentry configured (optional but recommended)
-
-
-## Monitoring
-
-### Sentry (Error Tracking & Performance)
-
-Sentry is integrated for error and performance monitoring. Configuration:
-
-1. **Create a Sentry project**: Go to [sentry.io](https://sentry.io) and create two projects:
-   - A "React" project for the frontend (`appstandard-web`)
-   - A "Node.js" project for the backend (`appstandard-api`)
-
-2. **Retrieve DSNs**: In each project, go to Settings > Client Keys (DSN)
-
-3. **Configure environment variables** (see section above)
-
-4. **Upload source maps** (CI/CD):
-   - Create an auth token in Sentry (Settings > Auth Tokens)
-   - Configure `SENTRY_ORG`, `SENTRY_PROJECT`, and `SENTRY_AUTH_TOKEN` in your CI
-
-Enabled features:
-- ✅ Automatic error capture (frontend & backend)
-- ✅ Performance monitoring with TanStack Router
-- ✅ Session Replay (10% of sessions, 100% with errors)
-- ✅ Distributed tracing between frontend and backend
-- ✅ Source maps for readable stack traces
-
-### Health Check
-
-The `/health` endpoint checks:
-- Database connection
-- Returns `200 OK` if everything is OK
-- Returns `503 Service Unavailable` if there's a problem
-
-Use a monitoring service (UptimeRobot, Pingdom, etc.) to monitor this endpoint.
-
-### Automatic Cleanup
-
-The server automatically runs a cleanup job in production that:
-- Deletes anonymous calendars not accessed for 60 days
-- Runs every 24 hours
-- Cleans up orphaned data to prevent database accumulation
-- Note: `updatedAt` is updated on access (getById/list), so a regularly accessed calendar will not be deleted
-
-**Note**: For a critical production environment, consider using an external scheduler (cron, Cloud Scheduler, etc.) instead of `setInterval`.
-
-### Logs
-
-Logs are displayed in the console. In production, redirect to a file:
-
-```bash
-bun run dist/src/index.js > logs/app.log 2>&1
-```
-
-Or with PM2:
-
-```bash
-pm2 logs appstandard-api
+# Verify database connection
+docker compose exec calendar-server curl localhost:3000/health
 ```
 
 ## Security
 
 ### Active Protections
 
-- ✅ Rate limiting: 
-  - General routes: 100 req/min
-  - Authentication: 10 req/min
-  - Sign-up: 5 req/min
-  - Email verification resend: 1 req/30s
-  - Password reset request: 3 req/hour
-  - Password change: 10 req/hour
-  - Profile update: 20 req/hour
-  - Account deletion: 1 req/hour
-  - Uses Redis for distributed rate limiting (falls back to in-memory if Redis unavailable)
-- ✅ SSRF protection for external URL imports
-- ✅ Content Security Policy (frontend and backend)
-- ✅ HTTP security headers (X-Frame-Options, X-Content-Type-Options, etc.)
-- ✅ Input validation with Zod
-- ✅ High entropy anonymous IDs (192 bits)
-- ✅ Limit of 10 sharing links per calendar
-- ✅ Security event logging
-- ✅ Sentry configured without PII
-- ✅ Docker secrets support (with fallback to environment variables)
-
-### Production Security Checklist
-
-Before going to production, verify:
-
-- [ ] `NODE_ENV=production`
-- [ ] `CORS_ORIGIN` defined explicitly (no `*`)
-- [ ] `CORS_ORIGIN` does not contain `localhost`
-- [ ] `BETTER_AUTH_SECRET` generated with 32+ characters (`openssl rand -base64 32`)
-- [ ] HTTPS enabled with valid certificate
-- [ ] Reverse proxy configured (nginx/Caddy) with X-Forwarded-* headers
-- [ ] Environment variables not committed
-- [ ] Automatic database backup
-- [ ] Log monitoring configured
-- [ ] Alerts on critical errors (Sentry or other)
+- Rate limiting (Redis-backed, with in-memory fallback)
+- SSRF protection for external imports
+- Content Security Policy (CSP) headers
+- HTTP security headers (HSTS, X-Frame-Options, etc.)
+- Input validation with Zod
+- High entropy anonymous IDs (192 bits)
+- Docker security: no-new-privileges, read-only filesystems
 
 ### Secret Rotation
-
-It is recommended to perform periodic rotation:
 
 | Secret | Frequency | Method |
 |--------|-----------|--------|
 | `BETTER_AUTH_SECRET` | 6 months | `openssl rand -base64 32` |
-| `POSTGRES_PASSWORD` | 6 months | Modify in `.env` and redeploy |
+| `POSTGRES_PASSWORD` | 6 months | Update `.env` and redeploy |
+| `REDIS_PASSWORD` | 6 months | Update `.env` and redeploy |
 
-**Note**: Rotating `BETTER_AUTH_SECRET` will invalidate all existing sessions.
+## Monitoring
 
-## Troubleshooting
+### Health Endpoints
 
-### Error "CORS_ORIGIN is required"
-→ Check that `CORS_ORIGIN` is defined in `apps/calendar-server/.env`
+| App | Endpoint |
+|-----|----------|
+| Calendar API | `https://api.appstandard.io/health` |
+| Tasks API | `https://api-tasks.appstandard.io/health` |
+| Contacts API | `https://api-contacts.appstandard.io/health` |
+| Landing | `https://appstandard.io/nginx-health` |
 
-### Health check returns 503
-→ Check database connection
-→ Check that Prisma is properly configured
+### Sentry Integration
 
-### Rate limiting too strict
-→ Adjust limits in `apps/calendar-server/src/middleware/rate-limit.ts`
-→ Note: Rate limiting uses Redis if `REDIS_URL` is set, otherwise falls back to in-memory (single instance only)
-
-### 429 Too Many Requests errors
-→ Normal if you exceed rate limits (see Security section for details)
-→ Wait for the time window to end
-→ Check Redis connection if using distributed rate limiting
-
-### Redis connection issues
-→ Rate limiting will automatically fall back to in-memory if Redis is unavailable
-→ Check `REDIS_URL` configuration
-→ Verify Redis service is running: `docker compose ps redis`
-
-## Support
-
-For any questions or issues, consult the main README.md or open an issue.
+Configure `SENTRY_DSN` and `VITE_SENTRY_DSN` for error tracking.
 
 ## See Also
 
 - [README.md](README.md) - Overview and quick start
 - [ARCHITECTURE.md](ARCHITECTURE.md) - Package architecture
-- [VPS_DEPLOYMENT.md](VPS_DEPLOYMENT.md) - VPS initial setup guide
-- [PRODUCTION_COMMANDS.md](PRODUCTION_COMMANDS.md) - Production management scripts
-- [SECURITY.md](SECURITY.md) - Security policy
 - [CONTRIBUTING.md](CONTRIBUTING.md) - Contribution guide
-
+- [SECURITY.md](SECURITY.md) - Security policy

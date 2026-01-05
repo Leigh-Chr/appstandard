@@ -1,6 +1,6 @@
 # ===================================
-# AppStandard Calendar - Docker Compose
-# Production-ready configuration with PostgreSQL
+# AppStandard - Multi-App Docker Compose
+# Production-ready configuration with all apps
 # ===================================
 
 # Enable BuildKit for faster builds with cache mounts
@@ -9,7 +9,7 @@
 
 services:
   # -----------------------------------
-  # PostgreSQL Database
+  # PostgreSQL Database (Shared)
   # -----------------------------------
   db:
     image: postgres:16-alpine
@@ -31,10 +31,8 @@ services:
       start_period: 10s
     networks:
       - appstandard-network
-    # Security: no new privileges
     security_opt:
       - no-new-privileges:true
-    # Resource limits
     deploy:
       resources:
         limits:
@@ -43,29 +41,24 @@ services:
         reservations:
           cpus: '0.5'
           memory: 512M
-    # Logging configuration with rotation
     logging:
       driver: "json-file"
       options:
         max-size: "10m"
         max-file: "3"
         compress: "true"
-    # Labels for orchestration and monitoring
     labels:
       - "com.appstandard.service=db"
       - "com.appstandard.version=16-alpine"
       - "com.appstandard.environment=${NODE_ENV:-production}"
 
   # -----------------------------------
-  # Redis (Rate Limiting)
+  # Redis (Shared - Rate Limiting)
   # -----------------------------------
-  # Security: For production, set REDIS_PASSWORD and use authenticated connections
-  # The server will connect via REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379
   redis:
     image: redis:7-alpine
     container_name: appstandard-redis
     restart: unless-stopped
-    # Enable password authentication if REDIS_PASSWORD is set
     command: >
       sh -c "if [ -n \"$$REDIS_PASSWORD\" ]; then
         redis-server --appendonly yes --requirepass \"$$REDIS_PASSWORD\";
@@ -86,10 +79,8 @@ services:
       start_period: 10s
     networks:
       - appstandard-network
-    # Security: no new privileges
     security_opt:
       - no-new-privileges:true
-    # Resource limits
     deploy:
       resources:
         limits:
@@ -98,27 +89,75 @@ services:
         reservations:
           cpus: '0.1'
           memory: 64M
-    # Logging configuration with rotation
     logging:
       driver: "json-file"
       options:
         max-size: "10m"
         max-file: "3"
         compress: "true"
-    # Labels for orchestration and monitoring
     labels:
       - "com.appstandard.service=redis"
       - "com.appstandard.version=7-alpine"
       - "com.appstandard.environment=${NODE_ENV:-production}"
 
-  # -----------------------------------
-  # Backend API (Hono + tRPC)
-  # -----------------------------------
-  server:
+  # ===================================
+  # LANDING PAGE (appstandard.io)
+  # ===================================
+  landing:
+    build:
+      context: .
+      dockerfile: apps/landing/Dockerfile
+    container_name: appstandard-landing
+    restart: unless-stopped
+    ports:
+      - "${LANDING_PORT:-3010}:8080"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - appstandard-network
+    read_only: true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.1'
+          memory: 64M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        compress: "true"
+    labels:
+      - "com.appstandard.service=landing"
+      - "com.appstandard.environment=${NODE_ENV:-production}"
+    tmpfs:
+      - /var/cache/nginx:noexec,nosuid,nodev
+      - /var/run:noexec,nosuid,nodev
+      - /tmp:noexec,nosuid,nodev
+
+  # ===================================
+  # CALENDAR (calendar.appstandard.io)
+  # ===================================
+  calendar-server:
     build:
       context: .
       dockerfile: apps/calendar-server/Dockerfile
-    container_name: appstandard-server
+    container_name: appstandard-calendar-server
     restart: unless-stopped
     depends_on:
       db:
@@ -129,24 +168,20 @@ services:
       NODE_ENV: production
       PORT: 3000
       DATABASE_URL: postgresql://${POSTGRES_USER:-appstandard}:${POSTGRES_PASSWORD:-appstandard_secret}@db:5432/${POSTGRES_DB:-appstandard}
-      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3001}
+      CORS_ORIGIN: ${CALENDAR_CORS_ORIGIN:-https://calendar.appstandard.io}
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-change-me-in-production-min-32-chars}
-      BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:3000}
+      BETTER_AUTH_URL: ${CALENDAR_API_URL:-https://api.appstandard.io}
       SENTRY_DSN: ${SENTRY_DSN:-}
-      # Redis URL with optional password authentication
-      # Format: redis://:password@host:port or redis://host:port (no auth)
       REDIS_URL: ${REDIS_URL:-redis://${REDIS_PASSWORD:+:${REDIS_PASSWORD}@}redis:6379}
-      # Email configuration
       RESEND_API_KEY: ${RESEND_API_KEY:-}
-      EMAIL_FROM: ${EMAIL_FROM:-AppStandard <noreply@appstandard.com>}
-      # SMTP (alternative to Resend)
+      EMAIL_FROM: ${EMAIL_FROM:-AppStandard <noreply@appstandard.io>}
       SMTP_HOST: ${SMTP_HOST:-}
       SMTP_PORT: ${SMTP_PORT:-}
       SMTP_SECURE: ${SMTP_SECURE:-}
       SMTP_USER: ${SMTP_USER:-}
       SMTP_PASSWORD: ${SMTP_PASSWORD:-}
     ports:
-      - "${SERVER_PORT:-3000}:3000"
+      - "${CALENDAR_SERVER_PORT:-3000}:3000"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
       interval: 30s
@@ -155,13 +190,10 @@ services:
       start_period: 30s
     networks:
       - appstandard-network
-    # Security: drop all capabilities and add only what's needed
     cap_drop:
       - ALL
-    # Security: no new privileges
     security_opt:
       - no-new-privileges:true
-    # Resource limits
     deploy:
       resources:
         limits:
@@ -170,36 +202,30 @@ services:
         reservations:
           cpus: '0.5'
           memory: 256M
-    # Logging configuration with rotation
     logging:
       driver: "json-file"
       options:
         max-size: "10m"
         max-file: "3"
         compress: "true"
-    # Labels for orchestration and monitoring
     labels:
-      - "com.appstandard.service=server"
+      - "com.appstandard.service=calendar-server"
       - "com.appstandard.environment=${NODE_ENV:-production}"
 
-  # -----------------------------------
-  # Frontend (React + Nginx)
-  # -----------------------------------
-  web:
+  calendar-web:
     build:
       context: .
       dockerfile: apps/calendar-web/Dockerfile
       args:
-        # Vite compiles env vars at build time
-        VITE_SERVER_URL: ${VITE_SERVER_URL:-http://localhost:3000}
+        VITE_SERVER_URL: ${CALENDAR_API_URL:-https://api.appstandard.io}
         VITE_SENTRY_DSN: ${VITE_SENTRY_DSN:-}
-    container_name: appstandard-web
+    container_name: appstandard-calendar-web
     restart: unless-stopped
     depends_on:
-      server:
+      calendar-server:
         condition: service_healthy
     ports:
-      - "${WEB_PORT:-3001}:8080"
+      - "${CALENDAR_WEB_PORT:-3001}:8080"
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/"]
       interval: 30s
@@ -208,19 +234,15 @@ services:
       start_period: 10s
     networks:
       - appstandard-network
-    # Security: read-only root filesystem where possible
     read_only: true
-    # Security: drop all capabilities and add only what's needed
     cap_drop:
       - ALL
     cap_add:
       - CHOWN
       - SETGID
       - SETUID
-    # Security: no new privileges
     security_opt:
       - no-new-privileges:true
-    # Resource limits
     deploy:
       resources:
         limits:
@@ -229,18 +251,235 @@ services:
         reservations:
           cpus: '0.25'
           memory: 128M
-    # Logging configuration with rotation
     logging:
       driver: "json-file"
       options:
         max-size: "10m"
         max-file: "3"
         compress: "true"
-    # Labels for orchestration and monitoring
     labels:
-      - "com.appstandard.service=web"
+      - "com.appstandard.service=calendar-web"
       - "com.appstandard.environment=${NODE_ENV:-production}"
-    # Temporary filesystem for nginx cache (read-only root requires tmpfs)
+    tmpfs:
+      - /var/cache/nginx:noexec,nosuid,nodev
+      - /var/run:noexec,nosuid,nodev
+      - /tmp:noexec,nosuid,nodev
+
+  # ===================================
+  # TASKS (tasks.appstandard.io)
+  # ===================================
+  tasks-server:
+    build:
+      context: .
+      dockerfile: apps/tasks-server/Dockerfile
+    container_name: appstandard-tasks-server
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 3002
+      DATABASE_URL: postgresql://${POSTGRES_USER:-appstandard}:${POSTGRES_PASSWORD:-appstandard_secret}@db:5432/${POSTGRES_DB:-appstandard}
+      CORS_ORIGIN: ${TASKS_CORS_ORIGIN:-https://tasks.appstandard.io}
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-change-me-in-production-min-32-chars}
+      BETTER_AUTH_URL: ${TASKS_API_URL:-https://api-tasks.appstandard.io}
+      SENTRY_DSN: ${SENTRY_DSN:-}
+      REDIS_URL: ${REDIS_URL:-redis://${REDIS_PASSWORD:+:${REDIS_PASSWORD}@}redis:6379}
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      EMAIL_FROM: ${EMAIL_FROM:-AppStandard <noreply@appstandard.io>}
+    ports:
+      - "${TASKS_SERVER_PORT:-3002}:3002"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - appstandard-network
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        compress: "true"
+    labels:
+      - "com.appstandard.service=tasks-server"
+      - "com.appstandard.environment=${NODE_ENV:-production}"
+
+  tasks-web:
+    build:
+      context: .
+      dockerfile: apps/tasks-web/Dockerfile
+      args:
+        VITE_SERVER_URL: ${TASKS_API_URL:-https://api-tasks.appstandard.io}
+        VITE_SENTRY_DSN: ${VITE_SENTRY_DSN:-}
+    container_name: appstandard-tasks-web
+    restart: unless-stopped
+    depends_on:
+      tasks-server:
+        condition: service_healthy
+    ports:
+      - "${TASKS_WEB_PORT:-3004}:8080"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - appstandard-network
+    read_only: true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        compress: "true"
+    labels:
+      - "com.appstandard.service=tasks-web"
+      - "com.appstandard.environment=${NODE_ENV:-production}"
+    tmpfs:
+      - /var/cache/nginx:noexec,nosuid,nodev
+      - /var/run:noexec,nosuid,nodev
+      - /tmp:noexec,nosuid,nodev
+
+  # ===================================
+  # CONTACTS (contacts.appstandard.io)
+  # ===================================
+  contacts-server:
+    build:
+      context: .
+      dockerfile: apps/contacts-server/Dockerfile
+    container_name: appstandard-contacts-server
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 3003
+      DATABASE_URL: postgresql://${POSTGRES_USER:-appstandard}:${POSTGRES_PASSWORD:-appstandard_secret}@db:5432/${POSTGRES_DB:-appstandard}
+      CORS_ORIGIN: ${CONTACTS_CORS_ORIGIN:-https://contacts.appstandard.io}
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-change-me-in-production-min-32-chars}
+      BETTER_AUTH_URL: ${CONTACTS_API_URL:-https://api-contacts.appstandard.io}
+      SENTRY_DSN: ${SENTRY_DSN:-}
+      REDIS_URL: ${REDIS_URL:-redis://${REDIS_PASSWORD:+:${REDIS_PASSWORD}@}redis:6379}
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      EMAIL_FROM: ${EMAIL_FROM:-AppStandard <noreply@appstandard.io>}
+    ports:
+      - "${CONTACTS_SERVER_PORT:-3003}:3003"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3003/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - appstandard-network
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        compress: "true"
+    labels:
+      - "com.appstandard.service=contacts-server"
+      - "com.appstandard.environment=${NODE_ENV:-production}"
+
+  contacts-web:
+    build:
+      context: .
+      dockerfile: apps/contacts-web/Dockerfile
+      args:
+        VITE_SERVER_URL: ${CONTACTS_API_URL:-https://api-contacts.appstandard.io}
+        VITE_SENTRY_DSN: ${VITE_SENTRY_DSN:-}
+    container_name: appstandard-contacts-web
+    restart: unless-stopped
+    depends_on:
+      contacts-server:
+        condition: service_healthy
+    ports:
+      - "${CONTACTS_WEB_PORT:-3005}:8080"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - appstandard-network
+    read_only: true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        compress: "true"
+    labels:
+      - "com.appstandard.service=contacts-web"
+      - "com.appstandard.environment=${NODE_ENV:-production}"
     tmpfs:
       - /var/cache/nginx:noexec,nosuid,nodev
       - /var/run:noexec,nosuid,nodev
@@ -261,5 +500,4 @@ volumes:
 networks:
   appstandard-network:
     driver: bridge
-    # IPv6 disabled by default (enable if needed)
     enable_ipv6: false

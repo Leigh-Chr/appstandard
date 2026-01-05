@@ -1,17 +1,145 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="UTF-8" />
-		<link rel="icon" type="image/x-icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<meta
-			name="description"
-			content="AppStandard - Open-source productivity apps for calendars, contacts, and tasks. Free, privacy-focused, and works offline."
-		/>
-		<title>AppStandard - Open Source Productivity Apps</title>
-	</head>
-	<body>
-		<div id="root"></div>
-		<script type="module" src="/src/main.tsx"></script>
-	</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+    <!-- Content Security Policy -->
+    <!-- Note: frame-ancestors is not supported in meta tags, it must be set via HTTP headers -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https://*.sentry.io https://*.ingest.sentry.io wss://*.sentry.io; worker-src 'self' blob:; base-uri 'self'; form-action 'self';" />
+
+    <!-- Theme & Colors -->
+    <meta name="theme-color" content="#1a1a1a" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="msapplication-TileColor" content="#1a1a1a" />
+
+    <!-- PWA Meta Tags -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="AppStandard" />
+    <meta name="application-name" content="AppStandard" />
+    <meta name="format-detection" content="telephone=no" />
+
+    <!-- SEO Meta Tags -->
+    <title>AppStandard - Open Source Productivity Apps</title>
+    <meta name="description" content="AppStandard - Open-source productivity apps for calendars, contacts, and tasks. Free, privacy-focused, and works offline." />
+    <meta name="keywords" content="calendar, contacts, tasks, productivity, open-source, ics, vcard, vtodo, offline, privacy" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://appstandard.io" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://appstandard.io" />
+    <meta property="og:title" content="AppStandard - Open Source Productivity Apps" />
+    <meta property="og:description" content="Open-source productivity apps for calendars, contacts, and tasks. Free, privacy-focused, and works offline." />
+    <meta property="og:image" content="https://appstandard.io/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:site_name" content="AppStandard" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://appstandard.io" />
+    <meta name="twitter:title" content="AppStandard - Open Source Productivity Apps" />
+    <meta name="twitter:description" content="Open-source productivity apps for calendars, contacts, and tasks. Free, privacy-focused, and works offline." />
+    <meta name="twitter:image" content="https://appstandard.io/og-image.png" />
+
+    <!-- Performance: Preload critical resources -->
+    <link rel="preload" as="image" href="/og-image.png" fetchpriority="high" />
+    <link rel="preconnect" href="https://o4506871232004096.ingest.sentry.io" />
+    <link rel="dns-prefetch" href="https://o4506871232004096.ingest.sentry.io" />
+
+    <!-- Favicon & Icons -->
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="icon" href="/pwa-192x192.png" type="image/png" sizes="192x192" />
+    <link rel="icon" href="/pwa-512x512.png" type="image/png" sizes="512x512" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon-180x180.png" />
+    <link rel="mask-icon" href="/maskable-icon-512x512.png" color="#1a1a1a" />
+
+    <!-- Structured Data (JSON-LD) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebSite",
+          "@id": "https://appstandard.io/#website",
+          "name": "AppStandard",
+          "description": "Open-source productivity apps for calendars, contacts, and tasks. Free, privacy-focused, and works offline.",
+          "url": "https://appstandard.io"
+        },
+        {
+          "@type": "Organization",
+          "@id": "https://appstandard.io/#organization",
+          "name": "AppStandard",
+          "url": "https://appstandard.io",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://appstandard.io/pwa-512x512.png",
+            "width": 512,
+            "height": 512
+          },
+          "sameAs": [
+            "https://github.com/appstandard/appstandard"
+          ],
+          "contactPoint": {
+            "@type": "ContactPoint",
+            "contactType": "Support",
+            "url": "https://appstandard.io"
+          }
+        },
+        {
+          "@type": "SoftwareApplication",
+          "@id": "https://appstandard.io/#calendar",
+          "name": "AppStandard Calendar",
+          "description": "Free, open-source calendar manager. Import, edit, merge your calendar files in seconds.",
+          "url": "https://calendar.appstandard.io",
+          "applicationCategory": "ProductivityApplication",
+          "operatingSystem": ["Web Browser", "PWA"],
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "EUR"
+          }
+        },
+        {
+          "@type": "SoftwareApplication",
+          "@id": "https://appstandard.io/#tasks",
+          "name": "AppStandard Tasks",
+          "description": "Free, open-source task manager. Create, organize, and track your todos with VTODO format support.",
+          "url": "https://tasks.appstandard.io",
+          "applicationCategory": "ProductivityApplication",
+          "operatingSystem": ["Web Browser", "PWA"],
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "EUR"
+          }
+        },
+        {
+          "@type": "SoftwareApplication",
+          "@id": "https://appstandard.io/#contacts",
+          "name": "AppStandard Contacts",
+          "description": "Free, open-source contact manager. Create, organize, and export your contacts with vCard format support.",
+          "url": "https://contacts.appstandard.io",
+          "applicationCategory": "ProductivityApplication",
+          "operatingSystem": ["Web Browser", "PWA"],
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "EUR"
+          }
+        }
+      ]
+    }
+    </script>
+  </head>
+
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
 </html>

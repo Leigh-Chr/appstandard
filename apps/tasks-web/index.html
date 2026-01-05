@@ -7,7 +7,7 @@
     <!-- Content Security Policy -->
     <!-- Note: frame-ancestors is not supported in meta tags, it must be set via HTTP headers -->
     <!-- Note: This CSP is for development. In production, Nginx sets a more restrictive CSP via HTTP headers -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' http://localhost:3002 ws://localhost:3002 https://api.appstandard.app wss://api.appstandard.app https://*.sentry.io https://*.ingest.sentry.io wss://*.sentry.io; worker-src 'self' blob:; base-uri 'self'; form-action 'self';" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' http://localhost:3002 ws://localhost:3002 https://api-tasks.appstandard.io wss://api-tasks.appstandard.io https://*.sentry.io https://*.ingest.sentry.io wss://*.sentry.io; worker-src 'self' blob:; base-uri 'self'; form-action 'self';" />
 
     <!-- Theme & Colors -->
     <meta name="theme-color" content="#14532d" media="(prefers-color-scheme: dark)" />
@@ -27,14 +27,14 @@
     <title>AppStandard Tasks - Task management simplified</title>
     <meta name="description" content="Free, open-source task manager. Create, organize, and track your todos with VTODO format support. No account required, works offline." />
     <meta name="robots" content="index, follow" />
-    <link rel="canonical" href="https://tasks.appstandard.app" />
+    <link rel="canonical" href="https://tasks.appstandard.io" />
 
     <!-- Open Graph (for initial HTML) -->
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://tasks.appstandard.app" />
+    <meta property="og:url" content="https://tasks.appstandard.io" />
     <meta property="og:title" content="AppStandard Tasks - Task management simplified" />
     <meta property="og:description" content="Free, open-source task manager. Create, organize, and track your todos with VTODO format support. No account required, works offline." />
-    <meta property="og:image" content="https://tasks.appstandard.app/og-image.png" />
+    <meta property="og:image" content="https://tasks.appstandard.io/og-image.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:locale" content="en_US" />
@@ -42,15 +42,15 @@
 
     <!-- Twitter Card (for initial HTML) -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:url" content="https://tasks.appstandard.app" />
+    <meta name="twitter:url" content="https://tasks.appstandard.io" />
     <meta name="twitter:title" content="AppStandard Tasks - Task management simplified" />
     <meta name="twitter:description" content="Free, open-source task manager. Create, organize, and track your todos with VTODO format support. No account required, works offline." />
-    <meta name="twitter:image" content="https://tasks.appstandard.app/og-image.png" />
+    <meta name="twitter:image" content="https://tasks.appstandard.io/og-image.png" />
 
     <!-- Performance: Preload critical resources -->
     <link rel="preload" as="image" href="/og-image.png" fetchpriority="high" />
-    <link rel="preconnect" href="https://api.appstandard.app" crossorigin />
-    <link rel="dns-prefetch" href="https://api.appstandard.app" />
+    <link rel="preconnect" href="https://api-tasks.appstandard.io" crossorigin />
+    <link rel="dns-prefetch" href="https://api-tasks.appstandard.io" />
     <link rel="preconnect" href="https://o4506871232004096.ingest.sentry.io" />
     <link rel="dns-prefetch" href="https://o4506871232004096.ingest.sentry.io" />
 
@@ -68,10 +68,10 @@
       "@graph": [
         {
           "@type": "WebApplication",
-          "@id": "https://tasks.appstandard.app/#webapp",
+          "@id": "https://tasks.appstandard.io/#webapp",
           "name": "AppStandard Tasks",
           "description": "Free, open-source task management tool. Create, organize, and track your todos with VTODO format support. Works offline.",
-          "url": "https://tasks.appstandard.app",
+          "url": "https://tasks.appstandard.io",
           "applicationCategory": "ProductivityApplication",
           "applicationSubCategory": "Task Management",
           "operatingSystem": ["Web Browser", "PWA"],
@@ -90,27 +90,27 @@
           "browserRequirements": "Requires JavaScript. Requires HTML5.",
           "softwareVersion": "1.0.0",
           "author": {
-            "@id": "https://tasks.appstandard.app/#organization"
+            "@id": "https://appstandard.io/#organization"
           }
         },
         {
           "@type": "Organization",
-          "@id": "https://tasks.appstandard.app/#organization",
-          "name": "AppStandard Tasks",
-          "url": "https://tasks.appstandard.app",
+          "@id": "https://appstandard.io/#organization",
+          "name": "AppStandard",
+          "url": "https://appstandard.io",
           "logo": {
             "@type": "ImageObject",
-            "url": "https://tasks.appstandard.app/pwa-512x512.png",
+            "url": "https://tasks.appstandard.io/pwa-512x512.png",
             "width": 512,
             "height": 512
           },
           "sameAs": [
-            "https://github.com/Leigh-Chr/appstandard"
+            "https://github.com/appstandard/appstandard"
           ],
           "contactPoint": {
             "@type": "ContactPoint",
             "contactType": "Support",
-            "url": "https://tasks.appstandard.app"
+            "url": "https://appstandard.io"
           }
         }
       ]

@@ -6,8 +6,8 @@
     
     <!-- Content Security Policy -->
     <!-- Note: frame-ancestors is not supported in meta tags, it must be set via HTTP headers -->
-    <!-- Note: This CSP includes both development (localhost) and production (calendraft.app) domains -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' http://localhost:3000 ws://localhost:3000 https://api.calendraft.app wss://api.calendraft.app https://*.sentry.io https://*.ingest.sentry.io https://*.ingest.de.sentry.io wss://*.sentry.io; worker-src 'self' blob:; base-uri 'self'; form-action 'self';" />
+    <!-- Note: This CSP includes both development (localhost) and production (appstandard.io) domains -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' http://localhost:3000 ws://localhost:3000 https://api.appstandard.io wss://api.appstandard.io https://*.sentry.io https://*.ingest.sentry.io https://*.ingest.de.sentry.io wss://*.sentry.io; worker-src 'self' blob:; base-uri 'self'; form-action 'self';" />
     
     <!-- Theme & Colors -->
     <meta name="theme-color" content="#2a2218" media="(prefers-color-scheme: dark)" />
@@ -27,14 +27,14 @@
     <title>AppStandard Calendar - Calendar management simplified</title>
     <meta name="description" content="Free, open-source calendar manager. Import, edit, merge your calendar files in seconds. No account required, works offline." />
     <meta name="robots" content="index, follow" />
-    <link rel="canonical" href="https://appstandard.app" />
+    <link rel="canonical" href="https://calendar.appstandard.io" />
     
     <!-- Open Graph (for initial HTML) -->
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://appstandard.app" />
+    <meta property="og:url" content="https://calendar.appstandard.io" />
     <meta property="og:title" content="AppStandard Calendar - Calendar management simplified" />
     <meta property="og:description" content="Free, open-source calendar manager. Import, edit, merge your calendar files in seconds. No account required, works offline." />
-    <meta property="og:image" content="https://appstandard.app/og-image.png" />
+    <meta property="og:image" content="https://calendar.appstandard.io/og-image.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:locale" content="en_US" />
@@ -42,15 +42,15 @@
     
     <!-- Twitter Card (for initial HTML) -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:url" content="https://appstandard.app" />
+    <meta name="twitter:url" content="https://calendar.appstandard.io" />
     <meta name="twitter:title" content="AppStandard Calendar - Calendar management simplified" />
     <meta name="twitter:description" content="Free, open-source calendar manager. Import, edit, merge your calendar files in seconds. No account required, works offline." />
-    <meta name="twitter:image" content="https://appstandard.app/og-image.png" />
+    <meta name="twitter:image" content="https://calendar.appstandard.io/og-image.png" />
     
     <!-- Performance: Preload critical resources -->
     <link rel="preload" as="image" href="/og-image.png" fetchpriority="high" />
-    <link rel="preconnect" href="https://api.calendraft.app" crossorigin />
-    <link rel="dns-prefetch" href="https://api.calendraft.app" />
+    <link rel="preconnect" href="https://api.appstandard.io" crossorigin />
+    <link rel="dns-prefetch" href="https://api.appstandard.io" />
     <link rel="preconnect" href="https://o4506871232004096.ingest.sentry.io" />
     <link rel="dns-prefetch" href="https://o4506871232004096.ingest.sentry.io" />
     
@@ -68,10 +68,10 @@
       "@graph": [
         {
           "@type": "WebApplication",
-          "@id": "https://appstandard.app/#webapp",
+          "@id": "https://calendar.appstandard.io/#webapp",
           "name": "AppStandard Calendar",
           "description": "Free, open-source calendar management tool. Import, create, edit, and merge your calendars easily. Works with Google Calendar, Apple Calendar, Outlook, and more.",
-          "url": "https://appstandard.app",
+          "url": "https://calendar.appstandard.io",
           "applicationCategory": "ProductivityApplication",
           "applicationSubCategory": "Calendar Management",
           "operatingSystem": ["Web Browser", "PWA"],
@@ -90,27 +90,27 @@
           "browserRequirements": "Requires JavaScript. Requires HTML5.",
           "softwareVersion": "1.0.0",
           "author": {
-            "@id": "https://appstandard.app/#organization"
+            "@id": "https://appstandard.io/#organization"
           }
         },
         {
           "@type": "Organization",
-          "@id": "https://appstandard.app/#organization",
-          "name": "AppStandard Calendar",
-          "url": "https://appstandard.app",
+          "@id": "https://appstandard.io/#organization",
+          "name": "AppStandard",
+          "url": "https://appstandard.io",
           "logo": {
             "@type": "ImageObject",
-            "url": "https://appstandard.app/pwa-512x512.png",
+            "url": "https://calendar.appstandard.io/pwa-512x512.png",
             "width": 512,
             "height": 512
           },
           "sameAs": [
-            "https://github.com/Leigh-Chr/appstandard"
+            "https://github.com/appstandard/appstandard"
           ],
           "contactPoint": {
             "@type": "ContactPoint",
             "contactType": "Support",
-            "url": "https://appstandard.app"
+            "url": "https://appstandard.io"
           }
         }
       ]
