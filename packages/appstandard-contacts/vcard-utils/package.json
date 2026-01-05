@@ -1,0 +1,65 @@
+{
+	"name": "@appstandard-contacts/vcard-utils",
+	"version": "0.1.0",
+	"description": "Pure vCard utilities for parsing and generating contact files (RFC 6350)",
+	"type": "module",
+	"main": "./dist/index.mjs",
+	"module": "./dist/index.mjs",
+	"types": "./dist/index.d.mts",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.mts",
+			"import": "./dist/index.mjs",
+			"default": "./src/index.ts"
+		},
+		"./parser": {
+			"types": "./dist/parser/index.d.mts",
+			"import": "./dist/parser/index.mjs",
+			"default": "./src/parser/index.ts"
+		},
+		"./generator": {
+			"types": "./dist/generator/index.d.mts",
+			"import": "./dist/generator/index.mjs",
+			"default": "./src/generator/index.ts"
+		},
+		"./utils": {
+			"types": "./dist/utils/index.d.mts",
+			"import": "./dist/utils/index.mjs",
+			"default": "./src/utils/index.ts"
+		}
+	},
+	"files": [
+		"dist",
+		"README.md"
+	],
+	"scripts": {
+		"build": "rm -rf dist && tsdown",
+		"dev": "tsdown --watch",
+		"typecheck": "tsc --noEmit",
+		"test": "vitest run --passWithNoTests",
+		"test:watch": "vitest",
+		"clean": "rm -rf dist *.tsbuildinfo"
+	},
+	"keywords": [
+		"vcard",
+		"vcf",
+		"contacts",
+		"rfc6350",
+		"carddav",
+		"parser",
+		"generator"
+	],
+	"author": "",
+	"license": "AGPL-3.0",
+	"dependencies": {},
+	"devDependencies": {
+		"@appstandard/config": "workspace:*",
+		"tsdown": "catalog:",
+		"typescript": "catalog:",
+		"vitest": "catalog:"
+	},
+	"peerDependencies": {},
+	"publishConfig": {
+		"access": "public"
+	}
+}

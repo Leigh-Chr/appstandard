@@ -1,0 +1,33 @@
+{
+	"name": "contacts-server",
+	"main": "src/index.ts",
+	"type": "module",
+	"scripts": {
+		"build": "tsdown",
+		"check-types": "tsc -b",
+		"compile": "bun build --compile --minify --sourcemap --bytecode ./src/index.ts --outfile appstandard-contacts-server",
+		"dev": "bun run --hot src/index.ts",
+		"start": "bun run dist/index.mjs",
+		"test": "vitest run --passWithNoTests",
+		"test:watch": "vitest"
+	},
+	"dependencies": {
+		"@appstandard-contacts/api": "workspace:*",
+		"@appstandard/auth": "workspace:*",
+		"@appstandard/db": "workspace:*",
+		"@appstandard/server-core": "workspace:*",
+		"@hono/trpc-server": "^0.4.1",
+		"@trpc/server": "catalog:",
+		"better-auth": "catalog:",
+		"dotenv": "catalog:",
+		"hono": "catalog:"
+	},
+	"devDependencies": {
+		"typescript": "catalog:",
+		"@types/bun": "^1.3.5",
+		"tsdown": "catalog:",
+		"@appstandard/config": "workspace:*",
+		"vitest": "catalog:"
+	},
+	"license": "AGPL-3.0"
+}

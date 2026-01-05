@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+    <!-- Content Security Policy -->
+    <!-- Note: frame-ancestors is not supported in meta tags, it must be set via HTTP headers -->
+    <!-- Note: This CSP is for development. In production, Nginx sets a more restrictive CSP via HTTP headers -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' http://localhost:3003 ws://localhost:3003 https://api.appstandard.app wss://api.appstandard.app https://*.sentry.io https://*.ingest.sentry.io wss://*.sentry.io; worker-src 'self' blob:; base-uri 'self'; form-action 'self';" />
+
+    <!-- Theme & Colors -->
+    <meta name="theme-color" content="#1e3a8a" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#eff6ff" media="(prefers-color-scheme: light)" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="msapplication-TileColor" content="#1e3a8a" />
+
+    <!-- PWA Meta Tags -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="AppStandard Contacts" />
+    <meta name="application-name" content="AppStandard Contacts" />
+    <meta name="format-detection" content="telephone=no" />
+
+    <!-- SEO Meta Tags (for initial HTML - TanStack Router will update these) -->
+    <title>AppStandard Contacts - Contact management simplified</title>
+    <meta name="description" content="Free, open-source contact manager. Create, organize, and export your contacts with vCard format support. No account required, works offline." />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://contacts.appstandard.app" />
+
+    <!-- Open Graph (for initial HTML) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://contacts.appstandard.app" />
+    <meta property="og:title" content="AppStandard Contacts - Contact management simplified" />
+    <meta property="og:description" content="Free, open-source contact manager. Create, organize, and export your contacts with vCard format support. No account required, works offline." />
+    <meta property="og:image" content="https://contacts.appstandard.app/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:site_name" content="AppStandard Contacts" />
+
+    <!-- Twitter Card (for initial HTML) -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://contacts.appstandard.app" />
+    <meta name="twitter:title" content="AppStandard Contacts - Contact management simplified" />
+    <meta name="twitter:description" content="Free, open-source contact manager. Create, organize, and export your contacts with vCard format support. No account required, works offline." />
+    <meta name="twitter:image" content="https://contacts.appstandard.app/og-image.png" />
+
+    <!-- Performance: Preload critical resources -->
+    <link rel="preload" as="image" href="/og-image.png" fetchpriority="high" />
+    <link rel="preconnect" href="https://api.appstandard.app" crossorigin />
+    <link rel="dns-prefetch" href="https://api.appstandard.app" />
+    <link rel="preconnect" href="https://o4506871232004096.ingest.sentry.io" />
+    <link rel="dns-prefetch" href="https://o4506871232004096.ingest.sentry.io" />
+
+    <!-- Favicon & Icons -->
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="icon" href="/pwa-192x192.png" type="image/png" sizes="192x192" />
+    <link rel="icon" href="/pwa-512x512.png" type="image/png" sizes="512x512" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon-180x180.png" />
+    <link rel="mask-icon" href="/maskable-icon-512x512.png" color="#3b82f6" />
+
+    <!-- Structured Data (JSON-LD) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebApplication",
+          "@id": "https://contacts.appstandard.app/#webapp",
+          "name": "AppStandard Contacts",
+          "description": "Free, open-source contact management tool. Create, organize, and export your contacts with vCard format support. Works offline.",
+          "url": "https://contacts.appstandard.app",
+          "applicationCategory": "ProductivityApplication",
+          "applicationSubCategory": "Contact Management",
+          "operatingSystem": ["Web Browser", "PWA"],
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "EUR"
+          },
+          "featureList": [
+            "Create and manage contacts",
+            "vCard format support",
+            "Export to contact apps",
+            "Offline mode (PWA)",
+            "Cloud sync"
+          ],
+          "browserRequirements": "Requires JavaScript. Requires HTML5.",
+          "softwareVersion": "1.0.0",
+          "author": {
+            "@id": "https://contacts.appstandard.app/#organization"
+          }
+        },
+        {
+          "@type": "Organization",
+          "@id": "https://contacts.appstandard.app/#organization",
+          "name": "AppStandard Contacts",
+          "url": "https://contacts.appstandard.app",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://contacts.appstandard.app/pwa-512x512.png",
+            "width": 512,
+            "height": 512
+          },
+          "sameAs": [
+            "https://github.com/Leigh-Chr/appstandard"
+          ],
+          "contactPoint": {
+            "@type": "ContactPoint",
+            "contactType": "Support",
+            "url": "https://contacts.appstandard.app"
+          }
+        }
+      ]
+    }
+    </script>
+  </head>
+
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

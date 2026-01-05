@@ -1,0 +1,44 @@
+{
+	"name": "@appstandard-contacts/api",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"default": "./src/index.ts"
+		},
+		"./*": {
+			"types": "./dist/*.d.ts",
+			"default": "./src/*.ts"
+		}
+	},
+	"type": "module",
+	"scripts": {
+		"build": "tsdown",
+		"typecheck": "tsc --noEmit",
+		"clean": "rm -rf dist *.tsbuildinfo",
+		"test": "vitest run --passWithNoTests",
+		"test:watch": "vitest"
+	},
+	"devDependencies": {
+		"tsdown": "catalog:",
+		"@appstandard/config": "workspace:*",
+		"vitest": "catalog:"
+	},
+	"peerDependencies": {
+		"typescript": "^5"
+	},
+	"dependencies": {
+		"@appstandard/api-core": "workspace:*",
+		"@appstandard/auth": "workspace:*",
+		"@appstandard/db": "workspace:*",
+		"@appstandard-contacts/core": "workspace:*",
+		"@appstandard-contacts/schemas": "workspace:*",
+		"@appstandard-contacts/vcard-utils": "workspace:*",
+		"@prisma/client": "catalog:",
+		"@trpc/server": "catalog:",
+		"date-fns": "^4.1.0",
+		"dotenv": "catalog:",
+		"hono": "catalog:",
+		"zod": "catalog:"
+	},
+	"license": "AGPL-3.0"
+}

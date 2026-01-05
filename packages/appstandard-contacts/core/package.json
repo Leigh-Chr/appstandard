@@ -1,0 +1,66 @@
+{
+	"name": "@appstandard-contacts/core",
+	"version": "0.1.0",
+	"description": "Core domain logic and types for AppStandard Contacts contact management",
+	"type": "module",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"default": "./src/index.ts"
+		},
+		"./types": {
+			"types": "./dist/types/index.d.ts",
+			"default": "./src/types/index.ts"
+		},
+		"./utils": {
+			"types": "./dist/utils/index.d.ts",
+			"default": "./src/utils/index.ts"
+		},
+		"./validation": {
+			"types": "./dist/validation/index.d.ts",
+			"default": "./src/validation/index.ts"
+		},
+		"./constants": {
+			"types": "./dist/constants/index.d.ts",
+			"default": "./src/constants/index.ts"
+		},
+		"./*": {
+			"types": "./dist/*.d.ts",
+			"default": "./src/*.ts"
+		}
+	},
+	"files": [
+		"dist",
+		"README.md"
+	],
+	"scripts": {
+		"build": "tsdown",
+		"dev": "tsdown --watch",
+		"typecheck": "tsc --noEmit",
+		"test": "vitest run --passWithNoTests",
+		"test:watch": "vitest",
+		"clean": "rm -rf dist *.tsbuildinfo"
+	},
+	"keywords": [
+		"contact",
+		"vcard",
+		"address-book",
+		"domain",
+		"core",
+		"validation"
+	],
+	"author": "",
+	"license": "AGPL-3.0",
+	"dependencies": {
+		"dequal": "^2.0.3"
+	},
+	"devDependencies": {
+		"@appstandard/config": "workspace:*",
+		"tsdown": "catalog:",
+		"typescript": "catalog:",
+		"vitest": "catalog:"
+	},
+	"publishConfig": {
+		"access": "public"
+	}
+}
