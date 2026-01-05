@@ -1,0 +1,286 @@
+// AppStandard Tasks Schema - RFC 5545 VTODO Implementation
+// Task management with ICS VTODO format support
+
+// Enums for type-safe VTODO values
+enum TaskStatus {
+  NEEDS_ACTION // NEEDS-ACTION in RFC 5545
+  IN_PROCESS   // IN-PROCESS in RFC 5545
+  COMPLETED
+  CANCELLED
+}
+
+enum TaskClass {
+  PUBLIC
+  PRIVATE
+  CONFIDENTIAL
+}
+
+model TaskList {
+  id           String    @id @default(uuid())
+  name         String
+  color        String?   // List color (hex format like #3B82F6)
+  userId       String?   // User ID (authenticated) or anonymous ID (anon-xxx format)
+  sourceUrl    String?   // URL from which the task list was imported
+  lastSyncedAt DateTime? // Last time the list was refreshed from sourceUrl
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  tasks        Task[]
+  shareLinks   TaskListShareLink[]
+
+  @@index([userId])
+  @@index([userId, updatedAt])
+  @@map("task_list")
+}
+
+model Task {
+  id           String      @id @default(uuid())
+  taskListId   String
+  taskList     TaskList    @relation(fields: [taskListId], references: [id], onDelete: Cascade)
+
+  // Core properties (RFC 5545 VTODO)
+  title        String      // SUMMARY
+  description  String?     // DESCRIPTION
+  status       TaskStatus  @default(NEEDS_ACTION)
+  priority     Int?        // 0-9 (0=undefined, 1=highest, 9=lowest)
+  percentComplete Int?     // 0-100 (PERCENT-COMPLETE)
+
+  // Date properties
+  startDate    DateTime?   // DTSTART
+  dueDate      DateTime?   // DUE (mutually exclusive with duration in RFC 5545)
+  completedAt  DateTime?   // COMPLETED
+
+  // Location & Geography
+  location     String?     // LOCATION
+  geoLatitude  Float?      // GEO latitude
+  geoLongitude Float?      // GEO longitude
+
+  // Organizer (GDPR: Personal data)
+  organizerName  String?   // Organizer name
+  organizerEmail String?   // Organizer email
+
+  // RFC 5545 metadata properties
+  uid          String?     // UID (unique per task list)
+  dtstamp      DateTime?   // DTSTAMP (creation timestamp)
+  created      DateTime?   // CREATED
+  lastModified DateTime?   // LAST-MODIFIED
+  sequence     Int         @default(0) // SEQUENCE
+  class        TaskClass?  // CLASS (PUBLIC, PRIVATE, CONFIDENTIAL)
+  url          String?     // URL
+  comment      String?     // COMMENT
+
+  // Recurrence properties
+  rrule        String?     // RRULE
+  recurrenceId String?     // RECURRENCE-ID
+
+  // Relationships
+  relatedTo    String?     // RELATED-TO (parent task ID for subtasks)
+  parentTask   Task?       @relation("TaskSubtasks", fields: [relatedTo], references: [id], onDelete: SetNull)
+  subtasks     Task[]      @relation("TaskSubtasks")
+
+  // Extensions (RFC 7986)
+  color        String?     // COLOR property (hex format)
+
+  // Relations (normalized)
+  attendees        TaskAttendee[]
+  alarms           TaskAlarm[]
+  categories       TaskCategory[]
+  recurrenceDates  TaskRecurrenceDate[]
+
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@unique([taskListId, uid])
+  @@index([taskListId])
+  @@index([taskListId, dueDate])
+  @@index([taskListId, status])
+  @@index([dueDate])
+  @@index([status])
+  @@index([priority])
+  @@index([relatedTo])
+  @@index([uid])
+  @@map("task")
+}
+
+model TaskAttendee {
+  id        String          @id @default(uuid())
+  taskId    String
+  task      Task            @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  name      String?         // GDPR: Personal data
+  email     String          // RFC 5545: Email is required
+  role      AttendeeRole?   // CHAIR, REQ-PARTICIPANT, etc.
+  status    AttendeeStatus? // NEEDS-ACTION, ACCEPTED, etc.
+  rsvp      Boolean         @default(false)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  @@index([taskId])
+  @@index([email])
+  @@map("task_attendee")
+}
+
+model TaskAlarm {
+  id          String      @id @default(uuid())
+  taskId      String
+  task        Task        @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  trigger     String      // RFC 5545: TRIGGER (duration or absolute)
+  action      AlarmAction // DISPLAY, EMAIL, AUDIO
+  summary     String?     // For DISPLAY and EMAIL
+  description String?     // For EMAIL
+  duration    String?     // For repeated alarms
+  repeat      Int?        // Number of repetitions
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@index([taskId])
+  @@index([action])
+  @@map("task_alarm")
+}
+
+model TaskCategory {
+  id        String   @id @default(uuid())
+  taskId    String
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  category  String   // Category name
+
+  @@unique([taskId, category])
+  @@index([taskId])
+  @@index([category])
+  @@map("task_category")
+}
+
+model TaskRecurrenceDate {
+  id        String              @id @default(uuid())
+  taskId    String
+  task      Task                @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  date      DateTime            // RDATE or EXDATE value
+  type      RecurrenceDateType  // RDATE or EXDATE
+
+  @@unique([taskId, date, type])
+  @@index([taskId])
+  @@index([type])
+  @@index([date])
+  @@map("task_recurrence_date")
+}
+
+// ============================================================================
+// TASK LIST GROUPS - Organizing task lists into groups
+// ============================================================================
+
+enum TaskGroupRole {
+  OWNER   // Creator of the group, has full control
+  MEMBER  // Member of the group, can modify task lists in the group
+}
+
+model TaskListGroup {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  color       String?  // Group color (hex format like #3B82F6)
+  userId      String?  // User ID (authenticated) or anonymous ID (anon-xxx format)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  taskLists   TaskListGroupMember[]  // Many-to-many relation with task lists
+  bundles     TaskListShareBundle[]  // Bundles created from this group
+  members     TaskListGroupMember2[] // Members of the group (for collaboration)
+
+  @@index([userId])
+  @@map("task_list_group")
+}
+
+// Junction table for task lists in a group
+model TaskListGroupMember {
+  id         String   @id @default(uuid())
+  groupId    String
+  taskListId String
+  order      Int      @default(0) // Order for custom sorting
+
+  group      TaskListGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, taskListId])
+  @@index([groupId])
+  @@index([taskListId])
+  @@index([groupId, taskListId])
+  @@map("task_list_group_member")
+}
+
+// Members of a shared task list group (authenticated users only)
+model TaskListGroupMember2 {
+  id          String         @id @default(uuid())
+  groupId     String
+  userId      String         // User ID (authenticated only)
+  role        TaskGroupRole  // OWNER or MEMBER
+  invitedBy   String         // User ID who sent the invitation
+  invitedAt   DateTime       @default(now())
+  acceptedAt  DateTime?      // null = invitation pending, non-null = accepted
+
+  group       TaskListGroup  @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+  @@index([groupId])
+  @@index([userId])
+  @@index([groupId, acceptedAt])
+  @@map("task_list_group_user")
+}
+
+// ============================================================================
+// TASK LIST SHARING - Share links and bundles
+// ============================================================================
+
+// Share link for public task list access
+model TaskListShareLink {
+  id             String    @id @default(uuid())
+  taskListId     String
+  taskList       TaskList  @relation(fields: [taskListId], references: [id], onDelete: Cascade)
+  token          String    @unique // Random token for the share URL
+  name           String?   // Optional friendly name
+  isActive       Boolean   @default(true) // Can be disabled without deleting
+  expiresAt      DateTime? // Optional expiration date
+  accessCount    Int       @default(0) // Track access count
+  lastAccessedAt DateTime? // Last access timestamp
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([taskListId])
+  @@index([token])
+  @@index([isActive])
+  @@map("task_list_share_link")
+}
+
+// Share bundle for sharing multiple task lists at once
+model TaskListShareBundle {
+  id               String    @id @default(uuid())
+  token            String    @unique
+  name             String?
+  groupId          String?   // Optional: reference to TaskListGroup
+  isActive         Boolean   @default(true)
+  expiresAt        DateTime?
+  removeDuplicates Boolean   @default(false) // Remove duplicate tasks when merging
+  accessCount      Int       @default(0)
+  lastAccessedAt   DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  taskLists        TaskShareBundleTaskList[]
+  group            TaskListGroup? @relation(fields: [groupId], references: [id], onDelete: SetNull)
+
+  @@index([token])
+  @@index([isActive])
+  @@index([groupId])
+  @@map("task_list_share_bundle")
+}
+
+// Junction table for task lists in a share bundle
+model TaskShareBundleTaskList {
+  id         String   @id @default(uuid())
+  bundleId   String
+  taskListId String
+  order      Int      @default(0)
+
+  bundle     TaskListShareBundle @relation(fields: [bundleId], references: [id], onDelete: Cascade)
+
+  @@unique([bundleId, taskListId])
+  @@index([bundleId])
+  @@index([taskListId])
+  @@map("task_share_bundle_task_list")
+}

@@ -1,0 +1,303 @@
+// AppStandard Contacts Schema - RFC 6350 vCard 4.0 Implementation
+// Contact management with vCard format support
+
+// Enums for type-safe vCard values
+enum ContactKind {
+  INDIVIDUAL
+  GROUP
+  ORG
+  LOCATION
+}
+
+enum Gender {
+  M // Male
+  F // Female
+  O // Other
+  N // None/Not applicable
+  U // Unknown
+}
+
+model AddressBook {
+  id           String    @id @default(uuid())
+  name         String
+  color        String?   // Address book color (hex format like #3B82F6)
+  userId       String?   // User ID (authenticated) or anonymous ID (anon-xxx format)
+  sourceUrl    String?   // URL from which the address book was imported (CardDAV)
+  lastSyncedAt DateTime? // Last time the address book was synced
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  contacts     Contact[]
+  shareLinks   AddressBookShareLink[]
+
+  @@index([userId])
+  @@index([userId, updatedAt])
+  @@map("address_book")
+}
+
+model Contact {
+  id            String       @id @default(uuid())
+  addressBookId String
+  addressBook   AddressBook  @relation(fields: [addressBookId], references: [id], onDelete: Cascade)
+
+  // Required property (RFC 6350)
+  formattedName String       // FN - Required
+
+  // Identification properties (N components)
+  familyName     String?     // Family name (surname)
+  givenName      String?     // Given name (first name)
+  additionalName String?     // Additional/middle names
+  namePrefix     String?     // Honorific prefixes (Mr., Dr., etc.)
+  nameSuffix     String?     // Honorific suffixes (Jr., III, etc.)
+  nickname       String?     // NICKNAME
+
+  // Photo
+  photoUrl       String?     // PHOTO (URI)
+
+  // Dates
+  birthday       DateTime?   // BDAY
+  anniversary    DateTime?   // ANNIVERSARY
+
+  // Demographics
+  gender         Gender?     // GENDER (M, F, O, N, U)
+
+  // Organization properties
+  organization   String?     // ORG
+  title          String?     // TITLE (job title)
+  role           String?     // ROLE (function/occupation)
+
+  // Geography
+  geoLatitude    Float?      // GEO latitude
+  geoLongitude   Float?      // GEO longitude
+  timezone       String?     // TZ
+
+  // Additional properties
+  note           String?     // NOTE
+  url            String?     // URL (website)
+  kind           ContactKind @default(INDIVIDUAL) // KIND
+
+  // RFC 6350 metadata
+  uid            String?     // UID (unique identifier)
+  revision       DateTime?   // REV (last revision timestamp)
+
+  // Relations (normalized)
+  emails         ContactEmail[]
+  phones         ContactPhone[]
+  addresses      ContactAddress[]
+  imHandles      ContactIM[]
+  categories     ContactCategory[]
+  relations      ContactRelation[]
+
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  @@unique([addressBookId, uid])
+  @@index([addressBookId])
+  @@index([addressBookId, formattedName])
+  @@index([formattedName])
+  @@index([organization])
+  @@index([uid])
+  @@map("contact")
+}
+
+model ContactEmail {
+  id        String   @id @default(uuid())
+  contactId String
+  contact   Contact  @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  email     String   // Email address
+  type      String?  // TYPE: home, work
+  isPrimary Boolean  @default(false) // PREF parameter
+
+  @@index([contactId])
+  @@index([email])
+  @@map("contact_email")
+}
+
+model ContactPhone {
+  id        String   @id @default(uuid())
+  contactId String
+  contact   Contact  @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  number    String   // Phone number
+  type      String?  // TYPE: home, work, cell, fax, voice, text, video, pager
+  isPrimary Boolean  @default(false) // PREF parameter
+
+  @@index([contactId])
+  @@index([number])
+  @@map("contact_phone")
+}
+
+model ContactAddress {
+  id            String   @id @default(uuid())
+  contactId     String
+  contact       Contact  @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  type          String?  // TYPE: home, work
+  streetAddress String?  // Street address (can be multiline)
+  locality      String?  // City
+  region        String?  // State/Province
+  postalCode    String?  // Postal/ZIP code
+  country       String?  // Country name
+  isPrimary     Boolean  @default(false) // PREF parameter
+
+  @@index([contactId])
+  @@index([locality])
+  @@index([country])
+  @@map("contact_address")
+}
+
+model ContactIM {
+  id        String   @id @default(uuid())
+  contactId String
+  contact   Contact  @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  handle    String   // IM handle/username
+  service   String   // Service type: xmpp, skype, telegram, whatsapp, signal, etc.
+
+  @@index([contactId])
+  @@index([service])
+  @@map("contact_im")
+}
+
+model ContactCategory {
+  id        String   @id @default(uuid())
+  contactId String
+  contact   Contact  @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  category  String   // Category/tag name
+
+  @@unique([contactId, category])
+  @@index([contactId])
+  @@index([category])
+  @@map("contact_category")
+}
+
+model ContactRelation {
+  id           String   @id @default(uuid())
+  contactId    String
+  contact      Contact  @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  relatedName  String   // Name or URI of related person
+  relationType String   // Relation type: spouse, child, parent, sibling, friend, colleague, etc.
+
+  @@index([contactId])
+  @@index([relationType])
+  @@map("contact_relation")
+}
+
+// ============================================================================
+// ADDRESS BOOK GROUPS - Organizing address books into groups
+// ============================================================================
+
+enum AddressBookGroupRole {
+  OWNER   // Creator of the group, has full control
+  MEMBER  // Member of the group, can modify address books in the group
+}
+
+model AddressBookGroup {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  color       String?  // Group color (hex format like #3B82F6)
+  userId      String?  // User ID (authenticated) or anonymous ID (anon-xxx format)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  addressBooks AddressBookGroupMember[]  // Many-to-many relation with address books
+  bundles      AddressBookShareBundle[]  // Bundles created from this group
+  members      AddressBookGroupMember2[] // Members of the group (for collaboration)
+
+  @@index([userId])
+  @@map("address_book_group")
+}
+
+// Junction table for address books in a group
+model AddressBookGroupMember {
+  id            String   @id @default(uuid())
+  groupId       String
+  addressBookId String
+  order         Int      @default(0) // Order for custom sorting
+
+  group         AddressBookGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, addressBookId])
+  @@index([groupId])
+  @@index([addressBookId])
+  @@index([groupId, addressBookId])
+  @@map("address_book_group_member")
+}
+
+// Members of a shared address book group (authenticated users only)
+model AddressBookGroupMember2 {
+  id          String               @id @default(uuid())
+  groupId     String
+  userId      String               // User ID (authenticated only)
+  role        AddressBookGroupRole // OWNER or MEMBER
+  invitedBy   String               // User ID who sent the invitation
+  invitedAt   DateTime             @default(now())
+  acceptedAt  DateTime?            // null = invitation pending, non-null = accepted
+
+  group       AddressBookGroup     @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+  @@index([groupId])
+  @@index([userId])
+  @@index([groupId, acceptedAt])
+  @@map("address_book_group_user")
+}
+
+// ============================================================================
+// ADDRESS BOOK SHARING - Share links and bundles
+// ============================================================================
+
+// Share link for public address book access
+model AddressBookShareLink {
+  id             String      @id @default(uuid())
+  addressBookId  String
+  addressBook    AddressBook @relation(fields: [addressBookId], references: [id], onDelete: Cascade)
+  token          String      @unique // Random token for the share URL
+  name           String?     // Optional friendly name
+  isActive       Boolean     @default(true) // Can be disabled without deleting
+  expiresAt      DateTime?   // Optional expiration date
+  accessCount    Int         @default(0) // Track access count
+  lastAccessedAt DateTime?   // Last access timestamp
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  @@index([addressBookId])
+  @@index([token])
+  @@index([isActive])
+  @@map("address_book_share_link")
+}
+
+// Share bundle for sharing multiple address books at once
+model AddressBookShareBundle {
+  id               String    @id @default(uuid())
+  token            String    @unique
+  name             String?
+  groupId          String?   // Optional: reference to AddressBookGroup
+  isActive         Boolean   @default(true)
+  expiresAt        DateTime?
+  removeDuplicates Boolean   @default(false) // Remove duplicate contacts when merging
+  accessCount      Int       @default(0)
+  lastAccessedAt   DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  addressBooks     AddressBookShareBundleBook[]
+  group            AddressBookGroup? @relation(fields: [groupId], references: [id], onDelete: SetNull)
+
+  @@index([token])
+  @@index([isActive])
+  @@index([groupId])
+  @@map("address_book_share_bundle")
+}
+
+// Junction table for address books in a share bundle
+model AddressBookShareBundleBook {
+  id            String   @id @default(uuid())
+  bundleId      String
+  addressBookId String
+  order         Int      @default(0)
+
+  bundle        AddressBookShareBundle @relation(fields: [bundleId], references: [id], onDelete: Cascade)
+
+  @@unique([bundleId, addressBookId])
+  @@index([bundleId])
+  @@index([addressBookId])
+  @@map("address_book_share_bundle_book")
+}
