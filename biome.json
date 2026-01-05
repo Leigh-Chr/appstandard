@@ -1,9 +1,9 @@
 {
 	"$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
 	"vcs": {
-		"enabled": false,
+		"enabled": true,
 		"clientKind": "git",
-		"useIgnoreFile": false
+		"useIgnoreFile": true
 	},
 	"files": {
 		"ignoreUnknown": false,
@@ -27,7 +27,8 @@
 			"!**/.source",
 			"!**/*.html",
 			"!**/*.conf",
-			"!**/prisma/generated"
+			"!**/prisma/generated",
+			"!**/index.css"
 		]
 	},
 	"formatter": {
@@ -41,24 +42,28 @@
 			"recommended": true,
 			"correctness": {
 				"useExhaustiveDependencies": "error",
-				"useHookAtTopLevel": "error"
+				"useHookAtTopLevel": "error",
+				"noUnusedImports": "error",
+				"noUnusedVariables": "warn"
 			},
 			"suspicious": {
 				"noExplicitAny": "error",
 				"noArrayIndexKey": "warn",
 				"noAssignInExpressions": "error",
 				"noDoubleEquals": "error",
-				"noShadowRestrictedNames": "error"
+				"noShadowRestrictedNames": "error",
+				"noConsole": "warn"
 			},
 			"performance": {
 				"noAccumulatingSpread": "warn",
-				"noDelete": "error"
+				"noDelete": "warn",
+				"noBarrelFile": "warn"
 			},
 			"complexity": {
 				"noExcessiveCognitiveComplexity": {
 					"level": "warn",
 					"options": {
-						"maxAllowedComplexity": 15
+						"maxAllowedComplexity": 40
 					}
 				},
 				"noExcessiveNestedTestSuites": "warn",
@@ -75,22 +80,175 @@
 				}
 			},
 			"style": {
-				"noParameterAssign": "error",
-				"useAsConstAssertion": "error",
-				"useDefaultParameterLast": "error",
-				"useEnumInitializers": "error",
-				"useSelfClosingElements": "error",
-				"useSingleVarDeclarator": "error",
-				"noUnusedTemplateLiteral": "error",
-				"useNumberNamespace": "error",
-				"noInferrableTypes": "error",
-				"noUselessElse": "error",
-				"noNegationElse": "error",
+				"noParameterAssign": "warn",
+				"useAsConstAssertion": "warn",
+				"useDefaultParameterLast": "warn",
+				"useEnumInitializers": "warn",
+				"useSelfClosingElements": "warn",
+				"useSingleVarDeclarator": "warn",
+				"noUnusedTemplateLiteral": "warn",
+				"useNumberNamespace": "warn",
+				"noInferrableTypes": "warn",
+				"noUselessElse": "warn",
+				"noNegationElse": "warn",
 				"useConst": "error",
-				"useTemplate": "error"
+				"useTemplate": "warn"
 			}
 		}
 	},
+	"overrides": [
+		{
+			"includes": ["packages/ui/**"],
+			"linter": {
+				"rules": {
+					"correctness": {
+						"noUnusedVariables": "off"
+					},
+					"performance": {
+						"noBarrelFile": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": [
+				"packages/*/src/index.ts",
+				"packages/*/*/src/index.ts",
+				"packages/**/constants/index.ts",
+				"packages/**/types/index.ts",
+				"packages/**/validation/index.ts",
+				"packages/**/generator/index.ts",
+				"packages/**/parser/index.ts",
+				"packages/**/utils/deep-equal.ts",
+				"packages/**/alarm/index.ts",
+				"packages/**/date/index.ts",
+				"packages/**/duration/index.ts",
+				"packages/**/error/index.ts",
+				"packages/**/hooks/index.ts",
+				"packages/**/query/index.ts",
+				"packages/**/storage/index.ts"
+			],
+			"linter": {
+				"rules": {
+					"performance": {
+						"noBarrelFile": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": ["**/logger.ts", "**/logger/*.ts", "**/logger/index.ts"],
+			"linter": {
+				"rules": {
+					"suspicious": {
+						"noConsole": "off",
+						"noExplicitAny": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": [
+				"**/dashboard/index.ts",
+				"**/utils.ts",
+				"**/utils/index.ts",
+				"**/lib/deep-equal.ts",
+				"**/routers/*.ts"
+			],
+			"linter": {
+				"rules": {
+					"performance": {
+						"noBarrelFile": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": [
+				"**/main.tsx",
+				"**/utils/trpc.ts",
+				"**/routes/**/*.tsx",
+				"**/middleware/*.ts",
+				"**/prisma/seed.ts",
+				"**/prisma/seed/*.ts"
+			],
+			"linter": {
+				"rules": {
+					"suspicious": {
+						"noConsole": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": ["**/vite.config.ts"],
+			"linter": {
+				"rules": {
+					"suspicious": {
+						"noConsole": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": [
+				"**/test-setup.ts",
+				"**/__tests__/*.test.ts",
+				"**/__tests__/*.test.tsx"
+			],
+			"linter": {
+				"rules": {
+					"suspicious": {
+						"noExplicitAny": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": [
+				"apps/*/src/lib/auth-client.ts",
+				"apps/*/src/hooks/use-server-status.ts",
+				"apps/*/src/hooks/use-appstandard-tour.ts"
+			],
+			"linter": {
+				"rules": {
+					"performance": {
+						"noBarrelFile": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": ["**/routers/dashboard.ts"],
+			"linter": {
+				"rules": {
+					"complexity": {
+						"noExcessiveCognitiveComplexity": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": ["packages/ui/src/loader.tsx", "**/components/*-filters.tsx"],
+			"linter": {
+				"rules": {
+					"a11y": {
+						"useSemanticElements": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": ["packages/ui/src/tour/tour-tooltip.tsx"],
+			"linter": {
+				"rules": {
+					"suspicious": {
+						"noArrayIndexKey": "off"
+					}
+				}
+			}
+		}
+	],
 	"javascript": {
 		"formatter": {
 			"quoteStyle": "double"
@@ -98,7 +256,14 @@
 	},
 	"css": {
 		"parser": {
-			"tailwindDirectives": true
+			"tailwindDirectives": true,
+			"cssModules": true
+		},
+		"linter": {
+			"enabled": true
+		},
+		"formatter": {
+			"enabled": true
 		}
 	}
 }

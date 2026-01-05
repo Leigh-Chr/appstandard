@@ -1,6 +1,7 @@
 {
 	"files": [],
 	"references": [
+		{ "path": "./packages/config" },
 		{ "path": "./packages/core" },
 		{ "path": "./packages/schemas" },
 		{ "path": "./packages/db" },
@@ -8,7 +9,23 @@
 		{ "path": "./packages/ics-utils" },
 		{ "path": "./packages/react-utils" },
 		{ "path": "./packages/api" },
-		{ "path": "./apps/web" },
-		{ "path": "./apps/server" }
+		{ "path": "./packages/api-core" },
+		{ "path": "./packages/server-core" },
+		{ "path": "./packages/ui" },
+		{ "path": "./packages/appstandard-tasks/api" },
+		{ "path": "./packages/appstandard-tasks/core" },
+		{ "path": "./packages/appstandard-tasks/schemas" },
+		{ "path": "./packages/appstandard-tasks/todo-utils" },
+		{ "path": "./packages/appstandard-contacts/api" },
+		{ "path": "./packages/appstandard-contacts/core" },
+		{ "path": "./packages/appstandard-contacts/schemas" },
+		{ "path": "./packages/appstandard-contacts/vcard-utils" },
+		{ "path": "./apps/calendar-web" },
+		{ "path": "./apps/calendar-server" },
+		{ "path": "./apps/tasks-web" },
+		{ "path": "./apps/tasks-server" },
+		{ "path": "./apps/contacts-web" },
+		{ "path": "./apps/contacts-server" },
+		{ "path": "./apps/landing" }
 	]
 }

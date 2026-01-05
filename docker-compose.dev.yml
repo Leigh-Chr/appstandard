@@ -1,5 +1,5 @@
 # ===================================
-# Calendraft - Docker Compose (Development)
+# AppStandard Calendar - Docker Compose (Development)
 # PostgreSQL only - Run apps locally with hot reload
 # ===================================
 #
@@ -17,18 +17,18 @@ services:
   # -----------------------------------
   db:
     image: postgres:16-alpine
-    container_name: calendraft-db-dev
+    container_name: appstandard-db-dev
     restart: unless-stopped
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-calendraft}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-calendraft_dev}
-      POSTGRES_DB: ${POSTGRES_DB:-calendraft_dev}
+      POSTGRES_USER: ${POSTGRES_USER:-appstandard}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-appstandard_dev}
+      POSTGRES_DB: ${POSTGRES_DB:-appstandard_dev}
     volumes:
       - postgres_data_dev:/var/lib/postgresql/data
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-calendraft} -d ${POSTGRES_DB:-calendraft_dev}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-appstandard} -d ${POSTGRES_DB:-appstandard_dev}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -39,7 +39,7 @@ services:
   # -----------------------------------
   redis:
     image: redis:7-alpine
-    container_name: calendraft-redis-dev
+    container_name: appstandard-redis-dev
     restart: unless-stopped
     command: redis-server --appendonly yes
     volumes:
@@ -61,21 +61,3 @@ volumes:
     driver: local
   redis_data_dev:
     driver: local
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

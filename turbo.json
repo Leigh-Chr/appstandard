@@ -6,6 +6,9 @@
 		"signature": true
 	},
 	"tasks": {
+		"transit": {
+			"dependsOn": ["^transit"]
+		},
 		"build": {
 			"dependsOn": ["^build"],
 			"inputs": [
@@ -45,7 +48,7 @@
 			"cache": true
 		},
 		"check-types": {
-			"dependsOn": ["^build", "^check-types"],
+			"dependsOn": ["^build", "transit"],
 			"inputs": [
 				"$TURBO_DEFAULT$",
 				"src/**/*.{ts,tsx}",
@@ -56,7 +59,7 @@
 			"cache": true
 		},
 		"typecheck": {
-			"dependsOn": ["^build", "^check-types"],
+			"dependsOn": ["^build", "transit"],
 			"inputs": [
 				"$TURBO_DEFAULT$",
 				"src/**/*.{ts,tsx}",
@@ -75,9 +78,19 @@
 			"cache": false,
 			"persistent": true
 		},
-		"db:push": {
+		"contacts-server#dev": {
+			"dependsOn": ["^build"],
 			"cache": false,
 			"persistent": true
+		},
+		"tasks-server#dev": {
+			"dependsOn": ["^build"],
+			"cache": false,
+			"persistent": true
+		},
+		"db:push": {
+			"cache": false,
+			"persistent": false
 		},
 		"db:studio": {
 			"cache": false,
@@ -85,11 +98,11 @@
 		},
 		"db:migrate": {
 			"cache": false,
-			"persistent": true
+			"persistent": false
 		},
 		"db:generate": {
 			"cache": false,
-			"persistent": true
+			"persistent": false
 		},
 		"db:seed": {
 			"cache": false,

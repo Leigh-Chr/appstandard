@@ -1,5 +1,5 @@
 # ===================================
-# Calendraft - Docker Compose
+# AppStandard Calendar - Docker Compose
 # Production-ready configuration with PostgreSQL
 # ===================================
 
@@ -13,24 +13,24 @@ services:
   # -----------------------------------
   db:
     image: postgres:16-alpine
-    container_name: calendraft-db
+    container_name: appstandard-db
     restart: unless-stopped
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-calendraft}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-calendraft_secret}
-      POSTGRES_DB: ${POSTGRES_DB:-calendraft}
+      POSTGRES_USER: ${POSTGRES_USER:-appstandard}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-appstandard_secret}
+      POSTGRES_DB: ${POSTGRES_DB:-appstandard}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-calendraft} -d ${POSTGRES_DB:-calendraft}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-appstandard} -d ${POSTGRES_DB:-appstandard}"]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 10s
     networks:
-      - calendraft-network
+      - appstandard-network
     # Security: no new privileges
     security_opt:
       - no-new-privileges:true
@@ -52,9 +52,9 @@ services:
         compress: "true"
     # Labels for orchestration and monitoring
     labels:
-      - "com.calendraft.service=db"
-      - "com.calendraft.version=16-alpine"
-      - "com.calendraft.environment=${NODE_ENV:-production}"
+      - "com.appstandard.service=db"
+      - "com.appstandard.version=16-alpine"
+      - "com.appstandard.environment=${NODE_ENV:-production}"
 
   # -----------------------------------
   # Redis (Rate Limiting)
@@ -63,7 +63,7 @@ services:
   # The server will connect via REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379
   redis:
     image: redis:7-alpine
-    container_name: calendraft-redis
+    container_name: appstandard-redis
     restart: unless-stopped
     # Enable password authentication if REDIS_PASSWORD is set
     command: >
@@ -85,7 +85,7 @@ services:
       retries: 5
       start_period: 10s
     networks:
-      - calendraft-network
+      - appstandard-network
     # Security: no new privileges
     security_opt:
       - no-new-privileges:true
@@ -107,9 +107,9 @@ services:
         compress: "true"
     # Labels for orchestration and monitoring
     labels:
-      - "com.calendraft.service=redis"
-      - "com.calendraft.version=7-alpine"
-      - "com.calendraft.environment=${NODE_ENV:-production}"
+      - "com.appstandard.service=redis"
+      - "com.appstandard.version=7-alpine"
+      - "com.appstandard.environment=${NODE_ENV:-production}"
 
   # -----------------------------------
   # Backend API (Hono + tRPC)
@@ -117,8 +117,8 @@ services:
   server:
     build:
       context: .
-      dockerfile: apps/server/Dockerfile
-    container_name: calendraft-server
+      dockerfile: apps/calendar-server/Dockerfile
+    container_name: appstandard-server
     restart: unless-stopped
     depends_on:
       db:
@@ -128,7 +128,7 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3000
-      DATABASE_URL: postgresql://${POSTGRES_USER:-calendraft}:${POSTGRES_PASSWORD:-calendraft_secret}@db:5432/${POSTGRES_DB:-calendraft}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-appstandard}:${POSTGRES_PASSWORD:-appstandard_secret}@db:5432/${POSTGRES_DB:-appstandard}
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3001}
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-change-me-in-production-min-32-chars}
       BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:3000}
@@ -138,7 +138,7 @@ services:
       REDIS_URL: ${REDIS_URL:-redis://${REDIS_PASSWORD:+:${REDIS_PASSWORD}@}redis:6379}
       # Email configuration
       RESEND_API_KEY: ${RESEND_API_KEY:-}
-      EMAIL_FROM: ${EMAIL_FROM:-Calendraft <noreply@calendraft.com>}
+      EMAIL_FROM: ${EMAIL_FROM:-AppStandard <noreply@appstandard.com>}
       # SMTP (alternative to Resend)
       SMTP_HOST: ${SMTP_HOST:-}
       SMTP_PORT: ${SMTP_PORT:-}
@@ -154,7 +154,7 @@ services:
       retries: 3
       start_period: 30s
     networks:
-      - calendraft-network
+      - appstandard-network
     # Security: drop all capabilities and add only what's needed
     cap_drop:
       - ALL
@@ -179,8 +179,8 @@ services:
         compress: "true"
     # Labels for orchestration and monitoring
     labels:
-      - "com.calendraft.service=server"
-      - "com.calendraft.environment=${NODE_ENV:-production}"
+      - "com.appstandard.service=server"
+      - "com.appstandard.environment=${NODE_ENV:-production}"
 
   # -----------------------------------
   # Frontend (React + Nginx)
@@ -188,12 +188,12 @@ services:
   web:
     build:
       context: .
-      dockerfile: apps/web/Dockerfile
+      dockerfile: apps/calendar-web/Dockerfile
       args:
         # Vite compiles env vars at build time
         VITE_SERVER_URL: ${VITE_SERVER_URL:-http://localhost:3000}
         VITE_SENTRY_DSN: ${VITE_SENTRY_DSN:-}
-    container_name: calendraft-web
+    container_name: appstandard-web
     restart: unless-stopped
     depends_on:
       server:
@@ -207,7 +207,7 @@ services:
       retries: 3
       start_period: 10s
     networks:
-      - calendraft-network
+      - appstandard-network
     # Security: read-only root filesystem where possible
     read_only: true
     # Security: drop all capabilities and add only what's needed
@@ -238,8 +238,8 @@ services:
         compress: "true"
     # Labels for orchestration and monitoring
     labels:
-      - "com.calendraft.service=web"
-      - "com.calendraft.environment=${NODE_ENV:-production}"
+      - "com.appstandard.service=web"
+      - "com.appstandard.environment=${NODE_ENV:-production}"
     # Temporary filesystem for nginx cache (read-only root requires tmpfs)
     tmpfs:
       - /var/cache/nginx:noexec,nosuid,nodev
@@ -259,7 +259,7 @@ volumes:
 # Networks
 # -----------------------------------
 networks:
-  calendraft-network:
+  appstandard-network:
     driver: bridge
     # IPv6 disabled by default (enable if needed)
     enable_ipv6: false
