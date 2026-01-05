@@ -1,6 +1,22 @@
-# Deployment Guide - AppStandard Calendar
+# Deployment Guide - AppStandard
 
-This guide describes the steps to deploy AppStandard Calendar in production.
+This guide describes the steps to deploy AppStandard products in production.
+
+## Architecture Overview
+
+AppStandard is a multi-product monorepo containing:
+- **AppStandard Calendar** - ICS calendar management (production-ready)
+- **AppStandard Contacts** - vCard contact management (in development)
+- **AppStandard Tasks** - Todo/task management (in development)
+
+### Current Production Setup
+
+| Component | Container Name | Image | Port | Public URL |
+|-----------|----------------|-------|------|------------|
+| PostgreSQL | appstandard-db | postgres:16-alpine | 5432 | - |
+| Redis | appstandard-redis | redis:7-alpine | 6379 | - |
+| Calendar Backend | appstandard-server | calendraft-server | 3000 | api.calendraft.app |
+| Calendar Frontend | appstandard-web | calendraft-web | 3001→8080 | calendraft.app |
 
 ## Prerequisites
 
@@ -200,6 +216,36 @@ WEB_PORT=3001
 POSTGRES_PORT=5432
 ```
 
+### Updating Production Deployments
+
+When deploying updates to production, follow these steps:
+
+```bash
+# 1. SSH to VPS
+ssh root@YOUR_VPS_IP
+
+# 2. Navigate to project
+cd /root/calendraft  # or your installation path
+
+# 3. Backup database (IMPORTANT - always backup before updates)
+docker compose exec db pg_dump -U calendraft calendraft > backup_$(date +%Y%m%d_%H%M%S).sql
+
+# 4. Pull latest code
+git pull origin master
+
+# 5. Rebuild and restart services
+DOCKER_BUILDKIT=1 docker compose up -d --build
+
+# 6. Verify health
+curl http://localhost:3000/health
+docker compose ps
+```
+
+**Important Notes:**
+- The Dockerfiles include ALL workspace package.json files for bun lockfile validation
+- If adding new packages to the monorepo, update both server and web Dockerfiles
+- Database migrations are typically not needed for minor updates
+
 ### Useful Docker Commands
 
 ```bash
@@ -246,6 +292,29 @@ docker compose build --no-cache
 # Check logs
 docker compose logs
 ```
+
+#### Bun Lockfile Frozen Error
+
+If you see this error during Docker build:
+```
+error: lockfile had changes, but lockfile is frozen
+```
+
+**Cause**: Bun validates the lockfile against ALL workspace packages. The Dockerfiles must include every `package.json` from the monorepo.
+
+**Solution**: Update the Dockerfile to include all workspace packages:
+```dockerfile
+# In the builder stage, add ALL package.json files:
+COPY packages/appstandard-contacts/api/package.json ./packages/appstandard-contacts/api/
+COPY packages/appstandard-contacts/core/package.json ./packages/appstandard-contacts/core/
+# ... etc for all packages
+```
+
+Both `apps/calendar-server/Dockerfile` and `apps/calendar-web/Dockerfile` must include:
+- All `packages/*` package.json files
+- All `packages/appstandard-contacts/*` package.json files
+- All `packages/appstandard-tasks/*` package.json files
+- All `apps/*` package.json files
 
 #### Database Won't Start
 
