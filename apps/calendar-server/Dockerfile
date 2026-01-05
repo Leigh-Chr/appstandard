@@ -19,6 +19,9 @@ COPY packages/ics-utils/package.json ./packages/ics-utils/
 COPY packages/db/package.json ./packages/db/
 COPY packages/auth/package.json ./packages/auth/
 COPY packages/api/package.json ./packages/api/
+COPY packages/api-core/package.json ./packages/api-core/
+COPY packages/server-core/package.json ./packages/server-core/
+COPY packages/ui/package.json ./packages/ui/
 COPY packages/react-utils/package.json ./packages/react-utils/
 COPY apps/calendar-server/package.json ./apps/calendar-server/
 COPY apps/calendar-web/package.json ./apps/calendar-web/
@@ -66,6 +69,9 @@ COPY packages/schemas/package.json ./packages/schemas/
 COPY packages/db/package.json ./packages/db/
 COPY packages/auth/package.json ./packages/auth/
 COPY packages/api/package.json ./packages/api/
+COPY packages/api-core/package.json ./packages/api-core/
+COPY packages/server-core/package.json ./packages/server-core/
+COPY packages/ui/package.json ./packages/ui/
 COPY apps/calendar-server/package.json ./apps/calendar-server/
 # Include web package.json for workspace resolution (needed by bun)
 COPY apps/calendar-web/package.json ./apps/calendar-web/
@@ -78,7 +84,7 @@ RUN bun install --frozen-lockfile --production --ignore-scripts
 # Copy config package (no dist, just tsconfig)
 COPY --from=builder /app/packages/config ./packages/config
 
-# Copy built packages needed by server (api -> auth, core, db, schemas)
+# Copy built packages needed by server (api -> auth, core, db, schemas, api-core, server-core)
 COPY --from=builder /app/packages/core/dist ./packages/core/dist
 COPY --from=builder /app/packages/schemas/dist ./packages/schemas/dist
 COPY --from=builder /app/packages/db/dist ./packages/db/dist
@@ -86,6 +92,8 @@ COPY --from=builder /app/packages/db/prisma ./packages/db/prisma
 COPY --from=builder /app/packages/db/prisma.config.ts ./packages/db/prisma.config.ts
 COPY --from=builder /app/packages/auth/dist ./packages/auth/dist
 COPY --from=builder /app/packages/api/dist ./packages/api/dist
+COPY --from=builder /app/packages/api-core/dist ./packages/api-core/dist
+COPY --from=builder /app/packages/server-core/dist ./packages/server-core/dist
 
 # Copy built server
 COPY --from=builder /app/apps/calendar-server/dist ./apps/calendar-server/dist
@@ -97,7 +105,9 @@ RUN mkdir -p node_modules/@appstandard && \
     ln -s /app/packages/schemas node_modules/@appstandard/schemas && \
     ln -s /app/packages/db node_modules/@appstandard/db && \
     ln -s /app/packages/auth node_modules/@appstandard/auth && \
-    ln -s /app/packages/api node_modules/@appstandard/api
+    ln -s /app/packages/api node_modules/@appstandard/api && \
+    ln -s /app/packages/api-core node_modules/@appstandard/api-core && \
+    ln -s /app/packages/server-core node_modules/@appstandard/server-core
 
 # Set ownership
 RUN chown -R bunjs:nodejs /app

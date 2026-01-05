@@ -20,6 +20,9 @@ COPY packages/ics-utils/package.json ./packages/ics-utils/
 COPY packages/db/package.json ./packages/db/
 COPY packages/auth/package.json ./packages/auth/
 COPY packages/api/package.json ./packages/api/
+COPY packages/api-core/package.json ./packages/api-core/
+COPY packages/server-core/package.json ./packages/server-core/
+COPY packages/ui/package.json ./packages/ui/
 COPY packages/react-utils/package.json ./packages/react-utils/
 COPY apps/calendar-server/package.json ./apps/calendar-server/
 COPY apps/calendar-web/package.json ./apps/calendar-web/
@@ -40,6 +43,9 @@ RUN mkdir -p node_modules/@appstandard && \
     ln -s /app/packages/ics-utils node_modules/@appstandard/ics-utils && \
     ln -s /app/packages/react-utils node_modules/@appstandard/react-utils && \
     ln -s /app/packages/api node_modules/@appstandard/api && \
+    ln -s /app/packages/api-core node_modules/@appstandard/api-core && \
+    ln -s /app/packages/server-core node_modules/@appstandard/server-core && \
+    ln -s /app/packages/ui node_modules/@appstandard/ui && \
     ln -s /app/packages/auth node_modules/@appstandard/auth && \
     ln -s /app/packages/db node_modules/@appstandard/db
 
