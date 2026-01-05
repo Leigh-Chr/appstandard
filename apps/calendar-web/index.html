@@ -6,8 +6,8 @@
     
     <!-- Content Security Policy -->
     <!-- Note: frame-ancestors is not supported in meta tags, it must be set via HTTP headers -->
-    <!-- Note: This CSP is for development. In production, Nginx sets a more restrictive CSP via HTTP headers -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' http://localhost:3000 ws://localhost:3000 https://api.appstandard.app wss://api.appstandard.app https://*.sentry.io https://*.ingest.sentry.io wss://*.sentry.io; worker-src 'self' blob:; base-uri 'self'; form-action 'self';" />
+    <!-- Note: This CSP includes both development (localhost) and production (calendraft.app) domains -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' http://localhost:3000 ws://localhost:3000 https://api.calendraft.app wss://api.calendraft.app https://*.sentry.io https://*.ingest.sentry.io https://*.ingest.de.sentry.io wss://*.sentry.io; worker-src 'self' blob:; base-uri 'self'; form-action 'self';" />
     
     <!-- Theme & Colors -->
     <meta name="theme-color" content="#2a2218" media="(prefers-color-scheme: dark)" />
@@ -49,8 +49,8 @@
     
     <!-- Performance: Preload critical resources -->
     <link rel="preload" as="image" href="/og-image.png" fetchpriority="high" />
-    <link rel="preconnect" href="https://api.appstandard.app" crossorigin />
-    <link rel="dns-prefetch" href="https://api.appstandard.app" />
+    <link rel="preconnect" href="https://api.calendraft.app" crossorigin />
+    <link rel="dns-prefetch" href="https://api.calendraft.app" />
     <link rel="preconnect" href="https://o4506871232004096.ingest.sentry.io" />
     <link rel="dns-prefetch" href="https://o4506871232004096.ingest.sentry.io" />
     
