@@ -209,6 +209,9 @@ export interface TaskInput {
 	// ----- Attachments -----
 	attachments?: ParsedAttachment[] | undefined;
 
+	// ----- Request Status -----
+	requestStatus?: ParsedRequestStatus[] | undefined; // REQUEST-STATUS (RFC 5545 Section 3.8.8.3)
+
 	// ----- Extensions -----
 	color?: string | undefined; // COLOR (RFC 7986)
 }

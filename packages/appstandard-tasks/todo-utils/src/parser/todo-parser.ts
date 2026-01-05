@@ -170,10 +170,12 @@ function extractRequestStatus(vtodo: ical.Component): ParsedRequestStatus[] {
 		if (!value) continue;
 
 		const parts = String(value).split(";");
-		if (parts.length >= 2) {
+		const code = parts[0];
+		const description = parts[1];
+		if (code && description) {
 			statuses.push({
-				code: parts[0],
-				description: parts[1],
+				code,
+				description,
 				extData: parts[2] || undefined,
 			});
 		}
