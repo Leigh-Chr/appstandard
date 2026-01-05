@@ -1,8 +1,8 @@
-# Authentication System - Calendraft
+# Authentication System - AppStandard Calendar
 
 ## Overview
 
-Calendraft uses **Better-Auth** to manage user authentication. The system supports two modes:
+AppStandard Calendar uses **Better-Auth** to manage user authentication. The system supports two modes:
 
 1. **Anonymous mode**: Use without an account (data stored locally)
 2. **Authenticated mode**: Account with email/password (data synchronized in the cloud)
@@ -19,7 +19,7 @@ The server exposes Better-Auth endpoints via `/api/auth/*`.
 - Email/password authentication enabled
 - Cookies configured based on environment (development/production)
 
-**Server Configuration** (`apps/server/src/index.ts`):
+**Server Configuration** (`apps/calendar-server/src/index.ts`):
 - Route `/api/auth/*` handled by `auth.handler()`
 - Rate limiting:
   - 5 sign-ups/minute for `/api/auth/sign-up/email` (abuse prevention)
@@ -34,16 +34,16 @@ The server exposes Better-Auth endpoints via `/api/auth/*`.
 
 ### Frontend (Client)
 
-The client uses `better-auth/react` for authentication. The client is configured in `apps/web/src/lib/auth-client.ts` with the backend server URL.
+The client uses `better-auth/react` for authentication. The client is configured in `apps/calendar-web/src/lib/auth-client.ts` with the backend server URL.
 
 **Components**:
-- `SignInForm`: Sign-in form (`apps/web/src/components/sign-in-form.tsx`)
-- `SignUpForm`: Sign-up form (`apps/web/src/components/sign-up-form.tsx`)
+- `SignInForm`: Sign-in form (`apps/calendar-web/src/components/sign-in-form.tsx`)
+- `SignUpForm`: Sign-up form (`apps/calendar-web/src/components/sign-up-form.tsx`)
 - Route `/login`: Sign-in/sign-up page
 
 ## Required Environment Variables
 
-### Backend (`apps/server/.env`)
+### Backend (`apps/calendar-server/.env`)
 
 ```env
 # PostgreSQL database (required)
@@ -61,7 +61,7 @@ BETTER_AUTH_URL=http://localhost:3000
 # Email Service Configuration (required for email verification)
 # Option A: Resend (Recommended)
 RESEND_API_KEY=re_xxxxxxxxxxxxx
-EMAIL_FROM=Calendraft <noreply@calendraft.com>
+EMAIL_FROM=AppStandard Calendar <noreply@appstandard.com>
 
 # Option B: SMTP (Alternative - if using Nodemailer)
 # SMTP_HOST=smtp.example.com
@@ -71,7 +71,7 @@ EMAIL_FROM=Calendraft <noreply@calendraft.com>
 # SMTP_PASSWORD=your-password
 ```
 
-### Frontend (`apps/web/.env`)
+### Frontend (`apps/calendar-web/.env`)
 
 ```env
 # Backend server URL (required)
@@ -210,5 +210,5 @@ Better-Auth exposes the following endpoints via `/api/auth/*`:
 ## Additional Documentation
 
 - [Better-Auth Documentation](https://www.better-auth.com/docs)
-- [@calendraft/auth README](packages/auth/README.md)
+- [@appstandard/auth README](packages/auth/README.md)
 - [Main README](README.md) - "Authentication and Storage" section

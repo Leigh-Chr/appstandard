@@ -1,6 +1,6 @@
-# Deployment Guide - Calendraft
+# Deployment Guide - AppStandard Calendar
 
-This guide describes the steps to deploy Calendraft in production.
+This guide describes the steps to deploy AppStandard Calendar in production.
 
 ## Prerequisites
 
@@ -13,7 +13,7 @@ This guide describes the steps to deploy Calendraft in production.
 
 ### Docker Secrets Support
 
-Calendraft supports Docker secrets for sensitive configuration (production best practice). Secrets are read from `/run/secrets/` with fallback to environment variables.
+AppStandard Calendar supports Docker secrets for sensitive configuration (production best practice). Secrets are read from `/run/secrets/` with fallback to environment variables.
 
 **Supported secrets** (can use Docker secrets or env vars):
 - `BETTER_AUTH_SECRET`
@@ -34,9 +34,9 @@ secrets:
     file: ./secrets/resend_api_key.txt
 ```
 
-### Backend (`apps/server/.env`)
+### Backend (`apps/calendar-server/.env`)
 
-Create a `.env` file in `apps/server/` with the following variables:
+Create a `.env` file in `apps/calendar-server/` with the following variables:
 
 ```env
 NODE_ENV=production
@@ -77,9 +77,9 @@ EMAIL_FROM=noreply@your-domain.com
 - `RESEND_API_KEY` or SMTP config: Required for email verification
 - Never commit the `.env` file to the repository
 
-### Frontend (`apps/web/.env`)
+### Frontend (`apps/calendar-web/.env`)
 
-Create a `.env` file in `apps/web/`:
+Create a `.env` file in `apps/calendar-web/`:
 
 ```env
 VITE_SERVER_URL=https://api.your-domain.com
@@ -94,13 +94,13 @@ For uploading Sentry source maps during build:
 
 ```env
 SENTRY_ORG=your-sentry-organization
-SENTRY_PROJECT=calendraft-web
+SENTRY_PROJECT=appstandard-web
 SENTRY_AUTH_TOKEN=sntrys_xxx
 ```
 
 ## Deployment with Docker (recommended)
 
-The easiest way to deploy Calendraft is using Docker.
+The easiest way to deploy AppStandard Calendar is using Docker.
 
 ### Quick Start
 
@@ -111,11 +111,11 @@ The easiest way to deploy Calendraft is using Docker.
 docker compose -f docker-compose.dev.yml up -d
 
 # 2. Configure environment
-echo 'DATABASE_URL="postgresql://calendraft:calendraft_dev@localhost:5432/calendraft_dev"
+echo 'DATABASE_URL="postgresql://appstandard:appstandard_dev@localhost:5432/appstandard_dev"
 PORT=3000
 CORS_ORIGIN=http://localhost:3001
 BETTER_AUTH_SECRET=dev-secret-key-min-32-characters-long
-BETTER_AUTH_URL=http://localhost:3000' > apps/server/.env
+BETTER_AUTH_URL=http://localhost:3000' > apps/calendar-server/.env
 
 # 3. Initialize the database
 bun run db:push
@@ -155,8 +155,10 @@ docker compose logs -f
 |---------|------|-------------|
 | `db` | 5432 | PostgreSQL 16 |
 | `redis` | 6379 | Redis (Rate limiting - optional, falls back to in-memory) |
-| `server` | 3000 | Backend API (Bun + Hono) |
-| `web` | 3001 | Frontend (Nginx) |
+| `server` | 3000 | Calendar Backend API (Bun + Hono) |
+| `web` | 3001 | Calendar Frontend (Nginx) |
+
+> **Note**: Service names are `server` and `web` in docker-compose.yml. Use these names with Docker commands.
 
 ### Environment Variables
 
@@ -164,9 +166,9 @@ Copy `docker.env.example` to `.env` and configure:
 
 ```env
 # Database
-POSTGRES_USER=calendraft
+POSTGRES_USER=appstandard
 POSTGRES_PASSWORD=your_secure_password
-POSTGRES_DB=calendraft
+POSTGRES_DB=appstandard
 
 # Backend
 CORS_ORIGIN=https://your-domain.com
@@ -220,13 +222,13 @@ docker compose up -d --build server
 docker compose up -d --build web
 
 # Access PostgreSQL
-docker compose exec db psql -U calendraft -d calendraft
+docker compose exec db psql -U appstandard -d appstandard
 
 # Database backup
-docker compose exec db pg_dump -U calendraft calendraft > backup.sql
+docker compose exec db pg_dump -U appstandard appstandard > backup.sql
 
 # Restore database
-docker compose exec -T db psql -U calendraft calendraft < backup.sql
+docker compose exec -T db psql -U appstandard appstandard < backup.sql
 
 # Update
 git pull
@@ -323,31 +325,31 @@ bun run build
 ```
 
 This will:
-- Build the frontend in `apps/web/dist/`
-- Build the backend in `apps/server/dist/`
+- Build the frontend in `apps/calendar-web/dist/`
+- Build the backend in `apps/calendar-server/dist/`
 
 ## Starting (without Docker)
 
 ### Backend
 
 ```bash
-cd apps/server
+cd apps/calendar-server
 bun run dist/index.js
 ```
 
 Or with PM2 (recommended for production):
 
 ```bash
-pm2 start apps/server/dist/index.js --name calendraft-api
+pm2 start apps/calendar-server/dist/index.js --name appstandard-api
 ```
 
 ### Frontend
 
 The frontend can be served with any static web server:
 
-- **Nginx**: Configure to serve `apps/web/dist/`
-- **Vercel/Netlify**: Deploy the `apps/web/dist/` folder
-- **Cloudflare Pages**: Deploy the `apps/web/dist/` folder
+- **Nginx**: Configure to serve `apps/calendar-web/dist/`
+- **Vercel/Netlify**: Deploy the `apps/calendar-web/dist/` folder
+- **Cloudflare Pages**: Deploy the `apps/calendar-web/dist/` folder
 
 ## Nginx Configuration (example)
 
@@ -357,7 +359,7 @@ server {
     listen 80;
     server_name your-domain.com;
     
-    root /path/to/apps/web/dist;
+    root /path/to/apps/calendar-web/dist;
     index index.html;
     
     location / {
@@ -412,8 +414,8 @@ server {
 Sentry is integrated for error and performance monitoring. Configuration:
 
 1. **Create a Sentry project**: Go to [sentry.io](https://sentry.io) and create two projects:
-   - A "React" project for the frontend (`calendraft-web`)
-   - A "Node.js" project for the backend (`calendraft-api`)
+   - A "React" project for the frontend (`appstandard-web`)
+   - A "Node.js" project for the backend (`appstandard-api`)
 
 2. **Retrieve DSNs**: In each project, go to Settings > Client Keys (DSN)
 
@@ -460,7 +462,7 @@ bun run dist/src/index.js > logs/app.log 2>&1
 Or with PM2:
 
 ```bash
-pm2 logs calendraft-api
+pm2 logs appstandard-api
 ```
 
 ## Security
@@ -516,14 +518,14 @@ It is recommended to perform periodic rotation:
 ## Troubleshooting
 
 ### Error "CORS_ORIGIN is required"
-→ Check that `CORS_ORIGIN` is defined in `apps/server/.env`
+→ Check that `CORS_ORIGIN` is defined in `apps/calendar-server/.env`
 
 ### Health check returns 503
 → Check database connection
 → Check that Prisma is properly configured
 
 ### Rate limiting too strict
-→ Adjust limits in `apps/server/src/middleware/rate-limit.ts`
+→ Adjust limits in `apps/calendar-server/src/middleware/rate-limit.ts`
 → Note: Rate limiting uses Redis if `REDIS_URL` is set, otherwise falls back to in-memory (single instance only)
 
 ### 429 Too Many Requests errors

@@ -1,54 +1,52 @@
-# Notice de Changement de Licence
+# License Change Notice
 
-## ⚠️ Changement Important
+## Important Change
 
-Le projet Calendraft a migré d'une licence **MIT** vers **AGPL v3** (GNU Affero General Public License v3).
+The AppStandard Calendar project has migrated from an **MIT** license to **AGPL v3** (GNU Affero General Public License v3).
 
-## 📅 Date du Changement
+## Date of Change
 
-[À compléter avec la date du commit]
+December 2024
 
-## 🔄 Ce qui Change
+## What Changes
 
-### Avant (MIT)
-- Utilisation, modification et distribution libres
-- Pas de restrictions sur l'exploitation commerciale
-- Pas de restrictions sur les instances publiques
-- Pas d'obligation de partager les modifications
+### Before (MIT)
+- Free use, modification, and distribution
+- No restrictions on commercial exploitation
+- No restrictions on public instances
+- No obligation to share modifications
 
-### Maintenant (AGPL v3)
-- ✅ Code consultable librement
-- ✅ Forks GitHub autorisés pour contributions
-- ✅ Instances privées autorisées (local ou petit cercle privé)
-- ✅ Modifications personnelles autorisées (pour usage privé)
-- ⚠️ **Instances publiques** : Si vous déployez publiquement, vous **devez** partager le code source de vos modifications
-- ⚠️ **Usage commercial** : Si vous utilisez commercialement, vous **devez** partager le code source de vos modifications
-- ⚠️ **Même licence** : Vos modifications doivent être sous AGPL v3 également
+### Now (AGPL v3)
+- Code remains freely viewable
+- GitHub forks allowed for contributions
+- Private instances allowed (local or small private circle)
+- Personal modifications allowed (for private use)
+- **Public instances**: If you deploy publicly, you **must** share the source code of your modifications
+- **Commercial use**: If you use commercially, you **must** share the source code of your modifications
+- **Same license**: Your modifications must also be under AGPL v3
 
-## 📋 Pour les Utilisateurs Existants
+## For Existing Users
 
-Si vous avez obtenu le code sous licence MIT avant cette date, vous pouvez continuer à utiliser cette version sous MIT. Les nouvelles versions seront sous AGPL v3.
+If you obtained the code under the MIT license before this date, you may continue to use that version under MIT. New versions will be under AGPL v3.
 
-## 🎯 Pourquoi ce Changement ?
+## Why This Change?
 
-AGPL v3 a été choisie pour :
-- **Protéger le travail** : Empêcher l'exploitation secrète du code
-- **Encourager le partage** : Forcer le partage des améliorations
-- **Maintenir la transparence** : Garantir que le code source reste accessible
+AGPL v3 was chosen to:
+- **Protect the work**: Prevent secret exploitation of the code
+- **Encourage sharing**: Force sharing of improvements
+- **Maintain transparency**: Ensure the source code remains accessible
 
-## 📖 Documentation
+## Documentation
 
-- [LICENSE](LICENSE) : Texte complet de la licence AGPL v3
-- [USAGE.md](USAGE.md) : Conditions d'utilisation détaillées
-- [NOTICE](NOTICE) : Notice de copyright et politique d'utilisation
-- [README.md](README.md) : Section License mise à jour
+- [LICENSE](../LICENSE) - Full text of the AGPL v3 license
+- [NOTICE](../NOTICE) - Copyright notice and usage policy
+- [README.md](../README.md) - Updated License section
 
-## ❓ Questions
+## Questions
 
-Pour toute question, ouvrez une issue ou contactez le mainteneur.
+For any questions, open an issue or contact the maintainer.
 
-## 🔗 Ressources
+## Resources
 
-- [Texte complet de la licence AGPL v3](https://www.gnu.org/licenses/agpl-3.0.html)
-- [Explication de l'AGPL v3](https://www.gnu.org/licenses/agpl-3.0.html#what-does-it-mean)
-
+- [Full text of the AGPL v3 license](https://www.gnu.org/licenses/agpl-3.0.html)
+- [Explanation of AGPL v3](https://www.gnu.org/licenses/agpl-3.0.html#what-does-it-mean)

@@ -1,6 +1,6 @@
 # Contribution Guide
 
-Thank you for your interest in contributing to Calendraft! This guide will help you get started.
+Thank you for your interest in contributing to AppStandard Calendar! This guide will help you get started.
 
 ## Table of Contents
 
@@ -44,7 +44,7 @@ By participating in this project, you agree to maintain a respectful and inclusi
 ```bash
 # Clone the repository
 git clone <repository-url>
-cd calendraft
+cd appstandard
 
 # Install dependencies
 bun install
@@ -59,18 +59,29 @@ bun run dev
 ### Project Structure
 
 ```
-calendraft/
+appstandard/
 ├── apps/
-│   ├── web/              # React frontend application
-│   └── server/           # Hono API server
+│   ├── landing/             # Landing page
+│   ├── calendar-web/        # Calendar frontend (React + TanStack Router)
+│   ├── calendar-server/     # Calendar API server (Hono + tRPC)
+│   ├── tasks-web/           # Tasks frontend
+│   ├── tasks-server/        # Tasks API server
+│   ├── contacts-web/        # Contacts frontend
+│   └── contacts-server/     # Contacts API server
 ├── packages/
-│   ├── api/              # tRPC routers
-│   ├── auth/             # Better-Auth configuration
-│   ├── core/             # Business logic and types
-│   ├── db/               # Prisma schemas
-│   ├── ics-utils/        # ICS parsing/generation
-│   ├── react-utils/      # React hooks and utilities
-│   └── schemas/          # Zod validation schemas
+│   ├── api/                 # Calendar tRPC routers
+│   ├── api-core/            # Shared tRPC infrastructure
+│   ├── auth/                # Better-Auth configuration
+│   ├── config/              # Shared TypeScript configuration
+│   ├── core/                # Calendar business logic and types
+│   ├── db/                  # Prisma schemas
+│   ├── ics-utils/           # ICS parsing/generation
+│   ├── react-utils/         # React hooks and utilities
+│   ├── schemas/             # Calendar Zod validation schemas
+│   ├── server-core/         # Shared server middleware
+│   ├── ui/                  # Shared UI components
+│   ├── appstandard-contacts/  # Contacts packages (api, core, schemas, vcard-utils)
+│   └── appstandard-tasks/     # Tasks packages (api, core, schemas, todo-utils)
 ```
 
 ## Development Standards
@@ -116,13 +127,13 @@ Common types:
 
 - Use explicit types, avoid `any`
 - Prefer `interface` over `type` for objects
-- Use Zod schemas from the `@calendraft/schemas` package for validation
+- Use Zod schemas from the `@appstandard/schemas` package for validation
 
 ### React - Preventing Hook Errors
 
 **IMPORTANT**: This project uses several measures to prevent "Invalid hook call" and "dispatcher is null" errors:
 
-1. **Vite Configuration** (`apps/web/vite.config.ts`):
+1. **Vite Configuration** (`apps/calendar-web/vite.config.ts`):
    - `resolve.dedupe: ["react", "react-dom"]` - Forces a single instance of React
    - `optimizeDeps.include: ["react", "react-dom"]` - Pre-bundles React
    - `manualChunks` - Ensures React and ReactDOM are in the same chunk
@@ -145,7 +156,7 @@ Common types:
 
 ```bash
 # Run tests
-cd apps/web && bun run test
+cd apps/calendar-web && bun run test
 ```
 
 ## Pull Request Process
@@ -212,5 +223,5 @@ If you have questions, open an issue with the `question` label.
 
 ---
 
-Thank you for contributing to Calendraft! 🎉
+Thank you for contributing to AppStandard Calendar! 🎉
 

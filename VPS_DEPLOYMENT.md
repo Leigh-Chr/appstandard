@@ -1,9 +1,9 @@
-# VPS Deployment Guide - Calendraft
+# VPS Deployment Guide - AppStandard Calendar
 
 > 📌 **First-time installation guide**: This document is for initial setup of a new VPS server.  
 > For daily production management, see [`PRODUCTION_COMMANDS.md`](./PRODUCTION_COMMANDS.md) and scripts in [`scripts/production/`](./scripts/production/).
 
-Complete step-by-step guide to deploy Calendraft on a VPS with Docker Compose.
+Complete step-by-step guide to deploy AppStandard Calendar on a VPS with Docker Compose.
 
 **Estimated time**: 2-3 hours (first time)
 
@@ -60,11 +60,11 @@ apt install -y curl wget git ufw
 
 ```bash
 # Create a new user
-adduser calendraft
-usermod -aG sudo calendraft
+adduser appstandard
+usermod -aG sudo appstandard
 
 # Connect with this new user
-su - calendraft
+su - appstandard
 ```
 
 ### 2.3 Configure Firewall
@@ -121,8 +121,8 @@ docker compose version
 
 ```bash
 cd ~
-git clone https://github.com/YOUR_USERNAME/calendraft.git
-cd calendraft
+git clone https://github.com/YOUR_USERNAME/appstandard.git
+cd appstandard
 ```
 
 **Option B: Transfer with rsync (recommended if the repository is private)**
@@ -130,7 +130,7 @@ cd calendraft
 From your local machine:
 
 ```bash
-cd /path/to/calendraft
+cd /path/to/appstandard
 rsync -avz \
   --exclude 'node_modules' \
   --exclude '.git' \
@@ -138,13 +138,13 @@ rsync -avz \
   --exclude '**/*.db' \
   --exclude '.turbo' \
   --exclude 'turbod' \
-  ./ root@YOUR_VPS_IP:~/calendraft/
+  ./ root@YOUR_VPS_IP:~/appstandard/
 ```
 
 Then on the VPS:
 
 ```bash
-cd ~/calendraft
+cd ~/appstandard
 ```
 
 ### 3.2 Configure Environment
@@ -166,22 +166,22 @@ nano .env
 POSTGRES_PASSWORD=YOUR_SECURE_PASSWORD_HERE
 
 # Backend
-CORS_ORIGIN=https://calendraft.com
+CORS_ORIGIN=https://appstandard.com
 BETTER_AUTH_SECRET=YOUR_32_CHARACTER_SECRET_HERE
-BETTER_AUTH_URL=https://api.calendraft.com
+BETTER_AUTH_URL=https://api.appstandard.com
 
 # Frontend
-VITE_SERVER_URL=https://api.calendraft.com
+VITE_SERVER_URL=https://api.appstandard.com
 
 # Email (optional but recommended)
 RESEND_API_KEY=re_xxxxxxxxxxxxx
-EMAIL_FROM=noreply@calendraft.com
+EMAIL_FROM=noreply@appstandard.com
 ```
 
 ### 3.3 Generate Secrets
 
 ```bash
-cd ~/calendraft
+cd ~/appstandard
 
 # Generate BETTER_AUTH_SECRET
 SECRET=$(openssl rand -base64 32)
@@ -233,7 +233,7 @@ sudo apt install -y nginx certbot python3-certbot-nginx
 
 ### 5.2 Basic Configuration
 
-Create `/etc/nginx/sites-available/calendraft`:
+Create `/etc/nginx/sites-available/appstandard`:
 
 ```nginx
 server {
@@ -254,7 +254,7 @@ server {
 Enable and test:
 
 ```bash
-sudo ln -s /etc/nginx/sites-available/calendraft /etc/nginx/sites-enabled/
+sudo ln -s /etc/nginx/sites-available/appstandard /etc/nginx/sites-enabled/
 sudo rm -f /etc/nginx/sites-enabled/default
 sudo nginx -t
 sudo systemctl restart nginx
@@ -275,10 +275,10 @@ A       api     YOUR_VPS_IP        3600
 
 ```bash
 # For frontend
-sudo certbot --nginx -d calendraft.com -d www.calendraft.com
+sudo certbot --nginx -d appstandard.com -d www.appstandard.com
 
 # For API
-sudo certbot --nginx -d api.calendraft.com
+sudo certbot --nginx -d api.appstandard.com
 
 # Verify automatic renewal
 sudo certbot renew --dry-run
@@ -287,16 +287,16 @@ sudo certbot renew --dry-run
 ### 5.5 Update Environment Variables
 
 ```bash
-cd ~/calendraft
+cd ~/appstandard
 nano .env
 ```
 
 Update with your production URLs:
 
 ```env
-CORS_ORIGIN=https://calendraft.com
-BETTER_AUTH_URL=https://api.calendraft.com
-VITE_SERVER_URL=https://api.calendraft.com
+CORS_ORIGIN=https://appstandard.com
+BETTER_AUTH_URL=https://api.appstandard.com
+VITE_SERVER_URL=https://api.appstandard.com
 ```
 
 Restart services:
@@ -315,15 +315,15 @@ DOCKER_BUILDKIT=1 docker compose up -d --build
 docker compose ps
 
 # Test endpoints
-curl https://api.calendraft.com/health
-curl -I https://calendraft.com
+curl https://api.appstandard.com/health
+curl -I https://appstandard.com
 
 # Check database
-docker compose exec db psql -U calendraft -d calendraft -c "\dt"
+docker compose exec db psql -U appstandard -d appstandard -c "\dt"
 ```
 
 **Test the application**:
-1. Open https://calendraft.com in a browser
+1. Open https://appstandard.com in a browser
 2. Check that there are no errors in the console (F12)
 3. Test account creation
 
@@ -356,19 +356,19 @@ docker compose exec db psql -U calendraft -d calendraft -c "\dt"
 
 ### Web Infrastructure
 - [ ] Nginx installed and configured
-- [ ] DNS configured (A records for calendraft.com and api.calendraft.com)
+- [ ] DNS configured (A records for appstandard.com and api.appstandard.com)
 - [ ] SSL certificates obtained with Certbot
 - [ ] Nginx restarts correctly
 
 ### Configuration
-- [ ] `CORS_ORIGIN` = `https://calendraft.com`
-- [ ] `BETTER_AUTH_URL` = `https://api.calendraft.com`
-- [ ] `VITE_SERVER_URL` = `https://api.calendraft.com`
+- [ ] `CORS_ORIGIN` = `https://appstandard.com`
+- [ ] `BETTER_AUTH_URL` = `https://api.appstandard.com`
+- [ ] `VITE_SERVER_URL` = `https://api.appstandard.com`
 - [ ] Services redeployed after variable changes
 
 ### Verifications
-- [ ] Frontend accessible: `https://calendraft.com`
-- [ ] API accessible: `https://api.calendraft.com/health`
+- [ ] Frontend accessible: `https://appstandard.com`
+- [ ] API accessible: `https://api.appstandard.com/health`
 - [ ] Database functional
 - [ ] Logs without critical errors
 - [ ] Authentication tested (account creation)
@@ -387,7 +387,7 @@ Your application is now deployed in production! 🎉
 
 1. **Daily management**: Use production scripts
    ```bash
-   cd ~/calendraft
+   cd ~/appstandard
    ./scripts/production/deploy.sh --backup
    ```
 
@@ -399,6 +399,6 @@ Your application is now deployed in production! 🎉
 ### Simple update
 
 ```bash
-cd ~/calendraft
+cd ~/appstandard
 ./scripts/production/deploy.sh --backup --migrate
 ```

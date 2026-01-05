@@ -8,7 +8,7 @@
 
 ## Reporting a Vulnerability
 
-Calendraft takes security very seriously. If you discover a security vulnerability, please report it responsibly.
+AppStandard Calendar takes security very seriously. If you discover a security vulnerability, please report it responsibly.
 
 ### How to Report
 
@@ -177,15 +177,15 @@ Dependencies are regularly updated to include security patches. We use:
 
 This policy covers:
 
-- The Calendraft web application
+- The AppStandard Calendar web application
 - The backend API
-- Internal packages (`@calendraft/*`)
+- Internal packages (`@appstandard/*`)
 - Third-party deployments or forks are not covered
 
 ## Acknowledgments
 
-We thank security researchers who contribute to Calendraft's security. Contributors will be recognized here (with their permission).
+We thank security researchers who contribute to AppStandard Calendar's security. Contributors will be recognized here (with their permission).
 
 ---
 
-Thank you for helping keep Calendraft secure!
+Thank you for helping keep AppStandard Calendar secure!

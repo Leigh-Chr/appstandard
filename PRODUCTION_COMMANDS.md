@@ -1,6 +1,6 @@
-# Production Commands Guide - Calendraft
+# Production Commands Guide - AppStandard Calendar
 
-Guide to production scripts for managing Calendraft in production.
+Guide to production scripts for managing AppStandard Calendar in production.
 
 > 💡 **Quick start**: See `scripts/production/README.md` for a quick introduction.  
 > 📖 **Basic Docker commands**: See [DEPLOYMENT.md](./DEPLOYMENT.md) for standard Docker commands.
@@ -112,13 +112,17 @@ chmod +x scripts/production/*.sh
 
 # Real-time logs
 ./scripts/production/quick-commands.sh logs
-./scripts/production/quick-commands.sh logs server
+./scripts/production/quick-commands.sh logs server    # Backend logs
+./scripts/production/quick-commands.sh logs web       # Frontend logs
 
 # Restart a service
+./scripts/production/quick-commands.sh restart server
 ./scripts/production/quick-commands.sh restart web
 
-# Access PostgreSQL
-./scripts/production/quick-commands.sh shell-db
+# Access containers
+./scripts/production/quick-commands.sh shell-db       # PostgreSQL shell
+./scripts/production/quick-commands.sh shell-server   # Backend shell
+./scripts/production/quick-commands.sh shell-web      # Frontend shell
 
 # Statistics
 ./scripts/production/quick-commands.sh stats
@@ -193,21 +197,21 @@ crontab -e
 ### Complete Crontab Example
 
 ```bash
-# Calendraft - Automated tasks
+# AppStandard Calendar - Automated tasks
 # Daily backup at 2 AM
-0 2 * * * cd ~/calendraft && ./scripts/production/backup.sh >> ~/backup.log 2>&1
+0 2 * * * cd ~/appstandard && ./scripts/production/backup.sh >> ~/backup.log 2>&1
 
 # Daily health check at 8 AM
-0 8 * * * cd ~/calendraft && ./scripts/production/health-check.sh >> ~/health.log 2>&1
+0 8 * * * cd ~/appstandard && ./scripts/production/health-check.sh >> ~/health.log 2>&1
 
 # Daily report at midnight
-0 0 * * * cd ~/calendraft && ./scripts/production/report.sh --format=json --output=~/reports/status-$(date +\%Y\%m\%d).json
+0 0 * * * cd ~/appstandard && ./scripts/production/report.sh --format=json --output=~/reports/status-$(date +\%Y\%m\%d).json
 
 # Weekly security audit (Monday 6 AM)
-0 6 * * 1 cd ~/calendraft && ./scripts/production/security-audit.sh >> ~/security-audit.log 2>&1
+0 6 * * 1 cd ~/appstandard && ./scripts/production/security-audit.sh >> ~/security-audit.log 2>&1
 
 # Weekly cleanup (Sunday 3 AM)
-0 3 * * 0 cd ~/calendraft && ./scripts/production/cleanup.sh --images --build-cache >> ~/cleanup.log 2>&1
+0 3 * * 0 cd ~/appstandard && ./scripts/production/cleanup.sh --images --build-cache >> ~/cleanup.log 2>&1
 ```
 
 ---

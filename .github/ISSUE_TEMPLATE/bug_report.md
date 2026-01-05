@@ -1,6 +1,6 @@
 ---
 name: 🐛 Bug Report
-about: Report a bug to help improve Calendraft
+about: Report a bug to help improve AppStandard Calendar
 title: '[Bug] '
 labels: bug
 assignees: ''

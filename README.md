@@ -1,11 +1,11 @@
-# Calendraft
+# AppStandard Calendar
 
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Bun](https://img.shields.io/badge/Bun-1.3-black?logo=bun&logoColor=white)](https://bun.sh/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
-**Calendraft** is a web platform designed to simplify the management, editing, and creation of **.ics** format calendars.
+**AppStandard Calendar** is a web platform designed to simplify the management, editing, and creation of **.ics** format calendars.
 
 The goal is to offer a modern and intuitive experience that allows users to work easily with calendar files — without complex tools, without configuration, and without particular technical skills.
 
@@ -87,14 +87,14 @@ This project uses PostgreSQL with Prisma.
 # Start PostgreSQL locally
 docker compose -f docker-compose.dev.yml up -d
 
-# Configure the environment variable in apps/server/.env
-DATABASE_URL="postgresql://calendraft:calendraft_dev@localhost:5432/calendraft_dev"
+# Configure the environment variable in apps/calendar-server/.env
+DATABASE_URL="postgresql://appstandard:appstandard_dev@localhost:5432/appstandard_dev"
 ```
 
 #### Option 2: Existing PostgreSQL
 
 ```env
-# In apps/server/.env
+# In apps/calendar-server/.env
 DATABASE_URL="postgresql://USER:PASSWORD@HOST:PORT/DATABASE"
 ```
 
@@ -121,7 +121,7 @@ bun run db:studio
 
 ### Environment Configuration
 
-Create a `.env` file in `apps/server`:
+Create a `.env` file in `apps/calendar-server`:
 
 ```env
 # PostgreSQL database (required)
@@ -144,7 +144,7 @@ REDIS_URL=redis://localhost:6379
 # Email Service Configuration (required for email verification)
 # Option A: Resend (Recommended)
 RESEND_API_KEY=re_xxxxxxxxxxxxx
-EMAIL_FROM=noreply@calendraft.com
+EMAIL_FROM=noreply@appstandard.com
 
 # Option B: SMTP (Alternative)
 # SMTP_HOST=smtp.example.com
@@ -154,7 +154,7 @@ EMAIL_FROM=noreply@calendraft.com
 # SMTP_PASSWORD=your-password
 ```
 
-Create a `.env` file in `apps/web`:
+Create a `.env` file in `apps/calendar-web`:
 
 ```env
 # Backend server URL (default: http://localhost:3000)
@@ -254,7 +254,7 @@ For managing the application in production, a comprehensive set of scripts is av
 
 ### Quick Production Checklist
 
-- [ ] Environment variables configured (see `docker.env.example` for Docker or configure `apps/server/.env` manually)
+- [ ] Environment variables configured (see `docker.env.example` for Docker or configure `apps/calendar-server/.env` manually)
 - [ ] `CORS_ORIGIN` defined (required, do not use `*`)
 - [ ] `BETTER_AUTH_SECRET` generated (min 32 characters)
 - [ ] Database initialized
@@ -264,12 +264,12 @@ For managing the application in production, a comprehensive set of scripts is av
 
 ### Critical Environment Variables
 
-**Backend** (`apps/server/.env`):
+**Backend** (`apps/calendar-server/.env`):
 - `CORS_ORIGIN`: Frontend URL (required in production)
 - `BETTER_AUTH_SECRET`: Secret key for authentication (required)
 - `NODE_ENV=production`: Production mode
 
-**Frontend** (`apps/web/.env`):
+**Frontend** (`apps/calendar-web/.env`):
 - `VITE_SERVER_URL`: Backend API URL
 
 ### Security
@@ -296,18 +296,29 @@ For managing the application in production, a comprehensive set of scripts is av
 ## Project Structure
 
 ```
-calendraft/
+appstandard/
 ├── apps/
-│   ├── web/           # Frontend application (React + TanStack Router)
-│   └── server/        # API server (Hono)
+│   ├── landing/             # Landing page (React + Vite)
+│   ├── calendar-web/        # Calendar frontend (React + TanStack Router)
+│   ├── calendar-server/     # Calendar API server (Hono + tRPC)
+│   ├── tasks-web/           # Tasks frontend (React + TanStack Router)
+│   ├── tasks-server/        # Tasks API server (Hono + tRPC)
+│   ├── contacts-web/        # Contacts frontend (React + TanStack Router)
+│   └── contacts-server/     # Contacts API server (Hono + tRPC)
 ├── packages/
-│   ├── api/           # tRPC routers
-│   ├── auth/          # Better-Auth configuration
-│   ├── core/          # Business logic and shared types
-│   ├── db/            # Prisma client and schemas
-│   ├── ics-utils/     # ICS parsing and generation
-│   ├── react-utils/   # React hooks and utilities
-│   └── schemas/       # Zod validation schemas
+│   ├── api/                 # Calendar tRPC routers
+│   ├── api-core/            # Shared tRPC infrastructure
+│   ├── auth/                # Better-Auth configuration
+│   ├── config/              # Shared TypeScript configuration
+│   ├── core/                # Calendar business logic and types
+│   ├── db/                  # Prisma client and schemas
+│   ├── ics-utils/           # ICS parsing and generation
+│   ├── react-utils/         # React hooks and utilities
+│   ├── schemas/             # Calendar Zod validation schemas
+│   ├── server-core/         # Shared server middleware
+│   ├── ui/                  # Shared UI components
+│   ├── appstandard-contacts/  # Contacts packages (api, core, schemas, vcard-utils)
+│   └── appstandard-tasks/     # Tasks packages (api, core, schemas, todo-utils)
 ```
 
 ## User Guide
@@ -345,7 +356,7 @@ calendraft/
 - `bun run db:migrate` - Apply database migrations
 - `bun run db:seed` - Seed database with test data (development only)
 - `bun run check` - Run formatting and linting with Biome
-- `cd apps/web && bun run generate-pwa-assets` - Generate PWA assets
+- `cd apps/calendar-web && bun run generate-pwa-assets` - Generate PWA assets
 
 ## Troubleshooting
 
@@ -357,7 +368,7 @@ calendraft/
 
 ### Frontend cannot connect to backend
 
-- Check that `VITE_SERVER_URL` in `apps/web/.env` points to `http://localhost:3000`
+- Check that `VITE_SERVER_URL` in `apps/calendar-web/.env` points to `http://localhost:3000`
 - Make sure the backend server is started (`bun run dev:server`)
 - Check the browser console for CORS errors
 
@@ -390,13 +401,13 @@ calendraft/
 
 | Package | Description |
 |---------|-------------|
-| [@calendraft/core](packages/core/README.md) | Business logic and shared types |
-| [@calendraft/ics-utils](packages/ics-utils/README.md) | ICS file parsing and generation |
-| [@calendraft/react-utils](packages/react-utils/README.md) | React hooks and utilities |
-| [@calendraft/api](packages/api/README.md) | tRPC API and routers |
-| [@calendraft/auth](packages/auth/README.md) | Better-Auth configuration |
-| [@calendraft/db](packages/db/README.md) | Prisma client and DB schemas |
-| [@calendraft/schemas](packages/schemas/README.md) | Zod validation schemas |
+| [@appstandard/core](packages/core/README.md) | Business logic and shared types |
+| [@appstandard/ics-utils](packages/ics-utils/README.md) | ICS file parsing and generation |
+| [@appstandard/react-utils](packages/react-utils/README.md) | React hooks and utilities |
+| [@appstandard/api](packages/api/README.md) | tRPC API and routers |
+| [@appstandard/auth](packages/auth/README.md) | Better-Auth configuration |
+| [@appstandard/db](packages/db/README.md) | Prisma client and DB schemas |
+| [@appstandard/schemas](packages/schemas/README.md) | Zod validation schemas |
 
 ## Contributing
 
@@ -411,14 +422,14 @@ This project is licensed under **AGPL v3** (GNU Affero General Public License v3
 AGPL v3 is a copyleft license that ensures cooperation with the community. Key points:
 
 - ✅ **Code is freely viewable and modifiable** - You can study, modify, and use the code
-- ✅ **Private instances are allowed** - You can run Calendraft locally or in a private environment
+- ✅ **Private instances are allowed** - You can run AppStandard Calendar locally or in a private environment
 - ✅ **Contributions are welcome** - Pull Requests are encouraged
-- ⚠️ **Modified versions must share their source code** - If you modify and deploy Calendraft publicly, you must share your modifications
+- ⚠️ **Modified versions must share their source code** - If you modify and deploy AppStandard Calendar publicly, you must share your modifications
 - ⚠️ **Commercial use requires source code sharing** - Commercial use is allowed, but modifications must be shared
 
 ### Usage Policy
 
-While Calendraft is licensed under AGPL v3, the maintainer requests that:
+While AppStandard Calendar is licensed under AGPL v3, the maintainer requests that:
 
 - **Public Instances**: Only the official instance operated by the maintainer should be publicly accessible. If you wish to operate a public instance, please contact the maintainer first to discuss.
 
