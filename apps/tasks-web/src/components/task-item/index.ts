@@ -13,6 +13,7 @@ export {
 	TaskProgressBar,
 	TaskSecondaryInfo,
 } from "./task-details";
+export { TaskHoverPreview } from "./task-hover-preview";
 export type {
 	KanbanCardProps,
 	KanbanColumnProps,

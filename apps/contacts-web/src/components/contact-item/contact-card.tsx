@@ -28,6 +28,7 @@ import {
 	User,
 } from "lucide-react";
 import { motion } from "motion/react";
+import { ContactNotePreview, ContactSecondaryInfo } from "./contact-details";
 import type { ContactCardProps } from "./types";
 import { formatCategories, formatLocation, formatPosition } from "./types";
 
@@ -182,6 +183,12 @@ export function ContactCard({
 							<span className="line-clamp-1">{categoriesStr}</span>
 						</div>
 					)}
+
+					{/* Secondary info (additional emails, phones, addresses, IM handles, relations) */}
+					<ContactSecondaryInfo contact={contact} />
+
+					{/* Note preview */}
+					<ContactNotePreview contact={contact} />
 				</div>
 
 				{/* Actions - hide in selection mode */}

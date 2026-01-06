@@ -1,81 +1,108 @@
 /**
- * Extended task form component for full-page create/edit
- * Based on EventFormExtended pattern from Calendar app
+ * Extended task form component with full RFC 5545 VTODO support
+ * Based on Calendar's EventFormExtended pattern
+ *
+ * Features:
+ * - CollapsibleSection for organized form sections
+ * - Real-time validation
+ * - Mobile progress indicator
+ * - Modification tracking
+ * - Attendees, Alarms, Recurrence, Attachments support
  */
 
+import { useFormTracking, useIsMobile } from "@appstandard/react-utils";
 import {
 	Badge,
 	Button,
 	Card,
 	CardContent,
+	CardDescription,
 	CardHeader,
 	CardTitle,
-	Input,
-	Label,
-	Progress,
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-	Textarea,
+	CollapsibleSection,
+	MobileFormProgress,
 } from "@appstandard/ui";
 import { format } from "date-fns";
 import {
+	Bell,
 	Calendar,
-	ChevronDown,
-	ChevronUp,
-	Clock,
-	Flag,
+	FileText,
 	Loader2,
-	MapPin,
-	Percent,
-	Tag,
+	Paperclip,
+	Repeat,
+	Settings,
+	Users,
+	X,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
+import {
+	AdditionalInfoSection,
+	AlarmsSection,
+	AttachmentsSection,
+	AttendeesSection,
+	BasicInfoSection,
+	DatesSection,
+	RecurrenceSection,
+} from "@/components/task-form";
+import {
+	hasValidationErrors,
+	type TaskFormData,
+	validateDates,
+	validateTaskForm,
+	validateTitle,
+	validateUrl,
+} from "@/lib/task-form-validation";
 
-export interface TaskFormData {
-	title: string;
-	description?: string | undefined;
-	status: "NEEDS_ACTION" | "IN_PROCESS" | "COMPLETED" | "CANCELLED";
-	priority?: number | undefined;
-	percentComplete: number;
-	dueDate?: Date | undefined;
-	startDate?: Date | undefined;
-	location?: string | undefined;
-	url?: string | undefined;
-	categories?: string | undefined;
-	color?: string | undefined;
+// Re-export type for backward compatibility
+export type { TaskFormData } from "@/lib/task-form-validation";
+
+interface AttendeeData {
+	email: string;
+	name?: string;
+	role?: string;
+	status?: string;
+	rsvp?: boolean;
+}
+
+interface AlarmData {
+	trigger: string;
+	action: string;
+}
+
+interface AttachmentData {
+	uri?: string;
+	filename?: string;
 }
 
 interface TaskFormExtendedProps {
 	mode: "create" | "edit";
-	initialData?: Partial<TaskFormData> | undefined;
+	initialData?: Partial<TaskFormData>;
 	onSubmit: (data: TaskFormData) => void;
 	onCancel: () => void;
 	isSubmitting: boolean;
 	taskListId: string;
 }
 
-const STATUS_OPTIONS = [
-	{ value: "NEEDS_ACTION", label: "To Do", color: "bg-yellow-500" },
-	{ value: "IN_PROCESS", label: "In Progress", color: "bg-blue-500" },
-	{ value: "COMPLETED", label: "Completed", color: "bg-green-500" },
-	{ value: "CANCELLED", label: "Cancelled", color: "bg-gray-500" },
-] as const;
-
-const PRIORITY_OPTIONS = [
-	{ value: "0", label: "None" },
-	{ value: "1", label: "Highest (1)" },
-	{ value: "2", label: "High (2)" },
-	{ value: "3", label: "High (3)" },
-	{ value: "4", label: "Medium-High (4)" },
-	{ value: "5", label: "Medium (5)" },
-	{ value: "6", label: "Medium-Low (6)" },
-	{ value: "7", label: "Low (7)" },
-	{ value: "8", label: "Low (8)" },
-	{ value: "9", label: "Lowest (9)" },
-] as const;
+function initializeFormData(data?: Partial<TaskFormData>): TaskFormData {
+	return {
+		title: data?.title || "",
+		description: data?.description || "",
+		status: data?.status || "NEEDS_ACTION",
+		priority: data?.priority,
+		percentComplete: data?.percentComplete ?? 0,
+		dueDate: data?.dueDate || "",
+		startDate: data?.startDate || "",
+		location: data?.location || "",
+		url: data?.url || "",
+		categories: data?.categories || "",
+		color: data?.color || "#22c55e",
+		rrule: data?.rrule || "",
+		attendees: data?.attendees || [],
+		alarms: data?.alarms || [],
+		attachments: data?.attachments || [],
+	};
+}
 
 export function TaskFormExtended({
 	mode,
@@ -85,420 +112,522 @@ export function TaskFormExtended({
 	isSubmitting,
 }: TaskFormExtendedProps) {
 	// Form state
-	const [title, setTitle] = useState(initialData?.title || "");
-	const [description, setDescription] = useState(
-		initialData?.description || "",
+	const [formData, setFormData] = useState<TaskFormData>(() =>
+		initializeFormData(initialData),
 	);
-	const [status, setStatus] = useState<TaskFormData["status"]>(
-		initialData?.status || "NEEDS_ACTION",
-	);
-	const [priority, setPriority] = useState<string>(
-		String(initialData?.priority || 0),
-	);
-	const [percentComplete, setPercentComplete] = useState(
-		initialData?.percentComplete || 0,
-	);
-	const [dueDate, setDueDate] = useState(
-		initialData?.dueDate
-			? format(new Date(initialData.dueDate), "yyyy-MM-dd")
-			: "",
-	);
-	const [dueTime, setDueTime] = useState(
-		initialData?.dueDate ? format(new Date(initialData.dueDate), "HH:mm") : "",
-	);
-	const [startDate, setStartDate] = useState(
-		initialData?.startDate
-			? format(new Date(initialData.startDate), "yyyy-MM-dd")
-			: "",
-	);
-	const [startTime, setStartTime] = useState(
-		initialData?.startDate
-			? format(new Date(initialData.startDate), "HH:mm")
-			: "",
-	);
-	const [location, setLocation] = useState(initialData?.location || "");
-	const [url, setUrl] = useState(initialData?.url || "");
-	const [categories, setCategories] = useState(initialData?.categories || "");
-	const [color, setColor] = useState(initialData?.color || "#22c55e");
-
-	// Section visibility state
-	const [showDatesSection, setShowDatesSection] = useState(
-		mode === "edit" || Boolean(initialData?.dueDate || initialData?.startDate),
-	);
-	const [showDetailsSection, setShowDetailsSection] = useState(
-		mode === "edit" ||
-			Boolean(
-				initialData?.location ||
-					initialData?.url ||
-					initialData?.categories ||
-					initialData?.color,
-			),
+	const [initialFormData, setInitialFormData] = useState<TaskFormData | null>(
+		null,
 	);
 
-	const handleSubmit = (e: React.FormEvent) => {
-		e.preventDefault();
-
-		let parsedDueDate: Date | undefined;
-		let parsedStartDate: Date | undefined;
-
-		if (dueDate) {
-			parsedDueDate = new Date(dueDate);
-			if (dueTime) {
-				const parts = dueTime.split(":").map(Number);
-				const hours = parts[0] ?? 0;
-				const minutes = parts[1] ?? 0;
-				parsedDueDate.setHours(hours, minutes);
+	// Date/time split state
+	const [startTime, setStartTime] = useState(() => {
+		if (initialData?.startDate) {
+			try {
+				return format(new Date(initialData.startDate), "HH:mm");
+			} catch {
+				return "";
 			}
 		}
-
-		if (startDate) {
-			parsedStartDate = new Date(startDate);
-			if (startTime) {
-				const parts = startTime.split(":").map(Number);
-				const hours = parts[0] ?? 0;
-				const minutes = parts[1] ?? 0;
-				parsedStartDate.setHours(hours, minutes);
+		return "";
+	});
+	const [dueTime, setDueTime] = useState(() => {
+		if (initialData?.dueDate) {
+			try {
+				return format(new Date(initialData.dueDate), "HH:mm");
+			} catch {
+				return "";
 			}
 		}
+		return "";
+	});
 
-		onSubmit({
-			title,
-			description: description || undefined,
-			status,
-			priority: Number.parseInt(priority, 10) || undefined,
-			percentComplete,
-			dueDate: parsedDueDate,
-			startDate: parsedStartDate,
-			location: location || undefined,
-			url: url || undefined,
-			categories: categories || undefined,
-			color: color || undefined,
+	// Section expansion state
+	const [expandedSections, setExpandedSections] = useState<Set<string>>(() => {
+		const sections = new Set<string>(["basic"]);
+		if (initialData?.dueDate || initialData?.startDate) sections.add("dates");
+		if (initialData?.attendees?.length) sections.add("attendees");
+		if (initialData?.alarms?.length) sections.add("alarms");
+		if (initialData?.rrule) sections.add("recurrence");
+		if (initialData?.attachments?.length) sections.add("attachments");
+		return sections;
+	});
+
+	// Validation state
+	const [validationErrors, setValidationErrors] = useState<
+		Record<string, string | undefined>
+	>({});
+	const [attendeeErrors, setAttendeeErrors] = useState<Record<number, string>>(
+		{},
+	);
+
+	// Mobile progress tracking
+	const isMobile = useIsMobile();
+	const formRef = useRef<HTMLFormElement>(null);
+	const [currentSection, setCurrentSection] = useState(1);
+	const sectionRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+
+	// Form tracking
+	const { hasModifications, resetTracking } = useFormTracking({
+		initialData: initialFormData,
+		currentData: formData,
+		warnOnUnload: mode === "edit",
+	});
+
+	// Initialize form data
+	useEffect(() => {
+		if (initialData) {
+			const newFormData = initializeFormData(initialData);
+			setFormData(newFormData);
+			setInitialFormData(newFormData);
+		}
+	}, [initialData]);
+
+	// Mobile section tracking with IntersectionObserver
+	useEffect(() => {
+		if (!isMobile || !formRef.current) return;
+
+		const observer = new IntersectionObserver(
+			(entries) => {
+				let maxVisible = 0;
+				let currentSectionId = "basic";
+
+				for (const entry of entries) {
+					if (entry.isIntersecting && entry.intersectionRatio > maxVisible) {
+						maxVisible = entry.intersectionRatio;
+						currentSectionId =
+							entry.target.getAttribute("data-section-id") || "basic";
+					}
+				}
+
+				const sectionMap: Record<string, number> = {
+					basic: 1,
+					dates: 2,
+					attendees: 3,
+					alarms: 4,
+					recurrence: 5,
+					attachments: 6,
+					additional: 7,
+				};
+
+				const sectionNumber = sectionMap[currentSectionId];
+				if (sectionNumber !== undefined) {
+					setCurrentSection(sectionNumber);
+				}
+			},
+			{
+				threshold: [0, 0.25, 0.5, 0.75, 1],
+				rootMargin: "-100px 0px -50% 0px",
+			},
+		);
+
+		const timeoutId = setTimeout(() => {
+			sectionRefs.current.forEach((ref) => {
+				if (ref) observer.observe(ref);
+			});
+		}, 100);
+
+		return () => {
+			clearTimeout(timeoutId);
+			observer.disconnect();
+		};
+	}, [isMobile]);
+
+	const setSectionRef = (id: string) => (el: HTMLDivElement | null) => {
+		if (el) {
+			sectionRefs.current.set(id, el);
+		} else {
+			sectionRefs.current.delete(id);
+		}
+	};
+
+	const toggleSection = (section: string) => {
+		setExpandedSections((prev) => {
+			const next = new Set(prev);
+			if (next.has(section)) {
+				next.delete(section);
+			} else {
+				next.add(section);
+			}
+			return next;
 		});
 	};
 
-	const statusInfo = STATUS_OPTIONS.find((s) => s.value === status);
+	// Field change handlers with real-time validation
+	const handleTitleChange = (value: string) => {
+		setFormData((prev) => ({ ...prev, title: value }));
+		const error = validateTitle(value);
+		setValidationErrors((prev) => ({ ...prev, title: error }));
+	};
 
-	// Calculate expanded sections for mobile progress indicator
-	const totalSections = 3; // Basic Info, Dates, Details
-	const expandedSections =
-		1 + (showDatesSection ? 1 : 0) + (showDetailsSection ? 1 : 0);
+	const handleStartDateChange = (value: string) => {
+		setFormData((prev) => ({ ...prev, startDate: value }));
+		const errors = validateDates(value, formData.dueDate);
+		setValidationErrors((prev) => ({ ...prev, ...errors }));
+	};
+
+	const handleDueDateChange = (value: string) => {
+		setFormData((prev) => ({ ...prev, dueDate: value }));
+		const errors = validateDates(formData.startDate, value);
+		setValidationErrors((prev) => ({ ...prev, ...errors }));
+	};
+
+	const handleUrlChange = (value: string) => {
+		setFormData((prev) => ({ ...prev, url: value }));
+		const error = validateUrl(value);
+		setValidationErrors((prev) => ({ ...prev, url: error }));
+	};
+
+	// Attendee handlers
+	const addAttendee = () => {
+		setFormData((prev) => ({
+			...prev,
+			attendees: [...(prev.attendees || []), { email: "", rsvp: false }],
+		}));
+	};
+
+	const removeAttendee = (index: number) => {
+		setFormData((prev) => ({
+			...prev,
+			attendees: prev.attendees?.filter((_, i) => i !== index) || [],
+		}));
+		setAttendeeErrors((prev) => {
+			const next = { ...prev };
+			delete next[index];
+			return next;
+		});
+	};
+
+	const updateAttendee = (index: number, data: Partial<AttendeeData>) => {
+		setFormData((prev) => ({
+			...prev,
+			attendees:
+				prev.attendees?.map((a, i) => (i === index ? { ...a, ...data } : a)) ||
+				[],
+		}));
+	};
+
+	// Alarm handlers
+	const addAlarm = () => {
+		setFormData((prev) => ({
+			...prev,
+			alarms: [
+				...(prev.alarms || []),
+				{ trigger: "-PT15M", action: "DISPLAY" },
+			],
+		}));
+	};
+
+	const removeAlarm = (index: number) => {
+		setFormData((prev) => ({
+			...prev,
+			alarms: prev.alarms?.filter((_, i) => i !== index) || [],
+		}));
+	};
+
+	const updateAlarm = (index: number, data: Partial<AlarmData>) => {
+		setFormData((prev) => ({
+			...prev,
+			alarms:
+				prev.alarms?.map((a, i) => (i === index ? { ...a, ...data } : a)) || [],
+		}));
+	};
+
+	// Attachment handlers
+	const addAttachment = () => {
+		setFormData((prev) => ({
+			...prev,
+			attachments: [...(prev.attachments || []), { uri: "" }],
+		}));
+	};
+
+	const removeAttachment = (index: number) => {
+		setFormData((prev) => ({
+			...prev,
+			attachments: prev.attachments?.filter((_, i) => i !== index) || [],
+		}));
+	};
+
+	const updateAttachment = (index: number, data: Partial<AttachmentData>) => {
+		setFormData((prev) => ({
+			...prev,
+			attachments:
+				prev.attachments?.map((a, i) =>
+					i === index ? { ...a, ...data } : a,
+				) || [],
+		}));
+	};
+
+	// Form submission
+	const handleSubmit = (e: React.FormEvent) => {
+		e.preventDefault();
+
+		const errors = validateTaskForm(formData);
+
+		if (hasValidationErrors(errors)) {
+			setValidationErrors(errors);
+			const firstError = Object.values(errors).find(
+				(e): e is string => typeof e === "string",
+			);
+			if (firstError) {
+				toast.error(firstError);
+			}
+			return;
+		}
+
+		setValidationErrors({});
+		resetTracking();
+		onSubmit(formData);
+	};
+
+	const totalSections = 7;
 
 	return (
-		<form onSubmit={handleSubmit} className="space-y-6">
-			{/* Mobile Progress Indicator */}
-			<div className="flex items-center justify-between text-muted-foreground text-sm sm:hidden">
-				<span>
-					Section {expandedSections} of {totalSections}
-				</span>
-				<span>
-					{Math.round((expandedSections / totalSections) * 100)}% complete
-				</span>
-			</div>
-
-			{/* Basic Info Card */}
-			<Card>
-				<CardHeader>
-					<CardTitle className="flex items-center gap-2 text-lg">
-						Basic Information
-						{statusInfo && (
-							<Badge variant="outline" className="ml-2">
-								<span
-									className={`mr-1.5 inline-block h-2 w-2 rounded-full ${statusInfo.color}`}
-								/>
-								{statusInfo.label}
-							</Badge>
-						)}
-					</CardTitle>
-				</CardHeader>
-				<CardContent className="space-y-4">
+		<Card>
+			<CardHeader>
+				<div className="flex items-start justify-between">
 					<div className="space-y-2">
-						<Label htmlFor="title">Title *</Label>
-						<Input
-							id="title"
-							value={title}
-							onChange={(e) => setTitle(e.target.value)}
-							placeholder="Task title"
-							required
-						/>
-					</div>
-
-					<div className="space-y-2">
-						<Label htmlFor="description">Description</Label>
-						<Textarea
-							id="description"
-							value={description}
-							onChange={(e) => setDescription(e.target.value)}
-							placeholder="Add a description..."
-							rows={3}
-						/>
-					</div>
-
-					<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-						<div className="space-y-2">
-							<Label htmlFor="status">Status</Label>
-							<Select
-								value={status}
-								onValueChange={(v) => setStatus(v as TaskFormData["status"])}
-							>
-								<SelectTrigger id="status">
-									<SelectValue />
-								</SelectTrigger>
-								<SelectContent>
-									{STATUS_OPTIONS.map((opt) => (
-										<SelectItem key={opt.value} value={opt.value}>
-											<span className="flex items-center gap-2">
-												<span
-													className={`inline-block h-2 w-2 rounded-full ${opt.color}`}
-												/>
-												{opt.label}
-											</span>
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
-						</div>
-
-						<div className="space-y-2">
-							<Label htmlFor="priority">Priority</Label>
-							<Select value={priority} onValueChange={setPriority}>
-								<SelectTrigger id="priority">
-									<SelectValue />
-								</SelectTrigger>
-								<SelectContent>
-									{PRIORITY_OPTIONS.map((opt) => (
-										<SelectItem key={opt.value} value={opt.value}>
-											<span className="flex items-center gap-2">
-												<Flag
-													className={`h-3 w-3 ${
-														Number(opt.value) <= 3
-															? "text-red-500"
-															: Number(opt.value) <= 6
-																? "text-yellow-500"
-																: "text-gray-400"
-													}`}
-												/>
-												{opt.label}
-											</span>
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
-						</div>
-					</div>
-
-					<div className="space-y-2">
-						<div className="flex items-center justify-between">
-							<Label htmlFor="percentComplete">
-								Progress: {percentComplete}%
-							</Label>
-							<span className="text-muted-foreground text-sm">
-								<Percent className="inline h-3 w-3" />
-							</span>
-						</div>
-						<Progress value={percentComplete} className="h-2" />
-						<input
-							type="range"
-							id="percentComplete"
-							min="0"
-							max="100"
-							step="5"
-							value={percentComplete}
-							onChange={(e) => setPercentComplete(Number(e.target.value))}
-							className="w-full"
-						/>
-					</div>
-				</CardContent>
-			</Card>
-
-			{/* Dates Section - Collapsible */}
-			<Card>
-				<CardHeader
-					className="cursor-pointer"
-					onClick={() => setShowDatesSection(!showDatesSection)}
-				>
-					<CardTitle className="flex items-center justify-between text-lg">
-						<span className="flex items-center gap-2">
-							<Calendar className="h-5 w-5" />
-							Dates
-						</span>
-						{showDatesSection ? (
-							<ChevronUp className="h-5 w-5" />
-						) : (
-							<ChevronDown className="h-5 w-5" />
-						)}
-					</CardTitle>
-				</CardHeader>
-				{showDatesSection && (
-					<CardContent className="space-y-4">
-						<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-							<div className="space-y-2">
-								<Label htmlFor="startDate" className="flex items-center gap-2">
-									<Calendar className="h-4 w-4" />
-									Start Date
-								</Label>
-								<Input
-									id="startDate"
-									type="date"
-									value={startDate}
-									onChange={(e) => setStartDate(e.target.value)}
-								/>
-							</div>
-							<div className="space-y-2">
-								<Label htmlFor="startTime" className="flex items-center gap-2">
-									<Clock className="h-4 w-4" />
-									Start Time
-								</Label>
-								<Input
-									id="startTime"
-									type="time"
-									value={startTime}
-									onChange={(e) => setStartTime(e.target.value)}
-									disabled={!startDate}
-								/>
-							</div>
-						</div>
-
-						<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-							<div className="space-y-2">
-								<Label htmlFor="dueDate" className="flex items-center gap-2">
-									<Calendar className="h-4 w-4 text-destructive" />
-									Due Date
-								</Label>
-								<Input
-									id="dueDate"
-									type="date"
-									value={dueDate}
-									onChange={(e) => setDueDate(e.target.value)}
-								/>
-							</div>
-							<div className="space-y-2">
-								<Label htmlFor="dueTime" className="flex items-center gap-2">
-									<Clock className="h-4 w-4 text-destructive" />
-									Due Time
-								</Label>
-								<Input
-									id="dueTime"
-									type="time"
-									value={dueTime}
-									onChange={(e) => setDueTime(e.target.value)}
-									disabled={!dueDate}
-								/>
-							</div>
-						</div>
-
-						{dueDate && (
-							<div className="rounded-lg border bg-muted/50 p-3">
-								<p className="text-sm">
-									Due:{" "}
-									<span className="font-medium">
-										{format(new Date(dueDate), "EEEE, MMMM d, yyyy")}
-										{dueTime && ` at ${dueTime}`}
-									</span>
-								</p>
-							</div>
-						)}
-					</CardContent>
-				)}
-			</Card>
-
-			{/* Details Section - Collapsible */}
-			<Card>
-				<CardHeader
-					className="cursor-pointer"
-					onClick={() => setShowDetailsSection(!showDetailsSection)}
-				>
-					<CardTitle className="flex items-center justify-between text-lg">
-						<span className="flex items-center gap-2">
-							<Tag className="h-5 w-5" />
-							Additional Details
-						</span>
-						{showDetailsSection ? (
-							<ChevronUp className="h-5 w-5" />
-						) : (
-							<ChevronDown className="h-5 w-5" />
-						)}
-					</CardTitle>
-				</CardHeader>
-				{showDetailsSection && (
-					<CardContent className="space-y-4">
-						<div className="space-y-2">
-							<Label htmlFor="location" className="flex items-center gap-2">
-								<MapPin className="h-4 w-4" />
-								Location
-							</Label>
-							<Input
-								id="location"
-								value={location}
-								onChange={(e) => setLocation(e.target.value)}
-								placeholder="Add a location..."
-							/>
-						</div>
-
-						<div className="space-y-2">
-							<Label htmlFor="url">URL</Label>
-							<Input
-								id="url"
-								type="url"
-								value={url}
-								onChange={(e) => setUrl(e.target.value)}
-								placeholder="https://..."
-							/>
-						</div>
-
-						<div className="space-y-2">
-							<Label htmlFor="categories" className="flex items-center gap-2">
-								<Tag className="h-4 w-4" />
-								Categories
-							</Label>
-							<Input
-								id="categories"
-								value={categories}
-								onChange={(e) => setCategories(e.target.value)}
-								placeholder="work, personal, urgent (comma-separated)"
-							/>
-							{categories && (
-								<div className="flex flex-wrap gap-1">
-									{categories.split(",").map((cat) => (
-										<Badge key={cat.trim()} variant="secondary">
-											{cat.trim()}
-										</Badge>
-									))}
-								</div>
+						<CardTitle className="flex items-center gap-2">
+							{mode === "create" ? "Create a task" : "Edit task"}
+							{hasModifications && mode === "edit" && (
+								<Badge variant="outline" className="text-xs">
+									Unsaved changes
+								</Badge>
 							)}
-						</div>
+						</CardTitle>
+						<CardDescription>
+							Fill in your task information. Fields marked with an asterisk (*)
+							are required.
+						</CardDescription>
+					</div>
+				</div>
+			</CardHeader>
 
-						<div className="space-y-2">
-							<Label htmlFor="color">Color</Label>
-							<div className="flex items-center gap-2">
-								<input
-									id="color"
-									type="color"
-									value={color}
-									onChange={(e) => setColor(e.target.value)}
-									className="h-10 w-20 cursor-pointer rounded border"
-								/>
-								<span className="text-muted-foreground text-sm">{color}</span>
-							</div>
-						</div>
-					</CardContent>
-				)}
-			</Card>
+			{/* Mobile progress indicator */}
+			{isMobile && (
+				<MobileFormProgress
+					currentSection={currentSection}
+					totalSections={totalSections}
+					className="sticky top-0 z-10"
+				/>
+			)}
 
-			{/* Actions */}
-			<div className="flex justify-end gap-3">
-				<Button
-					type="button"
-					variant="outline"
-					onClick={onCancel}
-					disabled={isSubmitting}
-				>
-					Cancel
-				</Button>
-				<Button type="submit" disabled={isSubmitting || !title.trim()}>
-					{isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-					{mode === "create" ? "Create Task" : "Save Changes"}
-				</Button>
-			</div>
-		</form>
+			<CardContent>
+				<form ref={formRef} onSubmit={handleSubmit} className="space-y-8">
+					{/* Section 1: Basic Info */}
+					<div ref={setSectionRef("basic")} data-section-id="basic">
+						<CollapsibleSection
+							id="basic"
+							title="Basic Information"
+							isExpanded={expandedSections.has("basic")}
+							onToggle={() => toggleSection("basic")}
+							icon={FileText}
+						>
+							<BasicInfoSection
+								title={formData.title}
+								description={formData.description || ""}
+								status={formData.status}
+								priority={String(formData.priority || 0)}
+								percentComplete={formData.percentComplete}
+								onTitleChange={handleTitleChange}
+								onDescriptionChange={(v) =>
+									setFormData((p) => ({ ...p, description: v }))
+								}
+								onStatusChange={(v) =>
+									setFormData((p) => ({
+										...p,
+										status: v as TaskFormData["status"],
+									}))
+								}
+								onPriorityChange={(v) =>
+									setFormData((p) => ({ ...p, priority: Number(v) }))
+								}
+								onPercentCompleteChange={(v) =>
+									setFormData((p) => ({ ...p, percentComplete: v }))
+								}
+								validationErrors={{ title: validationErrors["title"] }}
+								isSubmitting={isSubmitting}
+							/>
+						</CollapsibleSection>
+					</div>
+
+					{/* Section 2: Dates */}
+					<div ref={setSectionRef("dates")} data-section-id="dates">
+						<CollapsibleSection
+							id="dates"
+							title="Dates"
+							description="Start and due dates"
+							isExpanded={expandedSections.has("dates")}
+							onToggle={() => toggleSection("dates")}
+							icon={Calendar}
+						>
+							<DatesSection
+								startDate={formData.startDate || ""}
+								startTime={startTime}
+								dueDate={formData.dueDate || ""}
+								dueTime={dueTime}
+								onStartDateChange={handleStartDateChange}
+								onStartTimeChange={setStartTime}
+								onDueDateChange={handleDueDateChange}
+								onDueTimeChange={setDueTime}
+								validationErrors={{
+									startDate: validationErrors["startDate"],
+									dueDate: validationErrors["dueDate"],
+								}}
+								isSubmitting={isSubmitting}
+							/>
+						</CollapsibleSection>
+					</div>
+
+					{/* Section 3: Attendees */}
+					<div ref={setSectionRef("attendees")} data-section-id="attendees">
+						<CollapsibleSection
+							id="attendees"
+							title="Attendees"
+							description="Assign people to this task"
+							isExpanded={expandedSections.has("attendees")}
+							onToggle={() => toggleSection("attendees")}
+							icon={Users}
+							badge={formData.attendees?.length || undefined}
+						>
+							<AttendeesSection
+								attendees={formData.attendees || []}
+								onAddAttendee={addAttendee}
+								onRemoveAttendee={removeAttendee}
+								onUpdateAttendee={updateAttendee}
+								validationErrors={attendeeErrors}
+								isSubmitting={isSubmitting}
+							/>
+						</CollapsibleSection>
+					</div>
+
+					{/* Section 4: Alarms */}
+					<div ref={setSectionRef("alarms")} data-section-id="alarms">
+						<CollapsibleSection
+							id="alarms"
+							title="Reminders"
+							description="Get notified about this task"
+							isExpanded={expandedSections.has("alarms")}
+							onToggle={() => toggleSection("alarms")}
+							icon={Bell}
+							badge={formData.alarms?.length || undefined}
+						>
+							<AlarmsSection
+								alarms={formData.alarms || []}
+								onAddAlarm={addAlarm}
+								onRemoveAlarm={removeAlarm}
+								onUpdateAlarm={updateAlarm}
+								isSubmitting={isSubmitting}
+							/>
+						</CollapsibleSection>
+					</div>
+
+					{/* Section 5: Recurrence */}
+					<div ref={setSectionRef("recurrence")} data-section-id="recurrence">
+						<CollapsibleSection
+							id="recurrence"
+							title="Recurrence"
+							description="Make this a repeating task"
+							isExpanded={expandedSections.has("recurrence")}
+							onToggle={() => toggleSection("recurrence")}
+							icon={Repeat}
+						>
+							<RecurrenceSection
+								rrule={formData.rrule || ""}
+								onRruleChange={(v) => setFormData((p) => ({ ...p, rrule: v }))}
+								isSubmitting={isSubmitting}
+							/>
+						</CollapsibleSection>
+					</div>
+
+					{/* Section 6: Attachments */}
+					<div ref={setSectionRef("attachments")} data-section-id="attachments">
+						<CollapsibleSection
+							id="attachments"
+							title="Attachments"
+							description="Add files and links"
+							isExpanded={expandedSections.has("attachments")}
+							onToggle={() => toggleSection("attachments")}
+							icon={Paperclip}
+							badge={formData.attachments?.length || undefined}
+						>
+							<AttachmentsSection
+								attachments={formData.attachments || []}
+								onAddAttachment={addAttachment}
+								onRemoveAttachment={removeAttachment}
+								onUpdateAttachment={updateAttachment}
+								isSubmitting={isSubmitting}
+							/>
+						</CollapsibleSection>
+					</div>
+
+					{/* Section 7: Additional Info */}
+					<div ref={setSectionRef("additional")} data-section-id="additional">
+						<CollapsibleSection
+							id="additional"
+							title="Additional Details"
+							description="Location, URL, categories, color"
+							isExpanded={expandedSections.has("additional")}
+							onToggle={() => toggleSection("additional")}
+							icon={Settings}
+						>
+							<AdditionalInfoSection
+								location={formData.location || ""}
+								url={formData.url || ""}
+								categories={formData.categories || ""}
+								color={formData.color || "#22c55e"}
+								onLocationChange={(v) =>
+									setFormData((p) => ({ ...p, location: v }))
+								}
+								onUrlChange={handleUrlChange}
+								onCategoriesChange={(v) =>
+									setFormData((p) => ({ ...p, categories: v }))
+								}
+								onColorChange={(v) => setFormData((p) => ({ ...p, color: v }))}
+								validationErrors={{ url: validationErrors["url"] }}
+								isSubmitting={isSubmitting}
+							/>
+						</CollapsibleSection>
+					</div>
+
+					{/* Sticky action buttons on mobile */}
+					<div className="sticky bottom-0 z-10 -mx-6 -mb-6 border-t bg-card/95 p-4 backdrop-blur-sm sm:static sm:mx-0 sm:mb-0 sm:border-t-0 sm:bg-transparent sm:pt-4 sm:backdrop-blur-0">
+						<div className="flex gap-2">
+							<Button
+								type="submit"
+								disabled={!formData.title.trim() || isSubmitting}
+								className="min-h-[44px] flex-1 sm:min-h-0"
+							>
+								{isSubmitting ? (
+									<>
+										<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+										{mode === "create" ? "Creating..." : "Saving..."}
+									</>
+								) : mode === "create" ? (
+									<>
+										<FileText className="mr-2 h-4 w-4" />
+										Create Task
+									</>
+								) : (
+									<>
+										<FileText className="mr-2 h-4 w-4" />
+										Save Changes
+									</>
+								)}
+							</Button>
+							<Button
+								type="button"
+								variant="outline"
+								onClick={onCancel}
+								disabled={isSubmitting}
+								className="min-h-[44px] sm:min-h-0"
+							>
+								<X className="mr-2 h-4 w-4" />
+								Cancel
+							</Button>
+						</div>
+					</div>
+				</form>
+			</CardContent>
+		</Card>
 	);
 }

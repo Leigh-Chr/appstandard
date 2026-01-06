@@ -1,18 +1,17 @@
 /**
  * Extended contact form component for full-page create/edit
  * Based on EventFormExtended pattern from Calendar app
- * Supports multi-value fields (emails, phones, addresses)
+ * Supports multi-value fields (emails, phones, addresses, IM handles, relations)
  */
 
+import { useFormTracking } from "@appstandard/react-utils";
 import {
 	Badge,
 	Button,
-	Card,
-	CardContent,
-	CardHeader,
-	CardTitle,
+	CollapsibleSection,
 	Input,
 	Label,
+	MobileFormProgress,
 	Select,
 	SelectContent,
 	SelectItem,
@@ -23,21 +22,28 @@ import {
 import type {
 	ContactAddressData,
 	ContactEmailData,
+	ContactIMData,
 	ContactPhoneData,
+	ContactRelationData,
 } from "@appstandard-contacts/core";
 import {
 	Building,
 	Calendar,
-	ChevronDown,
-	ChevronUp,
 	Globe,
 	Loader2,
 	Mail,
 	Tag,
 	User,
+	Users,
 } from "lucide-react";
-import { useState } from "react";
-import { AddressesSection, EmailsSection, PhonesSection } from "./contact-form";
+import { useEffect, useRef, useState } from "react";
+import {
+	AddressesSection,
+	EmailsSection,
+	ImHandlesSection,
+	PhonesSection,
+	RelationsSection,
+} from "./contact-form";
 
 export interface ContactFormData {
 	formattedName: string;
@@ -62,6 +68,8 @@ export interface ContactFormData {
 	emails?: ContactEmailData[] | undefined;
 	phones?: ContactPhoneData[] | undefined;
 	addresses?: ContactAddressData[] | undefined;
+	imHandles?: ContactIMData[] | undefined;
+	relations?: ContactRelationData[] | undefined;
 }
 
 interface ContactFormExtendedProps {
@@ -149,6 +157,12 @@ export function ContactFormExtended({
 	const [addresses, setAddresses] = useState<ContactAddressData[]>(
 		initialData?.addresses || [],
 	);
+	const [imHandles, setImHandles] = useState<ContactIMData[]>(
+		initialData?.imHandles || [],
+	);
+	const [relations, setRelations] = useState<ContactRelationData[]>(
+		initialData?.relations || [],
+	);
 
 	// Validation errors for multi-value fields
 	const [emailErrors, setEmailErrors] = useState<Record<number, string>>({});
@@ -168,8 +182,13 @@ export function ContactFormExtended({
 			Boolean(
 				(initialData?.emails && initialData.emails.length > 0) ||
 					(initialData?.phones && initialData.phones.length > 0) ||
-					(initialData?.addresses && initialData.addresses.length > 0),
+					(initialData?.addresses && initialData.addresses.length > 0) ||
+					(initialData?.imHandles && initialData.imHandles.length > 0),
 			),
+	);
+	const [showRelationsSection, setShowRelationsSection] = useState(
+		mode === "edit" ||
+			Boolean(initialData?.relations && initialData.relations.length > 0),
 	);
 	const [showWorkSection, setShowWorkSection] = useState(
 		mode === "edit" ||
@@ -242,106 +261,170 @@ export function ContactFormExtended({
 			addresses: addresses.filter(
 				(a) => a.streetAddress || a.locality || a.country,
 			),
+			imHandles: imHandles.filter((im) => im.handle.trim()),
+			relations: relations.filter((r) => r.relatedName.trim()),
 		});
 	};
 
+	// Form tracking for dirty state and beforeunload warning
+	const currentData = {
+		formattedName,
+		givenName,
+		familyName,
+		additionalName,
+		namePrefix,
+		nameSuffix,
+		nickname,
+		organization,
+		title,
+		role,
+		birthday,
+		anniversary,
+		gender,
+		kind,
+		photoUrl,
+		url,
+		note,
+		categories,
+		emails,
+		phones,
+		addresses,
+		imHandles,
+		relations,
+	};
+	const { isDirty } = useFormTracking({
+		initialData: (initialData || {}) as Record<string, unknown>,
+		currentData: currentData as Record<string, unknown>,
+		warnOnUnload: true,
+	});
+
+	// Section refs for IntersectionObserver (mobile progress)
+	const sectionRefs = useRef<(HTMLDivElement | null)[]>([]);
+	const [currentSection, setCurrentSection] = useState(0);
+
+	// IntersectionObserver for mobile section tracking
+	useEffect(() => {
+		const observer = new IntersectionObserver(
+			(entries) => {
+				for (const entry of entries) {
+					if (entry.isIntersecting) {
+						const index = sectionRefs.current.indexOf(
+							entry.target as HTMLDivElement,
+						);
+						if (index !== -1) {
+							setCurrentSection(index);
+						}
+					}
+				}
+			},
+			{ threshold: 0.5, rootMargin: "-20% 0px -60% 0px" },
+		);
+
+		for (const ref of sectionRefs.current) {
+			if (ref) observer.observe(ref);
+		}
+
+		return () => observer.disconnect();
+	}, []);
+
 	// Count total sections for mobile progress indicator
-	const totalSections = 5;
-	const expandedSections = [
-		true, // Basic info is always visible
-		showNameSection,
-		showContactSection,
-		showWorkSection,
-		showDetailsSection,
-	].filter(Boolean).length;
+	const totalSections = 6;
+	const sectionNames = [
+		"Basic Info",
+		"Name Details",
+		"Contact",
+		"Relations",
+		"Work",
+		"Details",
+	];
 
 	return (
 		<form onSubmit={handleSubmit} className="space-y-6">
 			{/* Mobile progress indicator */}
-			<div className="flex items-center justify-between text-muted-foreground text-sm sm:hidden">
-				<span>
-					Section {expandedSections} of {totalSections}
-				</span>
-				<span>
-					{Math.round((expandedSections / totalSections) * 100)}% complete
-				</span>
-			</div>
+			<MobileFormProgress
+				currentSection={currentSection}
+				totalSections={totalSections}
+				sectionName={sectionNames[currentSection]}
+			/>
 
-			{/* Basic Info Card */}
-			<Card>
-				<CardHeader>
-					<CardTitle className="flex items-center gap-2 text-lg">
-						<User className="h-5 w-5" />
-						Basic Information
-					</CardTitle>
-				</CardHeader>
-				<CardContent className="space-y-4">
-					<div className="space-y-2">
-						<Label htmlFor="formattedName">Display Name *</Label>
-						<div className="flex gap-2">
-							<Input
-								id="formattedName"
-								value={formattedName}
-								onChange={(e) => setFormattedName(e.target.value)}
-								placeholder="Full name"
-								className="flex-1"
-								required
-							/>
-							{(givenName || familyName) && (
-								<Button
-									type="button"
-									variant="outline"
-									size="sm"
-									onClick={generateFormattedName}
-									title="Generate from name parts"
-								>
-									Auto
-								</Button>
-							)}
+			{/* Basic Info Section */}
+			<div
+				ref={(el) => {
+					sectionRefs.current[0] = el;
+				}}
+			>
+				<CollapsibleSection
+					id="basic-info"
+					title="Basic Information"
+					icon={User}
+					isExpanded={true}
+					onToggle={() => {}}
+				>
+					<div className="space-y-4">
+						<div className="space-y-2">
+							<Label htmlFor="formattedName">Display Name *</Label>
+							<div className="flex gap-2">
+								<Input
+									id="formattedName"
+									value={formattedName}
+									onChange={(e) => setFormattedName(e.target.value)}
+									placeholder="Full name"
+									className="flex-1"
+									required
+									disabled={isSubmitting}
+								/>
+								{(givenName || familyName) && (
+									<Button
+										type="button"
+										variant="outline"
+										size="sm"
+										onClick={generateFormattedName}
+										title="Generate from name parts"
+										disabled={isSubmitting}
+									>
+										Auto
+									</Button>
+								)}
+							</div>
+						</div>
+
+						<div className="space-y-2">
+							<Label htmlFor="kind">Contact Type</Label>
+							<Select
+								value={kind}
+								onValueChange={(v) => setKind(v as ContactFormData["kind"])}
+								disabled={isSubmitting}
+							>
+								<SelectTrigger id="kind">
+									<SelectValue />
+								</SelectTrigger>
+								<SelectContent>
+									{KIND_OPTIONS.map((opt) => (
+										<SelectItem key={opt.value} value={opt.value}>
+											{opt.label}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
 						</div>
 					</div>
+				</CollapsibleSection>
+			</div>
 
-					<div className="space-y-2">
-						<Label htmlFor="kind">Contact Type</Label>
-						<Select
-							value={kind}
-							onValueChange={(v) => setKind(v as ContactFormData["kind"])}
-						>
-							<SelectTrigger id="kind">
-								<SelectValue />
-							</SelectTrigger>
-							<SelectContent>
-								{KIND_OPTIONS.map((opt) => (
-									<SelectItem key={opt.value} value={opt.value}>
-										{opt.label}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
-					</div>
-				</CardContent>
-			</Card>
-
-			{/* Name Details Section - Collapsible */}
-			<Card>
-				<CardHeader
-					className="cursor-pointer"
-					onClick={() => setShowNameSection(!showNameSection)}
+			{/* Name Details Section */}
+			<div
+				ref={(el) => {
+					sectionRefs.current[1] = el;
+				}}
+			>
+				<CollapsibleSection
+					id="name-details"
+					title="Name Details"
+					icon={User}
+					isExpanded={showNameSection}
+					onToggle={() => setShowNameSection(!showNameSection)}
 				>
-					<CardTitle className="flex items-center justify-between text-lg">
-						<span className="flex items-center gap-2">
-							<User className="h-5 w-5" />
-							Name Details
-						</span>
-						{showNameSection ? (
-							<ChevronUp className="h-5 w-5" />
-						) : (
-							<ChevronDown className="h-5 w-5" />
-						)}
-					</CardTitle>
-				</CardHeader>
-				{showNameSection && (
-					<CardContent className="space-y-4">
+					<div className="space-y-4">
 						<div className="grid grid-cols-2 gap-4">
 							<div className="space-y-2">
 								<Label htmlFor="namePrefix">Prefix</Label>
@@ -350,6 +433,7 @@ export function ContactFormExtended({
 									value={namePrefix}
 									onChange={(e) => setNamePrefix(e.target.value)}
 									placeholder="Mr., Dr., etc."
+									disabled={isSubmitting}
 								/>
 							</div>
 							<div className="space-y-2">
@@ -359,6 +443,7 @@ export function ContactFormExtended({
 									value={nameSuffix}
 									onChange={(e) => setNameSuffix(e.target.value)}
 									placeholder="Jr., III, etc."
+									disabled={isSubmitting}
 								/>
 							</div>
 						</div>
@@ -371,6 +456,7 @@ export function ContactFormExtended({
 									value={givenName}
 									onChange={(e) => setGivenName(e.target.value)}
 									placeholder="First name"
+									disabled={isSubmitting}
 								/>
 							</div>
 							<div className="space-y-2">
@@ -380,6 +466,7 @@ export function ContactFormExtended({
 									value={familyName}
 									onChange={(e) => setFamilyName(e.target.value)}
 									placeholder="Last name"
+									disabled={isSubmitting}
 								/>
 							</div>
 						</div>
@@ -392,6 +479,7 @@ export function ContactFormExtended({
 									value={additionalName}
 									onChange={(e) => setAdditionalName(e.target.value)}
 									placeholder="Middle name"
+									disabled={isSubmitting}
 								/>
 							</div>
 							<div className="space-y-2">
@@ -401,40 +489,40 @@ export function ContactFormExtended({
 									value={nickname}
 									onChange={(e) => setNickname(e.target.value)}
 									placeholder="Nickname"
+									disabled={isSubmitting}
 								/>
 							</div>
 						</div>
-					</CardContent>
-				)}
-			</Card>
+					</div>
+				</CollapsibleSection>
+			</div>
 
-			{/* Contact Information Section - Collapsible (NEW!) */}
-			<Card>
-				<CardHeader
-					className="cursor-pointer"
-					onClick={() => setShowContactSection(!showContactSection)}
+			{/* Contact Information Section */}
+			<div
+				ref={(el) => {
+					sectionRefs.current[2] = el;
+				}}
+			>
+				<CollapsibleSection
+					id="contact-info"
+					title="Contact Information"
+					icon={Mail}
+					isExpanded={showContactSection}
+					onToggle={() => setShowContactSection(!showContactSection)}
+					badge={
+						emails.length +
+							phones.length +
+							addresses.length +
+							imHandles.length >
+						0
+							? emails.length +
+								phones.length +
+								addresses.length +
+								imHandles.length
+							: undefined
+					}
 				>
-					<CardTitle className="flex items-center justify-between text-lg">
-						<span className="flex items-center gap-2">
-							<Mail className="h-5 w-5" />
-							Contact Information
-							{(emails.length > 0 ||
-								phones.length > 0 ||
-								addresses.length > 0) && (
-								<Badge variant="secondary" className="ml-2">
-									{emails.length + phones.length + addresses.length}
-								</Badge>
-							)}
-						</span>
-						{showContactSection ? (
-							<ChevronUp className="h-5 w-5" />
-						) : (
-							<ChevronDown className="h-5 w-5" />
-						)}
-					</CardTitle>
-				</CardHeader>
-				{showContactSection && (
-					<CardContent className="space-y-8">
+					<div className="space-y-8">
 						{/* Emails */}
 						<EmailsSection
 							emails={emails}
@@ -453,36 +541,59 @@ export function ContactFormExtended({
 							isSubmitting={isSubmitting}
 						/>
 
+						{/* IM Handles */}
+						<ImHandlesSection
+							imHandles={imHandles}
+							onChange={setImHandles}
+							isSubmitting={isSubmitting}
+						/>
+
 						{/* Addresses */}
 						<AddressesSection
 							addresses={addresses}
 							onChange={setAddresses}
 							isSubmitting={isSubmitting}
 						/>
-					</CardContent>
-				)}
-			</Card>
+					</div>
+				</CollapsibleSection>
+			</div>
 
-			{/* Work Section - Collapsible */}
-			<Card>
-				<CardHeader
-					className="cursor-pointer"
-					onClick={() => setShowWorkSection(!showWorkSection)}
+			{/* Relations Section */}
+			<div
+				ref={(el) => {
+					sectionRefs.current[3] = el;
+				}}
+			>
+				<CollapsibleSection
+					id="relations"
+					title="Related People"
+					icon={Users}
+					isExpanded={showRelationsSection}
+					onToggle={() => setShowRelationsSection(!showRelationsSection)}
+					badge={relations.length > 0 ? relations.length : undefined}
 				>
-					<CardTitle className="flex items-center justify-between text-lg">
-						<span className="flex items-center gap-2">
-							<Building className="h-5 w-5" />
-							Work
-						</span>
-						{showWorkSection ? (
-							<ChevronUp className="h-5 w-5" />
-						) : (
-							<ChevronDown className="h-5 w-5" />
-						)}
-					</CardTitle>
-				</CardHeader>
-				{showWorkSection && (
-					<CardContent className="space-y-4">
+					<RelationsSection
+						relations={relations}
+						onChange={setRelations}
+						isSubmitting={isSubmitting}
+					/>
+				</CollapsibleSection>
+			</div>
+
+			{/* Work Section */}
+			<div
+				ref={(el) => {
+					sectionRefs.current[4] = el;
+				}}
+			>
+				<CollapsibleSection
+					id="work"
+					title="Work"
+					icon={Building}
+					isExpanded={showWorkSection}
+					onToggle={() => setShowWorkSection(!showWorkSection)}
+				>
+					<div className="space-y-4">
 						<div className="space-y-2">
 							<Label htmlFor="organization">Organization</Label>
 							<Input
@@ -490,6 +601,7 @@ export function ContactFormExtended({
 								value={organization}
 								onChange={(e) => setOrganization(e.target.value)}
 								placeholder="Company name"
+								disabled={isSubmitting}
 							/>
 						</div>
 
@@ -501,6 +613,7 @@ export function ContactFormExtended({
 									value={title}
 									onChange={(e) => setTitle(e.target.value)}
 									placeholder="Job title"
+									disabled={isSubmitting}
 								/>
 							</div>
 							<div className="space-y-2">
@@ -510,33 +623,28 @@ export function ContactFormExtended({
 									value={role}
 									onChange={(e) => setRole(e.target.value)}
 									placeholder="Function or occupation"
+									disabled={isSubmitting}
 								/>
 							</div>
 						</div>
-					</CardContent>
-				)}
-			</Card>
+					</div>
+				</CollapsibleSection>
+			</div>
 
-			{/* Details Section - Collapsible */}
-			<Card>
-				<CardHeader
-					className="cursor-pointer"
-					onClick={() => setShowDetailsSection(!showDetailsSection)}
+			{/* Details Section */}
+			<div
+				ref={(el) => {
+					sectionRefs.current[5] = el;
+				}}
+			>
+				<CollapsibleSection
+					id="details"
+					title="Additional Details"
+					icon={Tag}
+					isExpanded={showDetailsSection}
+					onToggle={() => setShowDetailsSection(!showDetailsSection)}
 				>
-					<CardTitle className="flex items-center justify-between text-lg">
-						<span className="flex items-center gap-2">
-							<Tag className="h-5 w-5" />
-							Additional Details
-						</span>
-						{showDetailsSection ? (
-							<ChevronUp className="h-5 w-5" />
-						) : (
-							<ChevronDown className="h-5 w-5" />
-						)}
-					</CardTitle>
-				</CardHeader>
-				{showDetailsSection && (
-					<CardContent className="space-y-4">
+					<div className="space-y-4">
 						<div className="grid grid-cols-2 gap-4">
 							<div className="space-y-2">
 								<Label htmlFor="birthday" className="flex items-center gap-2">
@@ -548,6 +656,7 @@ export function ContactFormExtended({
 									type="date"
 									value={birthday}
 									onChange={(e) => setBirthday(e.target.value)}
+									disabled={isSubmitting}
 								/>
 							</div>
 							<div className="space-y-2">
@@ -557,6 +666,7 @@ export function ContactFormExtended({
 									type="date"
 									value={anniversary}
 									onChange={(e) => setAnniversary(e.target.value)}
+									disabled={isSubmitting}
 								/>
 							</div>
 						</div>
@@ -564,7 +674,11 @@ export function ContactFormExtended({
 						<div className="grid grid-cols-2 gap-4">
 							<div className="space-y-2">
 								<Label htmlFor="gender">Gender</Label>
-								<Select value={gender} onValueChange={setGender}>
+								<Select
+									value={gender}
+									onValueChange={setGender}
+									disabled={isSubmitting}
+								>
 									<SelectTrigger id="gender">
 										<SelectValue placeholder="Select..." />
 									</SelectTrigger>
@@ -585,6 +699,7 @@ export function ContactFormExtended({
 									value={photoUrl}
 									onChange={(e) => setPhotoUrl(e.target.value)}
 									placeholder="https://..."
+									disabled={isSubmitting}
 								/>
 							</div>
 						</div>
@@ -600,6 +715,7 @@ export function ContactFormExtended({
 								value={url}
 								onChange={(e) => setUrl(e.target.value)}
 								placeholder="https://..."
+								disabled={isSubmitting}
 							/>
 						</div>
 
@@ -613,9 +729,10 @@ export function ContactFormExtended({
 								value={categories}
 								onChange={(e) => setCategories(e.target.value)}
 								placeholder="family, work, friend (comma-separated)"
+								disabled={isSubmitting}
 							/>
 							{categories && (
-								<div className="flex flex-wrap gap-1">
+								<div className="flex flex-wrap gap-1 pt-1">
 									{categories.split(",").map((cat) => (
 										<Badge key={cat.trim()} variant="secondary">
 											{cat.trim()}
@@ -633,14 +750,15 @@ export function ContactFormExtended({
 								onChange={(e) => setNote(e.target.value)}
 								placeholder="Additional notes..."
 								rows={3}
+								disabled={isSubmitting}
 							/>
 						</div>
-					</CardContent>
-				)}
-			</Card>
+					</div>
+				</CollapsibleSection>
+			</div>
 
-			{/* Actions */}
-			<div className="flex justify-end gap-3">
+			{/* Desktop Actions */}
+			<div className="hidden justify-end gap-3 sm:flex">
 				<Button
 					type="button"
 					variant="outline"
@@ -654,6 +772,37 @@ export function ContactFormExtended({
 					{mode === "create" ? "Create Contact" : "Save Changes"}
 				</Button>
 			</div>
+
+			{/* Mobile Sticky Actions */}
+			<div className="fixed right-0 bottom-0 left-0 border-t bg-background p-4 sm:hidden">
+				<div className="flex gap-3">
+					<Button
+						type="button"
+						variant="outline"
+						onClick={onCancel}
+						disabled={isSubmitting}
+						className="flex-1"
+					>
+						Cancel
+					</Button>
+					<Button
+						type="submit"
+						disabled={isSubmitting || !formattedName.trim()}
+						className="flex-1"
+					>
+						{isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+						{mode === "create" ? "Create" : "Save"}
+					</Button>
+				</div>
+				{isDirty && (
+					<p className="mt-2 text-center text-muted-foreground text-xs">
+						You have unsaved changes
+					</p>
+				)}
+			</div>
+
+			{/* Mobile bottom padding for sticky footer */}
+			<div className="h-24 sm:hidden" />
 		</form>
 	);
 }

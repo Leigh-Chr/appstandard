@@ -245,6 +245,13 @@ export {
 	type FileDropZoneProps,
 	type FileValidationResult,
 } from "./file-drop-zone";
+// Form Components
+export {
+	CollapsibleSection,
+	type CollapsibleSectionProps,
+	MobileFormProgress,
+	type MobileFormProgressProps,
+} from "./form";
 // Form Message
 export { FormMessage, type FormMessageProps } from "./form-message";
 // Hooks

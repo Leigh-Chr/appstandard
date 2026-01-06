@@ -32,6 +32,7 @@ import {
 	Users,
 } from "lucide-react";
 import { motion } from "motion/react";
+import { TaskHoverPreview } from "./task-hover-preview";
 import type { KanbanCardProps } from "./types";
 import { getPriorityInfo } from "./types";
 
@@ -78,33 +79,35 @@ export function KanbanCard({
 			<div className="flex-1 p-3">
 				{/* Title row */}
 				<div className="mb-2 flex items-start justify-between gap-2">
-					<div className="min-w-0 flex-1">
-						<div className="flex items-center gap-1.5">
-							<p
-								className={cn(
-									"line-clamp-2 font-medium text-sm",
-									isCancelled && "text-muted-foreground line-through",
+					<TaskHoverPreview task={task} taskListColor={taskListColor}>
+						<div className="min-w-0 flex-1 cursor-default">
+							<div className="flex items-center gap-1.5">
+								<p
+									className={cn(
+										"line-clamp-2 font-medium text-sm",
+										isCancelled && "text-muted-foreground line-through",
+									)}
+								>
+									{task.title}
+								</p>
+								{/* Inline indicators */}
+								{hasIndicators && (
+									<div className="flex shrink-0 items-center gap-1">
+										{task.rrule && (
+											<span title="Recurring">
+												<Repeat className="h-3 w-3 text-muted-foreground" />
+											</span>
+										)}
+										{task.class && task.class !== "PUBLIC" && (
+											<span title={task.class}>
+												<Lock className="h-3 w-3 text-muted-foreground" />
+											</span>
+										)}
+									</div>
 								)}
-							>
-								{task.title}
-							</p>
-							{/* Inline indicators */}
-							{hasIndicators && (
-								<div className="flex shrink-0 items-center gap-1">
-									{task.rrule && (
-										<span title="Recurring">
-											<Repeat className="h-3 w-3 text-muted-foreground" />
-										</span>
-									)}
-									{task.class && task.class !== "PUBLIC" && (
-										<span title={task.class}>
-											<Lock className="h-3 w-3 text-muted-foreground" />
-										</span>
-									)}
-								</div>
-							)}
+							</div>
 						</div>
-					</div>
+					</TaskHoverPreview>
 					<DropdownMenu>
 						<DropdownMenuTrigger asChild>
 							<button

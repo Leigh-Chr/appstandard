@@ -34,8 +34,12 @@ function transformTaskToFormData(
 		status: task.status as TaskFormData["status"],
 		priority: task.priority || undefined,
 		percentComplete: task.percentComplete || 0,
-		dueDate: task.dueDate ? new Date(task.dueDate) : undefined,
-		startDate: task.startDate ? new Date(task.startDate) : undefined,
+		dueDate: task.dueDate
+			? new Date(task.dueDate).toISOString().split("T")[0]
+			: undefined,
+		startDate: task.startDate
+			? new Date(task.startDate).toISOString().split("T")[0]
+			: undefined,
 		location: task.location || undefined,
 		url: task.url || undefined,
 		categories: task.categories?.map((c) => c.category).join(", ") || undefined,

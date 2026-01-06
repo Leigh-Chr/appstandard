@@ -27,7 +27,14 @@ export interface Contact {
 	primaryAddress?: ContactAddress | null;
 	birthday?: string | Date | null;
 	url?: string | null;
+	note?: string | null;
 	categories?: ContactCategory[];
+	// Counts for secondary info display
+	emailCount?: number;
+	phoneCount?: number;
+	addressCount?: number;
+	imHandleCount?: number;
+	relationCount?: number;
 }
 
 export interface ContactCardProps {

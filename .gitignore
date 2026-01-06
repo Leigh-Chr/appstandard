@@ -80,6 +80,3 @@ local.db
 tmp
 temp
 *.tmp
-
-# Project-specific ignores
-

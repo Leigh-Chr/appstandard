@@ -16,8 +16,10 @@ import {
 	Copy,
 	Edit2,
 	Globe,
+	Heart,
 	Mail,
 	MapPin,
+	MessageCircle,
 	MoreHorizontal,
 	Phone,
 	Tag,
@@ -25,6 +27,7 @@ import {
 	User,
 } from "lucide-react";
 import { motion } from "motion/react";
+import { ContactHoverPreview } from "./contact-hover-preview";
 import type { ContactGridCardProps } from "./types";
 import { formatCategories, formatLocation, formatPosition } from "./types";
 
@@ -56,32 +59,39 @@ export function ContactGridCard({
 			/>
 
 			<div className="flex flex-1 flex-col items-center p-4 text-center">
-				{/* Avatar */}
-				<div
-					className="mb-3 flex h-14 w-14 items-center justify-center rounded-full"
-					style={{ backgroundColor: `${accentColor}20` }}
+				<ContactHoverPreview
+					contact={contact}
+					addressBookColor={addressBookColor}
 				>
-					<User className="h-7 w-7" style={{ color: accentColor }} />
-				</div>
+					<div className="cursor-default">
+						{/* Avatar */}
+						<div
+							className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full"
+							style={{ backgroundColor: `${accentColor}20` }}
+						>
+							<User className="h-7 w-7" style={{ color: accentColor }} />
+						</div>
 
-				{/* Name */}
-				<p className="mb-0.5 line-clamp-1 font-medium text-sm">
-					{contact.formattedName}
-				</p>
+						{/* Name */}
+						<p className="mb-0.5 line-clamp-1 font-medium text-sm">
+							{contact.formattedName}
+						</p>
 
-				{/* Nickname */}
-				{contact.nickname && (
-					<p className="mb-1 text-muted-foreground text-xs">
-						"{contact.nickname}"
-					</p>
-				)}
+						{/* Nickname */}
+						{contact.nickname && (
+							<p className="mb-1 text-muted-foreground text-xs">
+								"{contact.nickname}"
+							</p>
+						)}
 
-				{/* Title/Role at Organization */}
-				{positionStr && (
-					<p className="mb-2 line-clamp-2 text-muted-foreground text-xs">
-						{positionStr}
-					</p>
-				)}
+						{/* Title/Role at Organization */}
+						{positionStr && (
+							<p className="mb-2 line-clamp-2 text-muted-foreground text-xs">
+								{positionStr}
+							</p>
+						)}
+					</div>
+				</ContactHoverPreview>
 
 				{/* Info badges */}
 				<div className="mb-2 flex flex-wrap justify-center gap-1">
@@ -123,6 +133,22 @@ export function ContactGridCard({
 							title={contact.url}
 						>
 							<Globe className="h-3 w-3 text-cyan-600 dark:text-cyan-400" />
+						</span>
+					)}
+					{contact.imHandleCount != null && contact.imHandleCount > 0 && (
+						<span
+							className="rounded-full bg-violet-100 p-1 dark:bg-violet-900/30"
+							title={`${contact.imHandleCount} messaging account${contact.imHandleCount > 1 ? "s" : ""}`}
+						>
+							<MessageCircle className="h-3 w-3 text-violet-600 dark:text-violet-400" />
+						</span>
+					)}
+					{contact.relationCount != null && contact.relationCount > 0 && (
+						<span
+							className="rounded-full bg-rose-100 p-1 dark:bg-rose-900/30"
+							title={`${contact.relationCount} relation${contact.relationCount > 1 ? "s" : ""}`}
+						>
+							<Heart className="h-3 w-3 text-rose-600 dark:text-rose-400" />
 						</span>
 					)}
 				</div>

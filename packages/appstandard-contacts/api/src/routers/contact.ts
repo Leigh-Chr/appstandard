@@ -62,6 +62,15 @@ export const contactRouter = router({
 					phones: { where: { isPrimary: true }, take: 1 },
 					addresses: { where: { isPrimary: true }, take: 1 },
 					categories: true,
+					_count: {
+						select: {
+							emails: true,
+							phones: true,
+							addresses: true,
+							imHandles: true,
+							relations: true,
+						},
+					},
 				},
 			});
 
@@ -86,6 +95,12 @@ export const contactRouter = router({
 						}
 					: null,
 				categories: contact.categories,
+				// Counts for card display
+				emailCount: contact._count.emails,
+				phoneCount: contact._count.phones,
+				addressCount: contact._count.addresses,
+				imHandleCount: contact._count.imHandles,
+				relationCount: contact._count.relations,
 				createdAt: contact.createdAt,
 				updatedAt: contact.updatedAt,
 			}));
