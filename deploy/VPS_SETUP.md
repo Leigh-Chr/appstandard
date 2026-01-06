@@ -2,6 +2,56 @@
 
 Quick setup guide for deploying AppStandard to your VPS (185.158.132.190).
 
+## Prerequisites: System Configuration
+
+### 1.1 Configure Swap (Required - 4GB minimum)
+
+Without swap, Docker builds will crash the server when memory is exhausted.
+
+```bash
+# Create 4GB swap file
+fallocate -l 4G /swapfile
+chmod 600 /swapfile
+mkswap /swapfile
+swapon /swapfile
+
+# Make persistent
+echo '/swapfile none swap sw 0 0' >> /etc/fstab
+
+# Set swappiness to 10 (prefer RAM, use swap only when needed)
+echo 'vm.swappiness=10' >> /etc/sysctl.conf
+sysctl -p
+
+# Verify
+free -h
+```
+
+### 1.2 Configure Docker BuildKit (Recommended)
+
+Limit build parallelism to prevent memory exhaustion:
+
+```bash
+# Docker daemon config
+mkdir -p /etc/docker
+cat > /etc/docker/daemon.json << 'EOF'
+{
+  "features": { "buildkit": true },
+  "builder": { "gc": { "enabled": true, "defaultKeepStorage": "10GB" } },
+  "max-concurrent-downloads": 3,
+  "max-concurrent-uploads": 3
+}
+EOF
+
+# BuildKit parallelism limit
+mkdir -p ~/.docker/buildx
+cat > ~/.docker/buildx/buildkitd.default.toml << 'EOF'
+[worker.oci]
+  max-parallelism = 2
+EOF
+
+systemctl restart docker
+```
+
 ## 1. DNS Configuration (at your registrar)
 
 Add these A records pointing to `185.158.132.190`:
@@ -102,12 +152,27 @@ systemctl start nginx
 ## 6. Deploy Containers
 
 ```bash
-# Build and start all services
-DOCKER_BUILDKIT=1 docker compose up -d --build
+# Method 1: Sequential build (RECOMMENDED - memory safe)
+# Build and start services one by one to avoid memory exhaustion
+docker compose up -d db redis
+sleep 10
+docker compose up -d --build calendar-server
+docker compose up -d --build tasks-server
+docker compose up -d --build contacts-server
+docker compose up -d --build landing
+docker compose up -d --build calendar-web
+docker compose up -d --build tasks-web
+docker compose up -d --build contacts-web
 
-# Verify
+# Method 2: Parallel build (requires 16GB+ RAM or swap configured)
+# DOCKER_BUILDKIT=1 docker compose up -d --build
+
+# Verify all containers are healthy
 docker compose ps
 ```
+
+> **Important**: The `deploy.resources.limits` in docker-compose.yml only work with Docker Swarm.
+> For regular docker compose, memory limits are not enforced. Always ensure swap is configured.
 
 ## 7. Verify Deployment
 

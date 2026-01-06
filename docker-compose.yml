@@ -2,7 +2,17 @@
 # AppStandard - Multi-App Docker Compose
 # Production-ready configuration with all apps
 # ===================================
-
+#
+# IMPORTANT: Memory Management
+# - The deploy.resources.limits only work in Docker Swarm mode (docker stack deploy)
+# - For docker compose, use sequential builds to avoid memory exhaustion
+# - VPS requires 4GB+ swap for parallel builds, see deploy/VPS_SETUP.md
+#
+# Recommended deployment:
+#   docker compose up -d db redis && sleep 10
+#   docker compose up -d --build calendar-server tasks-server contacts-server
+#   docker compose up -d --build landing calendar-web tasks-web contacts-web
+#
 # Enable BuildKit for faster builds with cache mounts
 # Run with: DOCKER_BUILDKIT=1 docker-compose up --build -d
 # Or set in ~/.docker/daemon.json: { "features": { "buildkit": true } }
