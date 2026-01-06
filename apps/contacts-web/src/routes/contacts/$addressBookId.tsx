@@ -12,7 +12,6 @@ import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
-	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@appstandard/ui";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -28,30 +27,17 @@ import { zodValidator } from "@tanstack/zod-adapter";
 import { formatDistanceToNow } from "date-fns";
 import {
 	ArrowLeft,
-	ArrowRight,
-	Briefcase,
-	Building,
-	Cake,
-	Copy,
 	Download,
-	Edit2,
-	Globe,
 	Grid3X3,
 	Link2,
-	Link as LinkIcon,
 	List,
 	Loader2,
-	Mail,
-	MapPin,
 	Merge,
 	MoreHorizontal,
-	Phone,
 	Plus,
 	RefreshCw,
 	Search,
 	Sparkles,
-	Tag,
-	Trash2,
 	Upload,
 	User,
 } from "lucide-react";
@@ -60,6 +46,7 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { AccountPrompt } from "@/components/account-prompt";
 import { ContactFilterBar } from "@/components/contact-filters";
+import { ContactCard, ContactGridCard } from "@/components/contact-item";
 import { ExportAddressBookDialog } from "@/components/export-address-book-dialog";
 import { MoveContactDialog } from "@/components/move-contact-dialog";
 import { ShareAddressBookDialog } from "@/components/share-address-book-dialog";
@@ -585,211 +572,23 @@ function AddressBookDetailPage() {
 											</span>
 										</motion.div>
 										<div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-											{(groupedContacts[letter] ?? []).map((contact) => {
-												const accentColor = addressBook.color || "#3b82f6";
-												const locationStr = contact.primaryAddress
-													? [
-															contact.primaryAddress.locality,
-															contact.primaryAddress.country,
-														]
-															.filter(Boolean)
-															.join(", ")
-													: null;
-												const categoriesStr =
-													contact.categories && contact.categories.length > 0
-														? contact.categories
-																.map((c: { category: string }) => c.category)
-																.join(", ")
-														: null;
-
-												return (
-													<motion.div
-														key={contact.id}
-														initial={{ opacity: 0, scale: 0.95 }}
-														animate={{ opacity: 1, scale: 1 }}
-														exit={{ opacity: 0, scale: 0.95 }}
-														className="group relative flex overflow-hidden rounded-lg border bg-card transition-all duration-200 hover:border-primary/30 hover:shadow-md"
-													>
-														{/* Color accent bar */}
-														<div
-															className="w-1 shrink-0 transition-all group-hover:w-1.5"
-															style={{ backgroundColor: accentColor }}
-														/>
-
-														<div className="flex flex-1 flex-col items-center p-4 text-center">
-															{/* Avatar */}
-															<div
-																className="mb-3 flex h-14 w-14 items-center justify-center rounded-full"
-																style={{
-																	backgroundColor: `${accentColor}20`,
-																}}
-															>
-																<User
-																	className="h-7 w-7"
-																	style={{ color: accentColor }}
-																/>
-															</div>
-
-															{/* Name */}
-															<p className="mb-0.5 line-clamp-1 font-medium text-sm">
-																{contact.formattedName}
-															</p>
-
-															{/* Nickname */}
-															{contact.nickname && (
-																<p className="mb-1 text-muted-foreground text-xs">
-																	"{contact.nickname}"
-																</p>
-															)}
-
-															{/* Title/Role at Organization */}
-															{(contact.title ||
-																contact.role ||
-																contact.organization) && (
-																<p className="mb-2 line-clamp-2 text-muted-foreground text-xs">
-																	{(() => {
-																		const parts = [];
-																		if (contact.title)
-																			parts.push(contact.title);
-																		if (
-																			contact.role &&
-																			contact.role !== contact.title
-																		)
-																			parts.push(contact.role);
-																		const position = parts.join(", ");
-																		if (position && contact.organization)
-																			return `${position} at ${contact.organization}`;
-																		return position || contact.organization;
-																	})()}
-																</p>
-															)}
-
-															{/* Info badges */}
-															<div className="mb-2 flex flex-wrap justify-center gap-1">
-																{contact.primaryEmail && (
-																	<span
-																		className="rounded-full bg-blue-100 p-1 dark:bg-blue-900/30"
-																		title={contact.primaryEmail}
-																	>
-																		<Mail className="h-3 w-3 text-blue-600 dark:text-blue-400" />
-																	</span>
-																)}
-																{contact.primaryPhone && (
-																	<span
-																		className="rounded-full bg-green-100 p-1 dark:bg-green-900/30"
-																		title={contact.primaryPhone}
-																	>
-																		<Phone className="h-3 w-3 text-green-600 dark:text-green-400" />
-																	</span>
-																)}
-																{locationStr && (
-																	<span
-																		className="rounded-full bg-amber-100 p-1 dark:bg-amber-900/30"
-																		title={locationStr}
-																	>
-																		<MapPin className="h-3 w-3 text-amber-600 dark:text-amber-400" />
-																	</span>
-																)}
-																{contact.birthday && (
-																	<span
-																		className="rounded-full bg-pink-100 p-1 dark:bg-pink-900/30"
-																		title={`Birthday: ${new Date(contact.birthday).toLocaleDateString()}`}
-																	>
-																		<Cake className="h-3 w-3 text-pink-600 dark:text-pink-400" />
-																	</span>
-																)}
-																{contact.url && (
-																	<span
-																		className="rounded-full bg-cyan-100 p-1 dark:bg-cyan-900/30"
-																		title={contact.url}
-																	>
-																		<Globe className="h-3 w-3 text-cyan-600 dark:text-cyan-400" />
-																	</span>
-																)}
-															</div>
-
-															{/* Categories */}
-															{categoriesStr && (
-																<div className="flex items-center gap-1 text-[10px] text-muted-foreground">
-																	<Tag className="h-2.5 w-2.5" />
-																	<span className="line-clamp-1">
-																		{categoriesStr}
-																	</span>
-																</div>
-															)}
-
-															{/* Hover actions */}
-															<div className="absolute top-2 right-2 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-																<button
-																	type="button"
-																	onClick={() =>
-																		navigate({
-																			to: `/contacts/${addressBookId}/contacts/${contact.id}`,
-																		})
-																	}
-																	className="rounded bg-background/80 p-1 text-muted-foreground shadow-sm hover:bg-muted hover:text-foreground"
-																>
-																	<Edit2 className="h-3.5 w-3.5" />
-																</button>
-																<DropdownMenu>
-																	<DropdownMenuTrigger asChild>
-																		<button
-																			type="button"
-																			className="rounded bg-background/80 p-1 text-muted-foreground shadow-sm hover:bg-muted"
-																		>
-																			<MoreHorizontal className="h-3.5 w-3.5" />
-																		</button>
-																	</DropdownMenuTrigger>
-																	<DropdownMenuContent align="end">
-																		<DropdownMenuItem
-																			onClick={() =>
-																				navigate({
-																					to: `/contacts/${addressBookId}/contacts/${contact.id}`,
-																				})
-																			}
-																		>
-																			<Edit2 className="mr-2 h-4 w-4" />
-																			Edit
-																		</DropdownMenuItem>
-																		<DropdownMenuItem
-																			onClick={() =>
-																				handleDuplicateContact(contact.id)
-																			}
-																			disabled={
-																				duplicateContactMutation.isPending
-																			}
-																		>
-																			<Copy className="mr-2 h-4 w-4" />
-																			Duplicate
-																		</DropdownMenuItem>
-																		<DropdownMenuItem
-																			onClick={() =>
-																				handleMoveContact(contact.id)
-																			}
-																		>
-																			<ArrowRight className="mr-2 h-4 w-4" />
-																			Move to address book...
-																		</DropdownMenuItem>
-																		<DropdownMenuSeparator />
-																		<DropdownMenuItem
-																			onClick={() =>
-																				handleDeleteContact(
-																					contact.id,
-																					contact.formattedName,
-																				)
-																			}
-																			className="text-destructive focus:text-destructive"
-																		>
-																			<Trash2 className="mr-2 h-4 w-4" />
-																			Delete
-																		</DropdownMenuItem>
-																	</DropdownMenuContent>
-																</DropdownMenu>
-															</div>
-														</div>
-													</motion.div>
-												);
-											})}
+											{(groupedContacts[letter] ?? []).map((contact) => (
+												<ContactGridCard
+													key={contact.id}
+													contact={contact}
+													addressBookId={addressBookId}
+													addressBookColor={addressBook.color}
+													onEdit={(id) =>
+														navigate({
+															to: `/contacts/${addressBookId}/contacts/${id}`,
+														})
+													}
+													onDuplicate={handleDuplicateContact}
+													onMove={handleMoveContact}
+													onDelete={handleDeleteContact}
+													isDuplicating={duplicateContactMutation.isPending}
+												/>
+											))}
 										</div>
 									</div>
 								))}
@@ -818,246 +617,23 @@ function AddressBookDetailPage() {
 											</span>
 										</motion.div>
 										<div className="space-y-2">
-											{(groupedContacts[letter] ?? []).map((contact) => {
-												const accentColor = addressBook.color || "#3b82f6";
-												const locationStr = contact.primaryAddress
-													? [
-															contact.primaryAddress.locality,
-															contact.primaryAddress.country,
-														]
-															.filter(Boolean)
-															.join(", ")
-													: null;
-												const categoriesStr =
-													contact.categories && contact.categories.length > 0
-														? contact.categories
-																.map((c: { category: string }) => c.category)
-																.join(", ")
-														: null;
-
-												return (
-													<motion.div
-														key={contact.id}
-														initial={{ opacity: 0, y: 10 }}
-														animate={{ opacity: 1, y: 0 }}
-														exit={{ opacity: 0, y: -10 }}
-														className="group relative flex overflow-hidden rounded-lg border bg-card transition-all duration-200 hover:border-primary/30 hover:shadow-md"
-													>
-														{/* Color accent bar */}
-														<div
-															className="w-1 shrink-0 transition-all group-hover:w-1.5"
-															style={{ backgroundColor: accentColor }}
-														/>
-
-														<div className="flex min-w-0 flex-1 items-start gap-4 p-4">
-															{/* Avatar */}
-															<div
-																className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
-																style={{
-																	backgroundColor: `${accentColor}20`,
-																}}
-															>
-																<User
-																	className="h-5 w-5"
-																	style={{ color: accentColor }}
-																/>
-															</div>
-
-															{/* Contact info */}
-															<div className="min-w-0 flex-1 space-y-1">
-																{/* Name row with badges */}
-																<div className="flex flex-wrap items-center gap-2">
-																	<h3 className="font-medium">
-																		{contact.formattedName}
-																	</h3>
-																	{contact.nickname && (
-																		<span className="text-muted-foreground text-sm">
-																			"{contact.nickname}"
-																		</span>
-																	)}
-																	{/* Inline badges */}
-																	<div className="flex gap-1">
-																		{contact.birthday && (
-																			<span
-																				className="rounded-full bg-pink-100 p-0.5 dark:bg-pink-900/30"
-																				title={`Birthday: ${new Date(contact.birthday).toLocaleDateString()}`}
-																			>
-																				<Cake className="h-2.5 w-2.5 text-pink-600 dark:text-pink-400" />
-																			</span>
-																		)}
-																	</div>
-																</div>
-
-																{/* Title/Role at Organization */}
-																{(contact.title ||
-																	contact.role ||
-																	contact.organization) && (
-																	<p className="text-muted-foreground text-sm">
-																		{(() => {
-																			const parts = [];
-																			if (contact.title)
-																				parts.push(contact.title);
-																			if (
-																				contact.role &&
-																				contact.role !== contact.title
-																			)
-																				parts.push(contact.role);
-																			const position = parts.join(", ");
-																			const hasPosition = position.length > 0;
-																			const Icon = hasPosition
-																				? Briefcase
-																				: Building;
-																			const text =
-																				position && contact.organization
-																					? `${position} at ${contact.organization}`
-																					: position || contact.organization;
-																			return (
-																				<>
-																					<Icon className="mr-1 inline h-3.5 w-3.5" />
-																					{text}
-																				</>
-																			);
-																		})()}
-																	</p>
-																)}
-
-																{/* Primary contact info */}
-																<div className="flex flex-wrap items-center gap-3 text-muted-foreground text-sm">
-																	{contact.primaryEmail && (
-																		<a
-																			href={`mailto:${contact.primaryEmail}`}
-																			className="flex items-center gap-1 hover:text-primary hover:underline"
-																			onClick={(e) => e.stopPropagation()}
-																		>
-																			<Mail className="h-3.5 w-3.5" />
-																			{contact.primaryEmail}
-																		</a>
-																	)}
-																	{contact.primaryPhone && (
-																		<a
-																			href={`tel:${contact.primaryPhone}`}
-																			className="flex items-center gap-1 hover:text-primary hover:underline"
-																			onClick={(e) => e.stopPropagation()}
-																		>
-																			<Phone className="h-3.5 w-3.5" />
-																			{contact.primaryPhone}
-																		</a>
-																	)}
-																</div>
-
-																{/* Secondary info - show on desktop with separator */}
-																{!isMobile &&
-																	(locationStr ||
-																		contact.url ||
-																		categoriesStr) && (
-																		<div className="flex flex-wrap items-center gap-3 border-border/40 border-t pt-2 text-muted-foreground text-sm">
-																			{locationStr && (
-																				<span className="flex items-center gap-1">
-																					<MapPin className="h-3.5 w-3.5" />
-																					{locationStr}
-																				</span>
-																			)}
-																			{contact.url && (
-																				<a
-																					href={contact.url}
-																					target="_blank"
-																					rel="noopener noreferrer"
-																					className="flex items-center gap-1 text-primary hover:underline"
-																					onClick={(e) => e.stopPropagation()}
-																				>
-																					<LinkIcon className="h-3.5 w-3.5" />
-																					Website
-																				</a>
-																			)}
-																			{categoriesStr && (
-																				<span className="flex items-center gap-1">
-																					<Tag className="h-3.5 w-3.5" />
-																					{categoriesStr}
-																				</span>
-																			)}
-																		</div>
-																	)}
-
-																{/* Note preview */}
-																{contact.note && (
-																	<p className="line-clamp-1 pt-1 text-muted-foreground text-xs italic">
-																		{contact.note}
-																	</p>
-																)}
-															</div>
-
-															{/* Actions */}
-															<div className="flex shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-																<button
-																	type="button"
-																	onClick={() =>
-																		navigate({
-																			to: `/contacts/${addressBookId}/contacts/${contact.id}`,
-																		})
-																	}
-																	className="rounded p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
-																>
-																	<Edit2 className="h-4 w-4" />
-																</button>
-																<DropdownMenu>
-																	<DropdownMenuTrigger asChild>
-																		<button
-																			type="button"
-																			className="rounded p-1.5 text-muted-foreground hover:bg-muted"
-																		>
-																			<MoreHorizontal className="h-4 w-4" />
-																		</button>
-																	</DropdownMenuTrigger>
-																	<DropdownMenuContent align="end">
-																		<DropdownMenuItem
-																			onClick={() =>
-																				navigate({
-																					to: `/contacts/${addressBookId}/contacts/${contact.id}`,
-																				})
-																			}
-																		>
-																			<Edit2 className="mr-2 h-4 w-4" />
-																			Edit
-																		</DropdownMenuItem>
-																		<DropdownMenuItem
-																			onClick={() =>
-																				handleDuplicateContact(contact.id)
-																			}
-																			disabled={
-																				duplicateContactMutation.isPending
-																			}
-																		>
-																			<Copy className="mr-2 h-4 w-4" />
-																			Duplicate
-																		</DropdownMenuItem>
-																		<DropdownMenuItem
-																			onClick={() =>
-																				handleMoveContact(contact.id)
-																			}
-																		>
-																			<ArrowRight className="mr-2 h-4 w-4" />
-																			Move to address book...
-																		</DropdownMenuItem>
-																		<DropdownMenuSeparator />
-																		<DropdownMenuItem
-																			onClick={() =>
-																				handleDeleteContact(
-																					contact.id,
-																					contact.formattedName,
-																				)
-																			}
-																			className="text-destructive focus:text-destructive"
-																		>
-																			<Trash2 className="mr-2 h-4 w-4" />
-																			Delete
-																		</DropdownMenuItem>
-																	</DropdownMenuContent>
-																</DropdownMenu>
-															</div>
-														</div>
-													</motion.div>
-												);
-											})}
+											{(groupedContacts[letter] ?? []).map((contact) => (
+												<ContactCard
+													key={contact.id}
+													contact={contact}
+													addressBookId={addressBookId}
+													addressBookColor={addressBook.color}
+													onEdit={(id) =>
+														navigate({
+															to: `/contacts/${addressBookId}/contacts/${id}`,
+														})
+													}
+													onDuplicate={handleDuplicateContact}
+													onMove={handleMoveContact}
+													onDelete={handleDeleteContact}
+													isDuplicating={duplicateContactMutation.isPending}
+												/>
+											))}
 										</div>
 									</div>
 								))}

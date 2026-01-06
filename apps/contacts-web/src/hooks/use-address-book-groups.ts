@@ -6,6 +6,7 @@ import { useMutation, type useQueryClient } from "@tanstack/react-query";
 import type { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
+import { exportGroupAsVCFFile } from "@/lib/address-book-export";
 import { QUERY_KEYS } from "@/lib/query-keys";
 import { trpc, trpcClient } from "@/utils/trpc";
 
@@ -85,9 +86,13 @@ export function useAddressBookGroupHandlers(
 		}
 	};
 
-	const handleExportGroup = async (_groupId: string) => {
-		// TODO: Implement export when export utilities are ready
-		toast.info("Export feature coming soon");
+	const handleExportGroup = async (groupId: string) => {
+		try {
+			await exportGroupAsVCFFile(groupId);
+			toast.success("Group exported successfully");
+		} catch (_error) {
+			toast.error("Error exporting group");
+		}
 	};
 
 	const handleViewGroup = (groupId: string) => {

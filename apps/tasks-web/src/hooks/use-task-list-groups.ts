@@ -7,6 +7,7 @@ import type { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 import { QUERY_KEYS } from "@/lib/query-keys";
+import { exportGroupAsICSFile } from "@/lib/task-list-export";
 import { trpc, trpcClient } from "@/utils/trpc";
 
 export function useTaskListGroupHandlers(
@@ -85,9 +86,13 @@ export function useTaskListGroupHandlers(
 		}
 	};
 
-	const handleExportGroup = async (_groupId: string) => {
-		// TODO: Implement export when export utilities are ready
-		toast.info("Export feature coming soon");
+	const handleExportGroup = async (groupId: string) => {
+		try {
+			await exportGroupAsICSFile(groupId);
+			toast.success("Group exported successfully");
+		} catch (_error) {
+			toast.error("Error exporting group");
+		}
 	};
 
 	const handleViewGroup = (groupId: string) => {
