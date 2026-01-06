@@ -31,6 +31,7 @@ import {
 	AlertTriangle,
 	ArrowLeft,
 	ArrowRight,
+	Bell,
 	Calendar,
 	Check,
 	Circle,
@@ -41,17 +42,25 @@ import {
 	Flag,
 	Kanban,
 	Link2,
+	Link as LinkIcon,
 	List,
+	ListTodo,
 	Loader2,
+	Lock,
+	MapPin,
 	Merge,
 	MoreHorizontal,
 	Play,
 	Plus,
 	RefreshCw,
+	Repeat,
 	Search,
 	Sparkles,
+	Tag,
 	Trash2,
 	Upload,
+	User,
+	Users,
 	X,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
@@ -618,6 +627,7 @@ function TaskListDetailPage() {
 							bgColor="bg-slate-100 dark:bg-slate-900/30"
 							tasks={tasksByStatus.needsAction}
 							taskListId={taskListId}
+							taskListColor={taskList?.color}
 							onToggle={handleToggleTask}
 							onEdit={(id) =>
 								navigate({ to: `/tasks/${taskListId}/tasks/${id}` })
@@ -636,6 +646,7 @@ function TaskListDetailPage() {
 							bgColor="bg-blue-100 dark:bg-blue-900/30"
 							tasks={tasksByStatus.inProgress}
 							taskListId={taskListId}
+							taskListColor={taskList?.color}
 							onToggle={handleToggleTask}
 							onEdit={(id) =>
 								navigate({ to: `/tasks/${taskListId}/tasks/${id}` })
@@ -654,6 +665,7 @@ function TaskListDetailPage() {
 							bgColor="bg-green-100 dark:bg-green-900/30"
 							tasks={tasksByStatus.completed}
 							taskListId={taskListId}
+							taskListColor={taskList?.color}
 							onToggle={handleToggleTask}
 							onEdit={(id) =>
 								navigate({ to: `/tasks/${taskListId}/tasks/${id}` })
@@ -672,6 +684,7 @@ function TaskListDetailPage() {
 							bgColor="bg-red-100 dark:bg-red-900/30"
 							tasks={tasksByStatus.cancelled}
 							taskListId={taskListId}
+							taskListColor={taskList?.color}
 							onToggle={handleToggleTask}
 							onEdit={(id) =>
 								navigate({ to: `/tasks/${taskListId}/tasks/${id}` })
@@ -711,6 +724,7 @@ function TaskListDetailPage() {
 											key={task.id}
 											task={task}
 											taskListId={taskListId}
+											taskListColor={taskList?.color}
 											onToggle={handleToggleTask}
 											onEdit={(id) =>
 												navigate({ to: `/tasks/${taskListId}/tasks/${id}` })
@@ -868,19 +882,38 @@ function TaskListDetailPage() {
 
 // ----- Helper Components -----
 
+interface TaskCategory {
+	id: string;
+	category: string;
+}
+
 interface Task {
 	id: string;
 	title: string;
 	description?: string | null;
 	status: string;
 	priority?: number | null;
+	percentComplete?: number | null;
+	startDate?: string | Date | null;
 	dueDate?: string | Date | null;
+	location?: string | null;
+	color?: string | null;
+	class?: string | null;
+	url?: string | null;
+	rrule?: string | null;
+	organizerName?: string | null;
+	organizerEmail?: string | null;
+	categories?: TaskCategory[];
+	subtaskCount?: number;
+	attendeeCount?: number;
+	alarmCount?: number;
 	createdAt: string | Date;
 }
 
 interface TaskCardProps {
 	task: Task;
 	taskListId: string;
+	taskListColor?: string | null;
 	onToggle: (id: string, status: string) => void;
 	onEdit: (id: string) => void;
 	onDuplicate: (id: string) => void;
@@ -911,10 +944,17 @@ function getPriorityInfo(priority: number | null | undefined) {
 	};
 }
 
-/** Task card with badges and animations */
+/** Format categories for display */
+function formatCategories(categories: TaskCategory[] | undefined): string {
+	if (!categories || categories.length === 0) return "";
+	return categories.map((c) => c.category).join(", ");
+}
+
+/** Task card with badges and animations - enhanced like Calendar */
 function TaskCard({
 	task,
 	taskListId: _taskListId,
+	taskListColor,
 	onToggle,
 	onEdit,
 	onDuplicate,
@@ -923,130 +963,315 @@ function TaskCard({
 	isToggling,
 	isDuplicating,
 }: TaskCardProps) {
+	const isMobile = useIsMobile();
 	const priorityInfo = getPriorityInfo(task.priority);
 	const dueDate = task.dueDate ? new Date(task.dueDate) : null;
+	const startDate = task.startDate ? new Date(task.startDate) : null;
 	const isOverdue =
 		dueDate &&
 		isPast(dueDate) &&
 		task.status !== "COMPLETED" &&
 		!isToday(dueDate);
 	const isDueToday = dueDate && isToday(dueDate);
+	const isCancelled = task.status === "CANCELLED";
+	const accentColor = task.color || taskListColor || "#3b82f6";
+
+	// Build secondary info rows
+	const categoriesStr = formatCategories(task.categories);
+	const hasSecondaryInfo =
+		task.location ||
+		categoriesStr ||
+		task.url ||
+		task.organizerName ||
+		task.organizerEmail ||
+		(task.attendeeCount && task.attendeeCount > 0) ||
+		(task.alarmCount && task.alarmCount > 0) ||
+		(task.subtaskCount && task.subtaskCount > 0);
+
+	// Inline indicators (recurrence, privacy)
+	const hasIndicators =
+		task.rrule || (task.class && task.class !== "PUBLIC") || priorityInfo;
 
 	return (
 		<motion.div
 			initial={{ opacity: 0, y: 10 }}
 			animate={{ opacity: 1, y: 0 }}
 			exit={{ opacity: 0, y: -10 }}
-			className="group flex items-center gap-3 rounded-lg border bg-card p-4 transition-all hover:border-primary/30"
+			className={cn(
+				"group relative flex overflow-hidden rounded-lg border bg-card transition-all duration-200 hover:border-primary/30 hover:shadow-md",
+				isCancelled && "opacity-60",
+			)}
 		>
-			<button
-				type="button"
-				onClick={() => onToggle(task.id, task.status)}
-				disabled={isToggling}
-				className={cn(
-					"flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors disabled:opacity-50",
-					task.status === "IN_PROCESS"
-						? "border-blue-500 bg-blue-500/20 text-blue-600"
-						: "border-muted-foreground/50 text-muted-foreground hover:border-primary hover:text-primary",
-				)}
-			>
-				{task.status === "IN_PROCESS" ? (
-					<Play className="h-2.5 w-2.5" />
-				) : (
-					<Circle className="h-3 w-3" />
-				)}
-			</button>
-			<div className="min-w-0 flex-1">
-				<div className="flex flex-wrap items-center gap-2">
-					<p className="font-medium">{task.title}</p>
-					{/* Priority badge */}
-					{priorityInfo && (
-						<span
-							className={cn(
-								"inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-xs",
-								priorityInfo.color,
-							)}
-						>
-							<Flag className="h-2.5 w-2.5" />
-							{priorityInfo.label}
-						</span>
-					)}
-					{/* Due date badges */}
-					{isOverdue && (
-						<span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-1.5 py-0.5 text-red-700 text-xs dark:bg-red-900/30 dark:text-red-400">
-							<AlertTriangle className="h-2.5 w-2.5" />
-							Overdue
-						</span>
-					)}
-					{isDueToday && !isOverdue && (
-						<span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-1.5 py-0.5 text-amber-700 text-xs dark:bg-amber-900/30 dark:text-amber-400">
-							<Clock className="h-2.5 w-2.5" />
-							Due today
-						</span>
-					)}
-				</div>
-				{task.description && (
-					<p className="truncate text-muted-foreground text-sm">
-						{task.description}
-					</p>
-				)}
-				{dueDate && (
-					<p
-						className={cn(
-							"mt-1 flex items-center gap-1 text-xs",
-							isOverdue
-								? "text-red-600 dark:text-red-400"
-								: "text-muted-foreground",
-						)}
-					>
-						<Calendar className="h-3 w-3" />
-						{dueDate.toLocaleDateString()}
-					</p>
-				)}
-			</div>
-			<div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+			{/* Color accent bar */}
+			<div
+				className="w-1 shrink-0 transition-all group-hover:w-1.5"
+				style={{ backgroundColor: accentColor }}
+			/>
+
+			{/* Main content */}
+			<div className="flex min-w-0 flex-1 items-start gap-3 p-4">
+				{/* Status button */}
 				<button
 					type="button"
-					onClick={() => onEdit(task.id)}
-					className="rounded p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+					onClick={() => onToggle(task.id, task.status)}
+					disabled={isToggling}
+					className={cn(
+						"mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors disabled:opacity-50",
+						task.status === "IN_PROCESS"
+							? "border-blue-500 bg-blue-500/20 text-blue-600"
+							: task.status === "COMPLETED"
+								? "border-green-500 bg-green-500/20 text-green-600"
+								: "border-muted-foreground/50 text-muted-foreground hover:border-primary hover:text-primary",
+					)}
 				>
-					<Edit2 className="h-4 w-4" />
+					{task.status === "IN_PROCESS" ? (
+						<Play className="h-2.5 w-2.5" />
+					) : task.status === "COMPLETED" ? (
+						<Check className="h-3 w-3" />
+					) : (
+						<Circle className="h-3 w-3" />
+					)}
 				</button>
-				<DropdownMenu>
-					<DropdownMenuTrigger asChild>
-						<button
-							type="button"
-							className="rounded p-1.5 text-muted-foreground hover:bg-muted"
+
+				{/* Content */}
+				<div className="min-w-0 flex-1 space-y-2">
+					{/* Title row with inline indicators */}
+					<div className="flex flex-wrap items-center gap-2">
+						<h3
+							className={cn(
+								"font-medium",
+								isCancelled && "text-muted-foreground line-through",
+							)}
 						>
-							<MoreHorizontal className="h-4 w-4" />
-						</button>
-					</DropdownMenuTrigger>
-					<DropdownMenuContent align="end">
-						<DropdownMenuItem onClick={() => onEdit(task.id)}>
-							<Edit2 className="mr-2 h-4 w-4" />
-							Edit
-						</DropdownMenuItem>
-						<DropdownMenuItem
-							onClick={() => onDuplicate(task.id)}
-							disabled={isDuplicating}
+							{task.title}
+						</h3>
+						{/* Inline indicators */}
+						{hasIndicators && (
+							<div className="flex items-center gap-1.5">
+								{task.rrule && (
+									<span
+										className="text-muted-foreground"
+										title="Recurring task"
+									>
+										<Repeat className="h-3.5 w-3.5" />
+									</span>
+								)}
+								{task.class && task.class !== "PUBLIC" && (
+									<span
+										className="text-muted-foreground"
+										title={
+											task.class === "PRIVATE" ? "Private" : "Confidential"
+										}
+									>
+										<Lock className="h-3.5 w-3.5" />
+									</span>
+								)}
+								{priorityInfo && (
+									<span
+										className={cn(
+											"inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-xs",
+											priorityInfo.color,
+										)}
+									>
+										<Flag className="h-2.5 w-2.5" />
+										{priorityInfo.label}
+									</span>
+								)}
+							</div>
+						)}
+					</div>
+
+					{/* Status badges row */}
+					<div className="flex flex-wrap items-center gap-2">
+						{task.status === "CANCELLED" && (
+							<span className="inline-flex items-center gap-1.5 rounded-full bg-red-100 px-2 py-0.5 text-red-700 text-xs dark:bg-red-900/30 dark:text-red-400">
+								<span className="h-1.5 w-1.5 rounded-full bg-red-500" />
+								Cancelled
+							</span>
+						)}
+						{isOverdue && (
+							<span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-1.5 py-0.5 text-red-700 text-xs dark:bg-red-900/30 dark:text-red-400">
+								<AlertTriangle className="h-2.5 w-2.5" />
+								Overdue
+							</span>
+						)}
+						{isDueToday && !isOverdue && (
+							<span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-1.5 py-0.5 text-amber-700 text-xs dark:bg-amber-900/30 dark:text-amber-400">
+								<Clock className="h-2.5 w-2.5" />
+								Due today
+							</span>
+						)}
+						{task.status === "IN_PROCESS" && (
+							<span className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-1.5 py-0.5 text-blue-700 text-xs dark:bg-blue-900/30 dark:text-blue-400">
+								<span className="h-1.5 w-1.5 animate-pulse rounded-full bg-blue-500" />
+								In progress
+							</span>
+						)}
+					</div>
+
+					{/* Progress bar */}
+					{task.percentComplete != null && task.percentComplete > 0 && (
+						<div className="flex items-center gap-2">
+							<div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
+								<div
+									className="h-full rounded-full bg-primary transition-all"
+									style={{ width: `${task.percentComplete}%` }}
+								/>
+							</div>
+							<span className="text-muted-foreground text-xs">
+								{task.percentComplete}%
+							</span>
+						</div>
+					)}
+
+					{/* Due date display */}
+					{(startDate || dueDate) && (
+						<div
+							className={cn(
+								"flex items-center gap-2 text-sm",
+								isOverdue
+									? "text-red-600 dark:text-red-400"
+									: "text-muted-foreground",
+							)}
 						>
-							<Copy className="mr-2 h-4 w-4" />
-							Duplicate
-						</DropdownMenuItem>
-						<DropdownMenuItem onClick={() => onMove(task.id)}>
-							<ArrowRight className="mr-2 h-4 w-4" />
-							Move to list...
-						</DropdownMenuItem>
-						<DropdownMenuSeparator />
-						<DropdownMenuItem
-							onClick={() => onDelete(task.id, task.title)}
-							className="text-destructive focus:text-destructive"
-						>
-							<Trash2 className="mr-2 h-4 w-4" />
-							Delete
-						</DropdownMenuItem>
-					</DropdownMenuContent>
-				</DropdownMenu>
+							<Calendar className="h-4 w-4 shrink-0" />
+							{startDate && dueDate ? (
+								<span>
+									{startDate.toLocaleDateString()} →{" "}
+									{dueDate.toLocaleDateString()}
+								</span>
+							) : dueDate ? (
+								<span>Due {dueDate.toLocaleDateString()}</span>
+							) : startDate ? (
+								<span>Starts {startDate.toLocaleDateString()}</span>
+							) : null}
+						</div>
+					)}
+
+					{/* Secondary info - show on desktop, limit on mobile */}
+					{hasSecondaryInfo && (
+						<div className="flex flex-col gap-2 border-border/40 border-t pt-2 text-muted-foreground text-sm md:grid md:grid-cols-2 md:gap-x-4 md:gap-y-2">
+							{task.location && (
+								<div className="flex items-center gap-2">
+									<MapPin className="h-4 w-4 shrink-0" />
+									<span className="truncate">{task.location}</span>
+								</div>
+							)}
+							{categoriesStr && (
+								<div className="flex items-center gap-2">
+									<Tag className="h-4 w-4 shrink-0" />
+									<span className="truncate">{categoriesStr}</span>
+								</div>
+							)}
+							{!isMobile && (
+								<>
+									{task.url && (
+										<div className="flex items-center gap-2">
+											<LinkIcon className="h-4 w-4 shrink-0" />
+											<a
+												href={task.url}
+												target="_blank"
+												rel="noopener noreferrer"
+												className="truncate text-primary hover:underline"
+												onClick={(e) => e.stopPropagation()}
+											>
+												{task.url}
+											</a>
+										</div>
+									)}
+									{(task.organizerName || task.organizerEmail) && (
+										<div className="flex items-center gap-2">
+											<User className="h-4 w-4 shrink-0" />
+											<span className="truncate">
+												{task.organizerName || task.organizerEmail}
+											</span>
+										</div>
+									)}
+									{task.attendeeCount != null && task.attendeeCount > 0 && (
+										<div className="flex items-center gap-2">
+											<Users className="h-4 w-4 shrink-0" />
+											<span>
+												{task.attendeeCount} participant
+												{task.attendeeCount > 1 ? "s" : ""}
+											</span>
+										</div>
+									)}
+									{task.alarmCount != null && task.alarmCount > 0 && (
+										<div className="flex items-center gap-2">
+											<Bell className="h-4 w-4 shrink-0" />
+											<span>
+												{task.alarmCount} reminder
+												{task.alarmCount > 1 ? "s" : ""}
+											</span>
+										</div>
+									)}
+									{task.subtaskCount != null && task.subtaskCount > 0 && (
+										<div className="flex items-center gap-2">
+											<ListTodo className="h-4 w-4 shrink-0" />
+											<span>
+												{task.subtaskCount} subtask
+												{task.subtaskCount > 1 ? "s" : ""}
+											</span>
+										</div>
+									)}
+								</>
+							)}
+						</div>
+					)}
+
+					{/* Description */}
+					{task.description && (
+						<p className="line-clamp-2 pt-1 text-muted-foreground text-sm">
+							{task.description}
+						</p>
+					)}
+				</div>
+
+				{/* Actions */}
+				<div className="flex shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+					<button
+						type="button"
+						onClick={() => onEdit(task.id)}
+						className="rounded p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+					>
+						<Edit2 className="h-4 w-4" />
+					</button>
+					<DropdownMenu>
+						<DropdownMenuTrigger asChild>
+							<button
+								type="button"
+								className="rounded p-1.5 text-muted-foreground hover:bg-muted"
+							>
+								<MoreHorizontal className="h-4 w-4" />
+							</button>
+						</DropdownMenuTrigger>
+						<DropdownMenuContent align="end">
+							<DropdownMenuItem onClick={() => onEdit(task.id)}>
+								<Edit2 className="mr-2 h-4 w-4" />
+								Edit
+							</DropdownMenuItem>
+							<DropdownMenuItem
+								onClick={() => onDuplicate(task.id)}
+								disabled={isDuplicating}
+							>
+								<Copy className="mr-2 h-4 w-4" />
+								Duplicate
+							</DropdownMenuItem>
+							<DropdownMenuItem onClick={() => onMove(task.id)}>
+								<ArrowRight className="mr-2 h-4 w-4" />
+								Move to list...
+							</DropdownMenuItem>
+							<DropdownMenuSeparator />
+							<DropdownMenuItem
+								onClick={() => onDelete(task.id, task.title)}
+								className="text-destructive focus:text-destructive"
+							>
+								<Trash2 className="mr-2 h-4 w-4" />
+								Delete
+							</DropdownMenuItem>
+						</DropdownMenuContent>
+					</DropdownMenu>
+				</div>
 			</div>
 		</motion.div>
 	);
@@ -1059,6 +1284,7 @@ interface KanbanColumnProps {
 	bgColor: string;
 	tasks: Task[];
 	taskListId: string;
+	taskListColor?: string | null;
 	onToggle: (id: string, status: string) => void;
 	onEdit: (id: string) => void;
 	onDuplicate: (id: string) => void;
@@ -1076,6 +1302,7 @@ function KanbanColumn({
 	bgColor,
 	tasks,
 	taskListId: _taskListId,
+	taskListColor,
 	onToggle,
 	onEdit,
 	onDuplicate,
@@ -1107,6 +1334,7 @@ function KanbanColumn({
 						<KanbanCard
 							key={task.id}
 							task={task}
+							taskListColor={taskListColor}
 							onToggle={onToggle}
 							onEdit={onEdit}
 							onDuplicate={onDuplicate}
@@ -1129,6 +1357,7 @@ function KanbanColumn({
 
 interface KanbanCardProps {
 	task: Task;
+	taskListColor?: string | null;
 	onToggle: (id: string, status: string) => void;
 	onEdit: (id: string) => void;
 	onDuplicate: (id: string) => void;
@@ -1138,9 +1367,10 @@ interface KanbanCardProps {
 	isDuplicating: boolean;
 }
 
-/** Compact task card for Kanban view */
+/** Compact task card for Kanban view - enhanced with more info */
 function KanbanCard({
 	task,
+	taskListColor,
 	onToggle,
 	onEdit,
 	onDuplicate,
@@ -1156,81 +1386,183 @@ function KanbanCard({
 		isPast(dueDate) &&
 		task.status !== "COMPLETED" &&
 		!isToday(dueDate);
+	const isDueToday = dueDate && isToday(dueDate);
+	const isCancelled = task.status === "CANCELLED";
+	const accentColor = task.color || taskListColor || "#3b82f6";
+
+	// Inline indicators
+	const hasIndicators =
+		task.rrule || (task.class && task.class !== "PUBLIC") || priorityInfo;
 
 	return (
 		<motion.div
 			initial={{ opacity: 0, scale: 0.95 }}
 			animate={{ opacity: 1, scale: 1 }}
 			exit={{ opacity: 0, scale: 0.95 }}
-			className="group rounded-md border bg-card p-3 shadow-sm transition-all hover:border-primary/30 hover:shadow-md"
+			className={cn(
+				"group relative flex overflow-hidden rounded-md border bg-card shadow-sm transition-all hover:border-primary/30 hover:shadow-md",
+				isCancelled && "opacity-60",
+			)}
 		>
-			<div className="mb-2 flex items-start justify-between gap-2">
-				<p className="line-clamp-2 font-medium text-sm">{task.title}</p>
-				<DropdownMenu>
-					<DropdownMenuTrigger asChild>
-						<button
-							type="button"
-							className="shrink-0 rounded p-1 text-muted-foreground opacity-0 transition-opacity hover:bg-muted group-hover:opacity-100"
-						>
-							<MoreHorizontal className="h-3.5 w-3.5" />
-						</button>
-					</DropdownMenuTrigger>
-					<DropdownMenuContent align="end">
-						<DropdownMenuItem onClick={() => onEdit(task.id)}>
-							<Edit2 className="mr-2 h-4 w-4" />
-							Edit
-						</DropdownMenuItem>
-						<DropdownMenuItem onClick={() => onToggle(task.id, task.status)}>
-							<Check className="mr-2 h-4 w-4" />
-							Toggle status
-						</DropdownMenuItem>
-						<DropdownMenuItem
-							onClick={() => onDuplicate(task.id)}
-							disabled={isDuplicating}
-						>
-							<Copy className="mr-2 h-4 w-4" />
-							Duplicate
-						</DropdownMenuItem>
-						<DropdownMenuItem onClick={() => onMove(task.id)}>
-							<ArrowRight className="mr-2 h-4 w-4" />
-							Move to list...
-						</DropdownMenuItem>
-						<DropdownMenuSeparator />
-						<DropdownMenuItem
-							onClick={() => onDelete(task.id, task.title)}
-							className="text-destructive focus:text-destructive"
-						>
-							<Trash2 className="mr-2 h-4 w-4" />
-							Delete
-						</DropdownMenuItem>
-					</DropdownMenuContent>
-				</DropdownMenu>
-			</div>
+			{/* Color accent bar */}
+			<div
+				className="w-1 shrink-0 transition-all group-hover:w-1.5"
+				style={{ backgroundColor: accentColor }}
+			/>
 
-			{/* Badges row */}
-			<div className="flex flex-wrap gap-1">
-				{priorityInfo && (
-					<span
-						className={cn(
-							"inline-flex items-center gap-0.5 rounded px-1 py-0.5 text-xs",
-							priorityInfo.color,
-						)}
-					>
-						<Flag className="h-2.5 w-2.5" />
-						{priorityInfo.label}
-					</span>
+			<div className="flex-1 p-3">
+				{/* Title row */}
+				<div className="mb-2 flex items-start justify-between gap-2">
+					<div className="min-w-0 flex-1">
+						<div className="flex items-center gap-1.5">
+							<p
+								className={cn(
+									"line-clamp-2 font-medium text-sm",
+									isCancelled && "text-muted-foreground line-through",
+								)}
+							>
+								{task.title}
+							</p>
+							{/* Inline indicators */}
+							{hasIndicators && (
+								<div className="flex shrink-0 items-center gap-1">
+									{task.rrule && (
+										<span title="Recurring">
+											<Repeat className="h-3 w-3 text-muted-foreground" />
+										</span>
+									)}
+									{task.class && task.class !== "PUBLIC" && (
+										<span title={task.class}>
+											<Lock className="h-3 w-3 text-muted-foreground" />
+										</span>
+									)}
+								</div>
+							)}
+						</div>
+					</div>
+					<DropdownMenu>
+						<DropdownMenuTrigger asChild>
+							<button
+								type="button"
+								className="shrink-0 rounded p-1 text-muted-foreground opacity-0 transition-opacity hover:bg-muted group-hover:opacity-100"
+							>
+								<MoreHorizontal className="h-3.5 w-3.5" />
+							</button>
+						</DropdownMenuTrigger>
+						<DropdownMenuContent align="end">
+							<DropdownMenuItem onClick={() => onEdit(task.id)}>
+								<Edit2 className="mr-2 h-4 w-4" />
+								Edit
+							</DropdownMenuItem>
+							<DropdownMenuItem onClick={() => onToggle(task.id, task.status)}>
+								<Check className="mr-2 h-4 w-4" />
+								Toggle status
+							</DropdownMenuItem>
+							<DropdownMenuItem
+								onClick={() => onDuplicate(task.id)}
+								disabled={isDuplicating}
+							>
+								<Copy className="mr-2 h-4 w-4" />
+								Duplicate
+							</DropdownMenuItem>
+							<DropdownMenuItem onClick={() => onMove(task.id)}>
+								<ArrowRight className="mr-2 h-4 w-4" />
+								Move to list...
+							</DropdownMenuItem>
+							<DropdownMenuSeparator />
+							<DropdownMenuItem
+								onClick={() => onDelete(task.id, task.title)}
+								className="text-destructive focus:text-destructive"
+							>
+								<Trash2 className="mr-2 h-4 w-4" />
+								Delete
+							</DropdownMenuItem>
+						</DropdownMenuContent>
+					</DropdownMenu>
+				</div>
+
+				{/* Progress bar (compact) */}
+				{task.percentComplete != null && task.percentComplete > 0 && (
+					<div className="mb-2 flex items-center gap-1.5">
+						<div className="h-1 flex-1 overflow-hidden rounded-full bg-muted">
+							<div
+								className="h-full rounded-full bg-primary"
+								style={{ width: `${task.percentComplete}%` }}
+							/>
+						</div>
+						<span className="text-[10px] text-muted-foreground">
+							{task.percentComplete}%
+						</span>
+					</div>
 				)}
-				{isOverdue && (
-					<span className="inline-flex items-center gap-0.5 rounded bg-red-100 px-1 py-0.5 text-red-700 text-xs dark:bg-red-900/30 dark:text-red-400">
-						<AlertTriangle className="h-2.5 w-2.5" />
-						Overdue
-					</span>
+
+				{/* Location (compact) */}
+				{task.location && (
+					<div className="mb-2 flex items-center gap-1 text-muted-foreground text-xs">
+						<MapPin className="h-3 w-3 shrink-0" />
+						<span className="truncate">{task.location}</span>
+					</div>
 				)}
-				{dueDate && !isOverdue && (
-					<span className="inline-flex items-center gap-0.5 rounded bg-muted px-1 py-0.5 text-muted-foreground text-xs">
-						<Calendar className="h-2.5 w-2.5" />
-						{dueDate.toLocaleDateString()}
-					</span>
+
+				{/* Badges row */}
+				<div className="flex flex-wrap gap-1">
+					{priorityInfo && (
+						<span
+							className={cn(
+								"inline-flex items-center gap-0.5 rounded px-1 py-0.5 text-xs",
+								priorityInfo.color,
+							)}
+						>
+							<Flag className="h-2.5 w-2.5" />
+							{priorityInfo.label}
+						</span>
+					)}
+					{isOverdue && (
+						<span className="inline-flex items-center gap-0.5 rounded bg-red-100 px-1 py-0.5 text-red-700 text-xs dark:bg-red-900/30 dark:text-red-400">
+							<AlertTriangle className="h-2.5 w-2.5" />
+							Overdue
+						</span>
+					)}
+					{isDueToday && !isOverdue && (
+						<span className="inline-flex items-center gap-0.5 rounded bg-amber-100 px-1 py-0.5 text-amber-700 text-xs dark:bg-amber-900/30 dark:text-amber-400">
+							<Clock className="h-2.5 w-2.5" />
+							Today
+						</span>
+					)}
+					{dueDate && !isOverdue && !isDueToday && (
+						<span className="inline-flex items-center gap-0.5 rounded bg-muted px-1 py-0.5 text-muted-foreground text-xs">
+							<Calendar className="h-2.5 w-2.5" />
+							{dueDate.toLocaleDateString()}
+						</span>
+					)}
+					{task.subtaskCount != null && task.subtaskCount > 0 && (
+						<span className="inline-flex items-center gap-0.5 rounded bg-muted px-1 py-0.5 text-muted-foreground text-xs">
+							<ListTodo className="h-2.5 w-2.5" />
+							{task.subtaskCount}
+						</span>
+					)}
+					{task.attendeeCount != null && task.attendeeCount > 0 && (
+						<span className="inline-flex items-center gap-0.5 rounded bg-muted px-1 py-0.5 text-muted-foreground text-xs">
+							<Users className="h-2.5 w-2.5" />
+							{task.attendeeCount}
+						</span>
+					)}
+					{task.alarmCount != null && task.alarmCount > 0 && (
+						<span className="inline-flex items-center gap-0.5 rounded bg-muted px-1 py-0.5 text-muted-foreground text-xs">
+							<Bell className="h-2.5 w-2.5" />
+							{task.alarmCount}
+						</span>
+					)}
+				</div>
+
+				{/* Categories (compact) */}
+				{task.categories && task.categories.length > 0 && (
+					<div className="flex items-center gap-1 text-muted-foreground text-xs">
+						<Tag className="h-3 w-3 shrink-0" />
+						<span className="line-clamp-1">
+							{task.categories.map((c) => c.category).join(", ")}
+						</span>
+					</div>
 				)}
 			</div>
 		</motion.div>

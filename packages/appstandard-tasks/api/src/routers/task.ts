@@ -48,8 +48,9 @@ export const taskRouter = router({
 				skip: input.offset,
 				include: {
 					_count: {
-						select: { subtasks: true },
+						select: { subtasks: true, attendees: true, alarms: true },
 					},
+					categories: true,
 				},
 			});
 
@@ -66,8 +67,16 @@ export const taskRouter = router({
 				completedAt: task.completedAt,
 				location: task.location,
 				color: task.color,
+				class: task.class,
+				url: task.url,
+				rrule: task.rrule,
+				organizerName: task.organizerName,
+				organizerEmail: task.organizerEmail,
+				categories: task.categories,
 				relatedTo: task.relatedTo,
 				subtaskCount: task._count.subtasks,
+				attendeeCount: task._count.attendees,
+				alarmCount: task._count.alarms,
 				createdAt: task.createdAt,
 				updatedAt: task.updatedAt,
 			}));

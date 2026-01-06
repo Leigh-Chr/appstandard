@@ -60,6 +60,8 @@ export const contactRouter = router({
 				include: {
 					emails: { where: { isPrimary: true }, take: 1 },
 					phones: { where: { isPrimary: true }, take: 1 },
+					addresses: { where: { isPrimary: true }, take: 1 },
+					categories: true,
 				},
 			});
 
@@ -67,11 +69,23 @@ export const contactRouter = router({
 				id: contact.id,
 				addressBookId: contact.addressBookId,
 				formattedName: contact.formattedName,
+				nickname: contact.nickname,
 				organization: contact.organization,
 				title: contact.title,
+				role: contact.role,
 				photoUrl: contact.photoUrl,
+				birthday: contact.birthday,
+				note: contact.note,
+				url: contact.url,
 				primaryEmail: contact.emails[0]?.email,
 				primaryPhone: contact.phones[0]?.number,
+				primaryAddress: contact.addresses[0]
+					? {
+							locality: contact.addresses[0].locality,
+							country: contact.addresses[0].country,
+						}
+					: null,
+				categories: contact.categories,
 				createdAt: contact.createdAt,
 				updatedAt: contact.updatedAt,
 			}));
