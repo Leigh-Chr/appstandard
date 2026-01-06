@@ -19,7 +19,7 @@ const TASK_PRESETS: TaskPreset[] = [
 		icon: "⚡",
 		description: "Simple task with no due date",
 		defaults: {
-			status: "NEEDS-ACTION",
+			status: "NEEDS_ACTION",
 			class: "PRIVATE",
 			priority: 5,
 		},
@@ -30,7 +30,7 @@ const TASK_PRESETS: TaskPreset[] = [
 		icon: "📅",
 		description: "Task due by end of today",
 		defaults: {
-			status: "NEEDS-ACTION",
+			status: "NEEDS_ACTION",
 			class: "PRIVATE",
 			priority: 5,
 			alarms: [
@@ -48,7 +48,7 @@ const TASK_PRESETS: TaskPreset[] = [
 		icon: "🔴",
 		description: "High priority urgent task",
 		defaults: {
-			status: "NEEDS-ACTION",
+			status: "NEEDS_ACTION",
 			class: "PRIVATE",
 			priority: 1,
 			alarms: [
@@ -66,7 +66,7 @@ const TASK_PRESETS: TaskPreset[] = [
 		icon: "🔄",
 		description: "Task that repeats regularly",
 		defaults: {
-			status: "NEEDS-ACTION",
+			status: "NEEDS_ACTION",
 			class: "PRIVATE",
 			priority: 5,
 			rrule: "FREQ=WEEKLY;COUNT=10",
@@ -78,7 +78,7 @@ const TASK_PRESETS: TaskPreset[] = [
 		icon: "📁",
 		description: "Task with subtasks",
 		defaults: {
-			status: "NEEDS-ACTION",
+			status: "NEEDS_ACTION",
 			class: "PRIVATE",
 			priority: 5,
 			percentComplete: 0,
@@ -90,7 +90,7 @@ const TASK_PRESETS: TaskPreset[] = [
 		icon: "⚙️",
 		description: "Start from scratch",
 		defaults: {
-			status: "NEEDS-ACTION",
+			status: "NEEDS_ACTION",
 			class: "PRIVATE",
 		},
 	},

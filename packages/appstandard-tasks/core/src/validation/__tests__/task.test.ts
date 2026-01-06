@@ -96,7 +96,7 @@ describe("validateTaskForm", () => {
 
 	describe("status validation", () => {
 		it("should accept valid task statuses", () => {
-			const statuses = ["NEEDS-ACTION", "IN-PROCESS", "COMPLETED", "CANCELLED"];
+			const statuses = ["NEEDS_ACTION", "IN_PROCESS", "COMPLETED", "CANCELLED"];
 
 			for (const status of statuses) {
 				const result = validateTaskForm(createTask({ status }));

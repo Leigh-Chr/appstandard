@@ -16,6 +16,79 @@ function generateShareToken(): string {
 	return randomBytes(32).toString("base64url");
 }
 
+/**
+ * Map database status to ICS status (RFC 5545 format)
+ */
+function mapStatusToIcs(
+	status: string | null,
+): "NEEDS-ACTION" | "IN-PROCESS" | "COMPLETED" | "CANCELLED" | undefined {
+	switch (status) {
+		case "NEEDS_ACTION":
+			return "NEEDS-ACTION";
+		case "IN_PROCESS":
+			return "IN-PROCESS";
+		case "COMPLETED":
+			return "COMPLETED";
+		case "CANCELLED":
+			return "CANCELLED";
+		default:
+			return undefined;
+	}
+}
+
+/**
+ * Map database attendee role to ICS format (RFC 5545)
+ */
+function mapRoleToIcs(
+	role: string | null,
+):
+	| "CHAIR"
+	| "REQ-PARTICIPANT"
+	| "OPT-PARTICIPANT"
+	| "NON-PARTICIPANT"
+	| undefined {
+	switch (role) {
+		case "CHAIR":
+			return "CHAIR";
+		case "REQ_PARTICIPANT":
+			return "REQ-PARTICIPANT";
+		case "OPT_PARTICIPANT":
+			return "OPT-PARTICIPANT";
+		case "NON_PARTICIPANT":
+			return "NON-PARTICIPANT";
+		default:
+			return undefined;
+	}
+}
+
+/**
+ * Map database attendee status to ICS format (RFC 5545)
+ */
+function mapAttendeeStatusToIcs(
+	status: string | null,
+):
+	| "NEEDS-ACTION"
+	| "ACCEPTED"
+	| "DECLINED"
+	| "TENTATIVE"
+	| "DELEGATED"
+	| undefined {
+	switch (status) {
+		case "NEEDS_ACTION":
+			return "NEEDS-ACTION";
+		case "ACCEPTED":
+			return "ACCEPTED";
+		case "DECLINED":
+			return "DECLINED";
+		case "TENTATIVE":
+			return "TENTATIVE";
+		case "DELEGATED":
+			return "DELEGATED";
+		default:
+			return undefined;
+	}
+}
+
 export const shareRouter = router({
 	/**
 	 * PUBLIC: Detect share type by token (without throwing errors)
@@ -332,12 +405,7 @@ export const shareRouter = router({
 				dtstart: task.startDate || undefined,
 				due: task.dueDate || undefined,
 				completed: task.completedAt || undefined,
-				status: task.status as
-					| "NEEDS-ACTION"
-					| "IN-PROCESS"
-					| "COMPLETED"
-					| "CANCELLED"
-					| undefined,
+				status: mapStatusToIcs(task.status),
 				percentComplete: task.percentComplete || undefined,
 				priority: task.priority || undefined,
 				location: task.location || undefined,
@@ -353,19 +421,8 @@ export const shareRouter = router({
 				attendees: task.attendees.map((a) => ({
 					email: a.email,
 					name: a.name || undefined,
-					role: a.role as
-						| "CHAIR"
-						| "REQ-PARTICIPANT"
-						| "OPT-PARTICIPANT"
-						| "NON-PARTICIPANT"
-						| undefined,
-					status: a.status as
-						| "NEEDS-ACTION"
-						| "ACCEPTED"
-						| "DECLINED"
-						| "TENTATIVE"
-						| "DELEGATED"
-						| undefined,
+					role: mapRoleToIcs(a.role),
+					status: mapAttendeeStatusToIcs(a.status),
 					rsvp: a.rsvp || undefined,
 				})),
 				alarms: task.alarms.map((a) => ({
@@ -778,12 +835,7 @@ export const shareRouter = router({
 						dtstart: task.startDate || undefined,
 						due: task.dueDate || undefined,
 						completed: task.completedAt || undefined,
-						status: task.status as
-							| "NEEDS-ACTION"
-							| "IN-PROCESS"
-							| "COMPLETED"
-							| "CANCELLED"
-							| undefined,
+						status: mapStatusToIcs(task.status),
 						percentComplete: task.percentComplete || undefined,
 						priority: task.priority || undefined,
 						location: task.location || undefined,

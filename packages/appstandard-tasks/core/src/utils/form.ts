@@ -15,7 +15,7 @@ export function initializeFormData(
 	return {
 		title: "",
 		description: "",
-		status: "NEEDS-ACTION",
+		status: "NEEDS_ACTION",
 		priority: undefined,
 		percentComplete: undefined,
 		startDate: "",

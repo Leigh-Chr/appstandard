@@ -78,6 +78,22 @@ export interface CalendarData {
 }
 
 /**
+ * Convert database role value to ICS format (RFC 5545)
+ * Converts underscores to hyphens for RFC compliance
+ */
+function mapRoleToIcs(role: string): string {
+	return role.replace(/_/g, "-").toUpperCase();
+}
+
+/**
+ * Convert database status value to ICS format (RFC 5545)
+ * Converts underscores to hyphens for RFC compliance
+ */
+function mapStatusToIcs(status: string): string {
+	return status.replace(/_/g, "-").toUpperCase();
+}
+
+/**
  * Escape text for ICS format (RFC 5545)
  */
 function escapeIcsText(text: string): string {
@@ -261,8 +277,9 @@ function buildAttendeeParams(
 ): string[] {
 	const params: string[] = [];
 	if (attendee.name) params.push(`CN=${escapeIcsText(attendee.name)}`);
-	if (attendee.role) params.push(`ROLE=${attendee.role.toUpperCase()}`);
-	if (attendee.status) params.push(`PARTSTAT=${attendee.status.toUpperCase()}`);
+	if (attendee.role) params.push(`ROLE=${mapRoleToIcs(attendee.role)}`);
+	if (attendee.status)
+		params.push(`PARTSTAT=${mapStatusToIcs(attendee.status)}`);
 	if (attendee.rsvp) params.push("RSVP=TRUE");
 	return params;
 }

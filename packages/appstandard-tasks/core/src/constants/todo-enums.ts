@@ -6,8 +6,8 @@
 // ----- Task Status (RFC 5545 Section 3.8.1.11) -----
 
 export const TASK_STATUS_VALUES = [
-	"NEEDS-ACTION",
-	"IN-PROCESS",
+	"NEEDS_ACTION", // NEEDS-ACTION in RFC 5545
+	"IN_PROCESS", // IN-PROCESS in RFC 5545
 	"COMPLETED",
 	"CANCELLED",
 ] as const;
@@ -30,9 +30,9 @@ export function isValidTaskClass(value: string): value is TaskClassValue {
 
 export const ATTENDEE_ROLE_VALUES = [
 	"CHAIR",
-	"REQ-PARTICIPANT",
-	"OPT-PARTICIPANT",
-	"NON-PARTICIPANT",
+	"REQ_PARTICIPANT", // REQ-PARTICIPANT in RFC 5545
+	"OPT_PARTICIPANT", // OPT-PARTICIPANT in RFC 5545
+	"NON_PARTICIPANT", // NON-PARTICIPANT in RFC 5545
 ] as const;
 export type AttendeeRoleValue = (typeof ATTENDEE_ROLE_VALUES)[number];
 
@@ -45,13 +45,13 @@ export function isValidAttendeeRole(value: string): value is AttendeeRoleValue {
 // ----- Attendee Status (RFC 5545 Section 3.2.12 - VTODO specific) -----
 
 export const ATTENDEE_STATUS_VALUES = [
-	"NEEDS-ACTION",
+	"NEEDS_ACTION", // NEEDS-ACTION in RFC 5545
 	"ACCEPTED",
 	"DECLINED",
 	"TENTATIVE",
 	"DELEGATED",
 	"COMPLETED", // VTODO specific
-	"IN-PROCESS", // VTODO specific
+	"IN_PROCESS", // IN-PROCESS in RFC 5545 (VTODO specific)
 ] as const;
 export type AttendeeStatusValue = (typeof ATTENDEE_STATUS_VALUES)[number];
 
