@@ -138,7 +138,6 @@ export function PhonesSection({
 				</div>
 			)}
 
-			{/* biome-ignore lint/suspicious/noArrayIndexKey: Form items without stable IDs, index reflects form position */}
 			{phones.map((phone, index) => (
 				<Card key={`phone-${index}`} className="border-muted p-4">
 					<div className="space-y-4">

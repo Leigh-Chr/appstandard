@@ -43,7 +43,6 @@ function KeyBadge({ keyStr }: { keyStr: string }) {
 	return (
 		<span className="flex items-center gap-1">
 			{parts.map((part, index) => (
-				// biome-ignore lint/suspicious/noArrayIndexKey: Parts can have duplicates (e.g., "+"), index needed for uniqueness
 				<span key={`${part}-${index}`}>
 					{part === "+" ? (
 						<span className="text-muted-foreground">+</span>

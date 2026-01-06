@@ -94,7 +94,6 @@ function formatDateForInput(date: Date | string | undefined): string {
 	return d.toISOString().split("T")[0] || "";
 }
 
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Form component with many sections is inherently complex
 export function ContactFormExtended({
 	mode,
 	initialData,

@@ -125,7 +125,6 @@ export function EmailsSection({
 				</div>
 			)}
 
-			{/* biome-ignore lint/suspicious/noArrayIndexKey: Form items without stable IDs, index reflects form position */}
 			{emails.map((email, index) => (
 				<Card key={`email-${index}`} className="border-muted p-4">
 					<div className="space-y-4">

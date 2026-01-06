@@ -104,7 +104,6 @@ export function AddressesSection({
 				</div>
 			)}
 
-			{/* biome-ignore lint/suspicious/noArrayIndexKey: Form items without stable IDs, index reflects form position */}
 			{addresses.map((address, index) => (
 				<Card key={`address-${index}`} className="border-muted p-4">
 					<div className="space-y-4">

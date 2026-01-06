@@ -27,7 +27,6 @@ export function ListLoadingState({ cardCount = 3 }: ListLoadingStateProps) {
 				</div>
 				<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
 					{Array.from({ length: cardCount }, (_, i) => (
-						// biome-ignore lint/suspicious/noArrayIndexKey: Static skeleton cards never reorder
 						<Card key={i} className="shimmer">
 							<CardHeader className="pb-3">
 								<Skeleton className="h-5 w-32" />

@@ -65,7 +65,6 @@ export function logTRPCErrorDetails(
 	error: TRPCErrorLike,
 	logger?: Logger,
 ): void {
-	// biome-ignore lint/suspicious/noConsole: Fallback when no logger is provided
 	const logFn = logger?.error ?? console.error;
 	logFn("tRPC Error", error, {
 		message: error.message,

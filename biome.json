@@ -137,7 +137,12 @@
 			}
 		},
 		{
-			"includes": ["**/logger.ts", "**/logger/*.ts", "**/logger/index.ts"],
+			"includes": [
+				"**/logger.ts",
+				"**/logger/*.ts",
+				"**/logger/index.ts",
+				"**/error/handler.ts"
+			],
 			"linter": {
 				"rules": {
 					"suspicious": {
@@ -153,7 +158,8 @@
 				"**/utils.ts",
 				"**/utils/index.ts",
 				"**/lib/deep-equal.ts",
-				"**/routers/*.ts"
+				"**/routers/*.ts",
+				"apps/*/src/components/*/index.ts"
 			],
 			"linter": {
 				"rules": {
@@ -219,7 +225,7 @@
 			}
 		},
 		{
-			"includes": ["**/routers/dashboard.ts"],
+			"includes": ["**/routers/dashboard.ts", "**/*-form-extended.tsx"],
 			"linter": {
 				"rules": {
 					"complexity": {
@@ -240,6 +246,20 @@
 		},
 		{
 			"includes": ["packages/ui/src/tour/tour-tooltip.tsx"],
+			"linter": {
+				"rules": {
+					"suspicious": {
+						"noArrayIndexKey": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": [
+				"**/contact-form/*.tsx",
+				"packages/ui/src/keyboard-shortcuts-dialog.tsx",
+				"packages/ui/src/collections/list-loading-state.tsx"
+			],
 			"linter": {
 				"rules": {
 					"suspicious": {
