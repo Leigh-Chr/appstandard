@@ -39,6 +39,10 @@ export interface ContactCardProps {
 	onMove: (id: string) => void;
 	onDelete: (id: string, name?: string) => void;
 	isDuplicating: boolean;
+	/** Selection mode props */
+	selectionMode?: boolean;
+	isSelected?: boolean;
+	onToggleSelect?: (id: string) => void;
 }
 
 export interface ContactGridCardProps extends ContactCardProps {}

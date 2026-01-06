@@ -1,3 +1,4 @@
+import { useIsMobile } from "@appstandard/react-utils";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -183,7 +184,7 @@ function TaskListDetailPage() {
 				void queryClient.invalidateQueries({
 					queryKey: QUERY_KEYS.taskList.byId(taskListId),
 				});
-				toast.success("Task duplicated");
+				toast.success("Task duplicated successfully");
 			},
 			onError: (error: unknown) => {
 				const message =

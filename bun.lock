@@ -124,6 +124,7 @@
       "version": "0.0.0",
       "dependencies": {
         "@appstandard-contacts/api": "workspace:*",
+        "@appstandard-contacts/core": "workspace:*",
         "@appstandard-contacts/schemas": "workspace:*",
         "@appstandard/react-utils": "workspace:*",
         "@appstandard/ui": "workspace:*",

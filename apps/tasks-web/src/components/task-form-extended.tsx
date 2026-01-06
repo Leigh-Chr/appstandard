@@ -178,8 +178,23 @@ export function TaskFormExtended({
 
 	const statusInfo = STATUS_OPTIONS.find((s) => s.value === status);
 
+	// Calculate expanded sections for mobile progress indicator
+	const totalSections = 3; // Basic Info, Dates, Details
+	const expandedSections =
+		1 + (showDatesSection ? 1 : 0) + (showDetailsSection ? 1 : 0);
+
 	return (
 		<form onSubmit={handleSubmit} className="space-y-6">
+			{/* Mobile Progress Indicator */}
+			<div className="flex items-center justify-between text-muted-foreground text-sm sm:hidden">
+				<span>
+					Section {expandedSections} of {totalSections}
+				</span>
+				<span>
+					{Math.round((expandedSections / totalSections) * 100)}% complete
+				</span>
+			</div>
+
 			{/* Basic Info Card */}
 			<Card>
 				<CardHeader>

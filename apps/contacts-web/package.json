@@ -19,6 +19,7 @@
 		"@appstandard/react-utils": "workspace:*",
 		"@appstandard/ui": "workspace:*",
 		"@appstandard-contacts/api": "workspace:*",
+		"@appstandard-contacts/core": "workspace:*",
 		"@appstandard-contacts/schemas": "workspace:*",
 		"@fontsource-variable/jetbrains-mono": "^5.2.8",
 		"@fontsource-variable/sora": "^5.2.8",

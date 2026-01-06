@@ -76,6 +76,7 @@ describe("EventCard", () => {
 	const defaultProps = {
 		event: mockEvent,
 		calendarId: "cal-1",
+		onEdit: vi.fn(),
 		onDelete: vi.fn(),
 		isDeleting: false,
 	};

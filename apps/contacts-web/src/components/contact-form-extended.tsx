@@ -1,6 +1,7 @@
 /**
  * Extended contact form component for full-page create/edit
  * Based on EventFormExtended pattern from Calendar app
+ * Supports multi-value fields (emails, phones, addresses)
  */
 
 import {
@@ -19,6 +20,11 @@ import {
 	SelectValue,
 	Textarea,
 } from "@appstandard/ui";
+import type {
+	ContactAddressData,
+	ContactEmailData,
+	ContactPhoneData,
+} from "@appstandard-contacts/core";
 import {
 	Building,
 	Calendar,
@@ -26,10 +32,12 @@ import {
 	ChevronUp,
 	Globe,
 	Loader2,
+	Mail,
 	Tag,
 	User,
 } from "lucide-react";
 import { useState } from "react";
+import { AddressesSection, EmailsSection, PhonesSection } from "./contact-form";
 
 export interface ContactFormData {
 	formattedName: string;
@@ -50,6 +58,10 @@ export interface ContactFormData {
 	url?: string | undefined;
 	note?: string | undefined;
 	categories?: string | undefined;
+	// Multi-value fields
+	emails?: ContactEmailData[] | undefined;
+	phones?: ContactPhoneData[] | undefined;
+	addresses?: ContactAddressData[] | undefined;
 }
 
 interface ContactFormExtendedProps {
@@ -82,6 +94,7 @@ function formatDateForInput(date: Date | string | undefined): string {
 	return d.toISOString().split("T")[0] || "";
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Form component with many sections is inherently complex
 export function ContactFormExtended({
 	mode,
 	initialData,
@@ -127,6 +140,21 @@ export function ContactFormExtended({
 	const [note, setNote] = useState(initialData?.note || "");
 	const [categories, setCategories] = useState(initialData?.categories || "");
 
+	// Form state - Multi-value fields
+	const [emails, setEmails] = useState<ContactEmailData[]>(
+		initialData?.emails || [],
+	);
+	const [phones, setPhones] = useState<ContactPhoneData[]>(
+		initialData?.phones || [],
+	);
+	const [addresses, setAddresses] = useState<ContactAddressData[]>(
+		initialData?.addresses || [],
+	);
+
+	// Validation errors for multi-value fields
+	const [emailErrors, setEmailErrors] = useState<Record<number, string>>({});
+	const [phoneErrors, setPhoneErrors] = useState<Record<number, string>>({});
+
 	// Section visibility state
 	const [showNameSection, setShowNameSection] = useState(
 		mode === "edit" ||
@@ -134,6 +162,14 @@ export function ContactFormExtended({
 				initialData?.givenName ||
 					initialData?.familyName ||
 					initialData?.nickname,
+			),
+	);
+	const [showContactSection, setShowContactSection] = useState(
+		mode === "edit" ||
+			Boolean(
+				(initialData?.emails && initialData.emails.length > 0) ||
+					(initialData?.phones && initialData.phones.length > 0) ||
+					(initialData?.addresses && initialData.addresses.length > 0),
 			),
 	);
 	const [showWorkSection, setShowWorkSection] = useState(
@@ -174,6 +210,14 @@ export function ContactFormExtended({
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
 
+		// Check for validation errors
+		if (
+			Object.keys(emailErrors).length > 0 ||
+			Object.keys(phoneErrors).length > 0
+		) {
+			return;
+		}
+
 		onSubmit({
 			formattedName,
 			givenName: givenName || undefined,
@@ -193,11 +237,37 @@ export function ContactFormExtended({
 			url: url || undefined,
 			note: note || undefined,
 			categories: categories || undefined,
+			// Multi-value fields - filter out empty entries
+			emails: emails.filter((e) => e.email.trim()),
+			phones: phones.filter((p) => p.number.trim()),
+			addresses: addresses.filter(
+				(a) => a.streetAddress || a.locality || a.country,
+			),
 		});
 	};
 
+	// Count total sections for mobile progress indicator
+	const totalSections = 5;
+	const expandedSections = [
+		true, // Basic info is always visible
+		showNameSection,
+		showContactSection,
+		showWorkSection,
+		showDetailsSection,
+	].filter(Boolean).length;
+
 	return (
 		<form onSubmit={handleSubmit} className="space-y-6">
+			{/* Mobile progress indicator */}
+			<div className="flex items-center justify-between text-muted-foreground text-sm sm:hidden">
+				<span>
+					Section {expandedSections} of {totalSections}
+				</span>
+				<span>
+					{Math.round((expandedSections / totalSections) * 100)}% complete
+				</span>
+			</div>
+
 			{/* Basic Info Card */}
 			<Card>
 				<CardHeader>
@@ -335,6 +405,61 @@ export function ContactFormExtended({
 								/>
 							</div>
 						</div>
+					</CardContent>
+				)}
+			</Card>
+
+			{/* Contact Information Section - Collapsible (NEW!) */}
+			<Card>
+				<CardHeader
+					className="cursor-pointer"
+					onClick={() => setShowContactSection(!showContactSection)}
+				>
+					<CardTitle className="flex items-center justify-between text-lg">
+						<span className="flex items-center gap-2">
+							<Mail className="h-5 w-5" />
+							Contact Information
+							{(emails.length > 0 ||
+								phones.length > 0 ||
+								addresses.length > 0) && (
+								<Badge variant="secondary" className="ml-2">
+									{emails.length + phones.length + addresses.length}
+								</Badge>
+							)}
+						</span>
+						{showContactSection ? (
+							<ChevronUp className="h-5 w-5" />
+						) : (
+							<ChevronDown className="h-5 w-5" />
+						)}
+					</CardTitle>
+				</CardHeader>
+				{showContactSection && (
+					<CardContent className="space-y-8">
+						{/* Emails */}
+						<EmailsSection
+							emails={emails}
+							onChange={setEmails}
+							validationErrors={emailErrors}
+							onValidationErrorChange={setEmailErrors}
+							isSubmitting={isSubmitting}
+						/>
+
+						{/* Phones */}
+						<PhonesSection
+							phones={phones}
+							onChange={setPhones}
+							validationErrors={phoneErrors}
+							onValidationErrorChange={setPhoneErrors}
+							isSubmitting={isSubmitting}
+						/>
+
+						{/* Addresses */}
+						<AddressesSection
+							addresses={addresses}
+							onChange={setAddresses}
+							isSubmitting={isSubmitting}
+						/>
 					</CardContent>
 				)}
 			</Card>

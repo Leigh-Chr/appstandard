@@ -3,7 +3,9 @@
  * Displays detailed contact information in a horizontal layout
  */
 
+import { cn } from "@appstandard/react-utils";
 import {
+	Checkbox,
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
@@ -37,18 +39,36 @@ export function ContactCard({
 	onMove,
 	onDelete,
 	isDuplicating,
+	selectionMode = false,
+	isSelected = false,
+	onToggleSelect,
 }: ContactCardProps) {
 	const accentColor = addressBookColor || "#3b82f6";
 	const locationStr = formatLocation(contact.primaryAddress);
 	const categoriesStr = formatCategories(contact.categories);
 	const positionStr = formatPosition(contact);
 
+	const handleCardClick = () => {
+		if (selectionMode) {
+			onToggleSelect?.(contact.id);
+		}
+	};
+
+	const handleCheckboxChange = () => {
+		onToggleSelect?.(contact.id);
+	};
+
 	return (
 		<motion.div
 			initial={{ opacity: 0, y: 10 }}
 			animate={{ opacity: 1, y: 0 }}
 			exit={{ opacity: 0, y: -10 }}
-			className="group relative flex overflow-hidden rounded-lg border bg-card transition-all duration-200 hover:border-primary/30 hover:shadow-md"
+			className={cn(
+				"group relative flex overflow-hidden rounded-lg border bg-card transition-all duration-200 hover:border-primary/30 hover:shadow-md",
+				selectionMode && "cursor-pointer",
+				isSelected && "bg-primary/5 ring-2 ring-primary",
+			)}
+			onClick={selectionMode ? handleCardClick : undefined}
 		>
 			{/* Color accent bar */}
 			<div
@@ -57,6 +77,18 @@ export function ContactCard({
 			/>
 
 			<div className="flex min-w-0 flex-1 items-start gap-4 p-4">
+				{/* Selection checkbox */}
+				{selectionMode && (
+					<div className="flex items-center">
+						<Checkbox
+							checked={isSelected}
+							onCheckedChange={handleCheckboxChange}
+							onClick={(e) => e.stopPropagation()}
+							aria-label={`Select ${contact.formattedName}`}
+						/>
+					</div>
+				)}
+
 				{/* Avatar */}
 				<div
 					className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
@@ -152,51 +184,53 @@ export function ContactCard({
 					)}
 				</div>
 
-				{/* Actions */}
-				<div className="flex shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-					<button
-						type="button"
-						onClick={() => onEdit(contact.id)}
-						className="rounded p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
-					>
-						<Edit2 className="h-4 w-4" />
-					</button>
-					<DropdownMenu>
-						<DropdownMenuTrigger asChild>
-							<button
-								type="button"
-								className="rounded p-1.5 text-muted-foreground hover:bg-muted"
-							>
-								<MoreHorizontal className="h-4 w-4" />
-							</button>
-						</DropdownMenuTrigger>
-						<DropdownMenuContent align="end">
-							<DropdownMenuItem onClick={() => onEdit(contact.id)}>
-								<Edit2 className="mr-2 h-4 w-4" />
-								Edit
-							</DropdownMenuItem>
-							<DropdownMenuItem
-								onClick={() => onDuplicate(contact.id)}
-								disabled={isDuplicating}
-							>
-								<Copy className="mr-2 h-4 w-4" />
-								Duplicate
-							</DropdownMenuItem>
-							<DropdownMenuItem onClick={() => onMove(contact.id)}>
-								<ArrowRight className="mr-2 h-4 w-4" />
-								Move to address book...
-							</DropdownMenuItem>
-							<DropdownMenuSeparator />
-							<DropdownMenuItem
-								onClick={() => onDelete(contact.id, contact.formattedName)}
-								className="text-destructive focus:text-destructive"
-							>
-								<Trash2 className="mr-2 h-4 w-4" />
-								Delete
-							</DropdownMenuItem>
-						</DropdownMenuContent>
-					</DropdownMenu>
-				</div>
+				{/* Actions - hide in selection mode */}
+				{!selectionMode && (
+					<div className="flex shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+						<button
+							type="button"
+							onClick={() => onEdit(contact.id)}
+							className="rounded p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+						>
+							<Edit2 className="h-4 w-4" />
+						</button>
+						<DropdownMenu>
+							<DropdownMenuTrigger asChild>
+								<button
+									type="button"
+									className="rounded p-1.5 text-muted-foreground hover:bg-muted"
+								>
+									<MoreHorizontal className="h-4 w-4" />
+								</button>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent align="end">
+								<DropdownMenuItem onClick={() => onEdit(contact.id)}>
+									<Edit2 className="mr-2 h-4 w-4" />
+									Edit
+								</DropdownMenuItem>
+								<DropdownMenuItem
+									onClick={() => onDuplicate(contact.id)}
+									disabled={isDuplicating}
+								>
+									<Copy className="mr-2 h-4 w-4" />
+									Duplicate
+								</DropdownMenuItem>
+								<DropdownMenuItem onClick={() => onMove(contact.id)}>
+									<ArrowRight className="mr-2 h-4 w-4" />
+									Move to address book...
+								</DropdownMenuItem>
+								<DropdownMenuSeparator />
+								<DropdownMenuItem
+									onClick={() => onDelete(contact.id, contact.formattedName)}
+									className="text-destructive focus:text-destructive"
+								>
+									<Trash2 className="mr-2 h-4 w-4" />
+									Delete
+								</DropdownMenuItem>
+							</DropdownMenuContent>
+						</DropdownMenu>
+					</div>
+				)}
 			</div>
 		</motion.div>
 	);

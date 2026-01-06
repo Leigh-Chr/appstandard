@@ -6,7 +6,6 @@
 import { cn } from "@appstandard/react-utils";
 // React Compiler will automatically memoize this component and its callbacks
 import {
-	Button,
 	Card,
 	CardContent,
 	Checkbox,
@@ -17,7 +16,7 @@ import {
 	DropdownMenuTrigger,
 } from "@appstandard/ui";
 import { useNavigate } from "@tanstack/react-router";
-import { ArrowRight, Copy, Edit, MoreHorizontal, Trash2 } from "lucide-react";
+import { ArrowRight, Copy, Edit2, MoreHorizontal, Trash2 } from "lucide-react";
 import { motion } from "motion/react";
 import { EventBadges } from "./event-badges";
 import { EventDetails } from "./event-details";
@@ -26,6 +25,7 @@ import type { EventItem } from "./types";
 interface EventCardProps {
 	event: EventItem;
 	calendarId: string;
+	onEdit: (id: string) => void;
 	onDelete: (id: string) => void;
 	onDuplicate?: (id: string) => void;
 	onMove?: (id: string) => void;
@@ -40,6 +40,7 @@ interface EventCardProps {
 export function EventCard({
 	event,
 	calendarId,
+	onEdit,
 	onDelete,
 	onDuplicate,
 	onMove,
@@ -58,6 +59,10 @@ export function EventCard({
 		} else {
 			navigate({ to: `/calendars/${calendarId}/events/${event.id}` });
 		}
+	};
+
+	const handleEdit = () => {
+		onEdit(event.id);
 	};
 
 	const handleDelete = () => {
@@ -121,50 +126,57 @@ export function EventCard({
 							<EventDetails event={event} />
 						</div>
 
-						{/* Action menu - hide in selection mode */}
+						{/* Actions - hide in selection mode, show on hover like Tasks/Contacts */}
 						{!selectionMode && (
-							<DropdownMenu>
-								<DropdownMenuTrigger asChild>
-									<Button
-										variant="ghost"
-										size="icon"
-										className="h-10 min-h-[44px] w-10 shrink-0 sm:h-8 sm:min-h-0 sm:w-8"
-									>
-										<MoreHorizontal className="h-4 w-4" />
-										<span className="sr-only">More options</span>
-									</Button>
-								</DropdownMenuTrigger>
-								<DropdownMenuContent align="end">
-									<DropdownMenuItem onClick={handleNavigate}>
-										<Edit className="mr-2 h-4 w-4" />
-										Edit
-									</DropdownMenuItem>
-									{onDuplicate && (
-										<DropdownMenuItem
-											onClick={handleDuplicate}
-											disabled={isDuplicating}
+							<div className="flex shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+								<button
+									type="button"
+									onClick={handleEdit}
+									className="rounded p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+								>
+									<Edit2 className="h-4 w-4" />
+								</button>
+								<DropdownMenu>
+									<DropdownMenuTrigger asChild>
+										<button
+											type="button"
+											className="rounded p-1.5 text-muted-foreground hover:bg-muted"
 										>
-											<Copy className="mr-2 h-4 w-4" />
-											Duplicate
+											<MoreHorizontal className="h-4 w-4" />
+										</button>
+									</DropdownMenuTrigger>
+									<DropdownMenuContent align="end">
+										<DropdownMenuItem onClick={handleEdit}>
+											<Edit2 className="mr-2 h-4 w-4" />
+											Edit
 										</DropdownMenuItem>
-									)}
-									{onMove && (
-										<DropdownMenuItem onClick={handleMove}>
-											<ArrowRight className="mr-2 h-4 w-4" />
-											Move to calendar...
+										{onDuplicate && (
+											<DropdownMenuItem
+												onClick={handleDuplicate}
+												disabled={isDuplicating}
+											>
+												<Copy className="mr-2 h-4 w-4" />
+												Duplicate
+											</DropdownMenuItem>
+										)}
+										{onMove && (
+											<DropdownMenuItem onClick={handleMove}>
+												<ArrowRight className="mr-2 h-4 w-4" />
+												Move to calendar...
+											</DropdownMenuItem>
+										)}
+										<DropdownMenuSeparator />
+										<DropdownMenuItem
+											onClick={handleDelete}
+											disabled={isDeleting}
+											className="text-destructive focus:text-destructive"
+										>
+											<Trash2 className="mr-2 h-4 w-4" />
+											Delete
 										</DropdownMenuItem>
-									)}
-									<DropdownMenuSeparator />
-									<DropdownMenuItem
-										onClick={handleDelete}
-										disabled={isDeleting}
-										className="text-destructive focus:text-destructive"
-									>
-										<Trash2 className="mr-2 h-4 w-4" />
-										Delete
-									</DropdownMenuItem>
-								</DropdownMenuContent>
-							</DropdownMenu>
+									</DropdownMenuContent>
+								</DropdownMenu>
+							</div>
 						)}
 					</div>
 				</CardContent>

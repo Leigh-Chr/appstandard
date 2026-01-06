@@ -41,6 +41,10 @@ export interface TaskCardProps {
 	onDelete: (id: string, title?: string) => void;
 	isToggling: boolean;
 	isDuplicating: boolean;
+	/** Selection mode props */
+	selectionMode?: boolean;
+	isSelected?: boolean;
+	onToggleSelect?: (id: string) => void;
 }
 
 export interface KanbanCardProps {

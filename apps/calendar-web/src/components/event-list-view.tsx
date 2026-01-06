@@ -5,8 +5,9 @@
  */
 
 import { cn } from "@appstandard/react-utils";
-import { Button, Card, CardContent } from "@appstandard/ui";
+import { Button } from "@appstandard/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
 import {
 	endOfDay,
 	endOfMonth,
@@ -18,7 +19,7 @@ import {
 	startOfWeek,
 } from "date-fns";
 import { enUS } from "date-fns/locale";
-import { Calendar, CheckSquare, ChevronRight } from "lucide-react";
+import { Calendar, CheckSquare, ChevronRight, Search } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -227,7 +228,7 @@ function useDuplicateEvent(calendarId: string) {
 				void queryClient.invalidateQueries({
 					queryKey: QUERY_KEYS.dashboard.all,
 				});
-				toast.success("Event duplicated");
+				toast.success("Event duplicated successfully");
 			},
 			onError: (error: unknown) => {
 				const message =
@@ -296,6 +297,7 @@ export function EventListView({
 	initialFilters,
 	onFiltersChange,
 }: EventListViewProps) {
+	const navigate = useNavigate();
 	const {
 		filters,
 		updateFilters,
@@ -306,6 +308,11 @@ export function EventListView({
 	const { handleDuplicate, isDuplicating } = useDuplicateEvent(calendarId);
 	const { handleMove, moveDialogOpen, setMoveDialogOpen, eventIdToMove } =
 		useMoveEvent(calendarId);
+
+	// Edit handler - navigates to event edit page
+	const handleEdit = (id: string) => {
+		navigate({ to: `/calendars/${calendarId}/events/${id}` });
+	};
 
 	// Selection mode state
 	const [selectionMode, setSelectionMode] = useState(false);
@@ -422,7 +429,11 @@ export function EventListView({
 			<EventsList
 				events={events}
 				calendarId={calendarId}
+				hasActiveFilters={
+					filters.keyword !== "" || filters.dateFilter !== "all"
+				}
 				handlers={{
+					onEdit: handleEdit,
 					onDelete: handleDelete,
 					onDuplicate: handleDuplicate,
 					onMove: handleMove,
@@ -533,13 +544,16 @@ function DateGroupHeader({
 function EventsList({
 	events,
 	calendarId,
+	hasActiveFilters,
 	handlers,
 	loading,
 	selection,
 }: {
 	events: EventItem[];
 	calendarId: string;
+	hasActiveFilters: boolean;
 	handlers: {
+		onEdit: (id: string) => void;
 		onDelete: (id: string) => void;
 		onDuplicate: (id: string) => void;
 		onMove?: (id: string) => void;
@@ -560,11 +574,23 @@ function EventsList({
 
 	if (events.length === 0) {
 		return (
-			<Card>
-				<CardContent className="py-10 text-center">
-					<p className="text-muted-foreground">No events found</p>
-				</CardContent>
-			</Card>
+			<div className="flex flex-col items-center justify-center py-12 text-center">
+				<div className="mb-4 rounded-full bg-muted p-4">
+					{hasActiveFilters ? (
+						<Search className="h-8 w-8 text-muted-foreground" />
+					) : (
+						<Calendar className="h-8 w-8 text-muted-foreground" />
+					)}
+				</div>
+				<h3 className="mb-2 font-medium">
+					{hasActiveFilters ? "No matching events" : "No events yet"}
+				</h3>
+				<p className="text-muted-foreground text-sm">
+					{hasActiveFilters
+						? "Try adjusting your filters or search query"
+						: "Add your first event using the button above"}
+				</p>
+			</div>
 		);
 	}
 
@@ -584,6 +610,7 @@ function EventsList({
 									key={event.id}
 									event={event}
 									calendarId={calendarId}
+									onEdit={handlers.onEdit}
 									onDelete={handlers.onDelete}
 									onDuplicate={handlers.onDuplicate}
 									onMove={handlers.onMove}

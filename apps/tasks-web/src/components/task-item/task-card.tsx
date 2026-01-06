@@ -5,6 +5,7 @@
 
 import { cn } from "@appstandard/react-utils";
 import {
+	Checkbox,
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
@@ -41,9 +42,22 @@ export function TaskCard({
 	onDelete,
 	isToggling,
 	isDuplicating,
+	selectionMode = false,
+	isSelected = false,
+	onToggleSelect,
 }: TaskCardProps) {
 	const isCancelled = task.status === "CANCELLED";
 	const accentColor = task.color || taskListColor || "#3b82f6";
+
+	const handleCardClick = () => {
+		if (selectionMode) {
+			onToggleSelect?.(task.id);
+		}
+	};
+
+	const handleCheckboxChange = () => {
+		onToggleSelect?.(task.id);
+	};
 
 	return (
 		<motion.div
@@ -53,7 +67,10 @@ export function TaskCard({
 			className={cn(
 				"group relative flex overflow-hidden rounded-lg border bg-card transition-all duration-200 hover:border-primary/30 hover:shadow-md",
 				isCancelled && "opacity-60",
+				selectionMode && "cursor-pointer",
+				isSelected && "bg-primary/5 ring-2 ring-primary",
 			)}
+			onClick={selectionMode ? handleCardClick : undefined}
 		>
 			{/* Color accent bar */}
 			<div
@@ -63,6 +80,18 @@ export function TaskCard({
 
 			{/* Main content */}
 			<div className="flex min-w-0 flex-1 items-start gap-3 p-4">
+				{/* Selection checkbox */}
+				{selectionMode && (
+					<div className="flex items-center">
+						<Checkbox
+							checked={isSelected}
+							onCheckedChange={handleCheckboxChange}
+							onClick={(e) => e.stopPropagation()}
+							aria-label={`Select ${task.title}`}
+						/>
+					</div>
+				)}
+
 				{/* Status button */}
 				<button
 					type="button"
@@ -117,51 +146,53 @@ export function TaskCard({
 					<TaskDescription task={task} />
 				</div>
 
-				{/* Actions */}
-				<div className="flex shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-					<button
-						type="button"
-						onClick={() => onEdit(task.id)}
-						className="rounded p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
-					>
-						<Edit2 className="h-4 w-4" />
-					</button>
-					<DropdownMenu>
-						<DropdownMenuTrigger asChild>
-							<button
-								type="button"
-								className="rounded p-1.5 text-muted-foreground hover:bg-muted"
-							>
-								<MoreHorizontal className="h-4 w-4" />
-							</button>
-						</DropdownMenuTrigger>
-						<DropdownMenuContent align="end">
-							<DropdownMenuItem onClick={() => onEdit(task.id)}>
-								<Edit2 className="mr-2 h-4 w-4" />
-								Edit
-							</DropdownMenuItem>
-							<DropdownMenuItem
-								onClick={() => onDuplicate(task.id)}
-								disabled={isDuplicating}
-							>
-								<Copy className="mr-2 h-4 w-4" />
-								Duplicate
-							</DropdownMenuItem>
-							<DropdownMenuItem onClick={() => onMove(task.id)}>
-								<ArrowRight className="mr-2 h-4 w-4" />
-								Move to list...
-							</DropdownMenuItem>
-							<DropdownMenuSeparator />
-							<DropdownMenuItem
-								onClick={() => onDelete(task.id, task.title)}
-								className="text-destructive focus:text-destructive"
-							>
-								<Trash2 className="mr-2 h-4 w-4" />
-								Delete
-							</DropdownMenuItem>
-						</DropdownMenuContent>
-					</DropdownMenu>
-				</div>
+				{/* Actions - hide in selection mode */}
+				{!selectionMode && (
+					<div className="flex shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+						<button
+							type="button"
+							onClick={() => onEdit(task.id)}
+							className="rounded p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+						>
+							<Edit2 className="h-4 w-4" />
+						</button>
+						<DropdownMenu>
+							<DropdownMenuTrigger asChild>
+								<button
+									type="button"
+									className="rounded p-1.5 text-muted-foreground hover:bg-muted"
+								>
+									<MoreHorizontal className="h-4 w-4" />
+								</button>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent align="end">
+								<DropdownMenuItem onClick={() => onEdit(task.id)}>
+									<Edit2 className="mr-2 h-4 w-4" />
+									Edit
+								</DropdownMenuItem>
+								<DropdownMenuItem
+									onClick={() => onDuplicate(task.id)}
+									disabled={isDuplicating}
+								>
+									<Copy className="mr-2 h-4 w-4" />
+									Duplicate
+								</DropdownMenuItem>
+								<DropdownMenuItem onClick={() => onMove(task.id)}>
+									<ArrowRight className="mr-2 h-4 w-4" />
+									Move to list...
+								</DropdownMenuItem>
+								<DropdownMenuSeparator />
+								<DropdownMenuItem
+									onClick={() => onDelete(task.id, task.title)}
+									className="text-destructive focus:text-destructive"
+								>
+									<Trash2 className="mr-2 h-4 w-4" />
+									Delete
+								</DropdownMenuItem>
+							</DropdownMenuContent>
+						</DropdownMenu>
+					</div>
+				)}
 			</div>
 		</motion.div>
 	);
