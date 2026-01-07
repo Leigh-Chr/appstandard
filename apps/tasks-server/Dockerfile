@@ -81,9 +81,8 @@ COPY --from=pruner /app/out/json/ .
 # Use original lockfile from build context
 COPY bun.lock ./bun.lock
 
-# Install production dependencies only with cache mount
-RUN --mount=type=cache,target=/root/.bun/install/cache \
-    bun install --production --ignore-scripts
+# Install production dependencies only
+RUN bun install --production --ignore-scripts
 
 # Copy config package (no dist, just tsconfig)
 COPY --chown=bunjs:nodejs --from=builder /app/packages/config ./packages/config
