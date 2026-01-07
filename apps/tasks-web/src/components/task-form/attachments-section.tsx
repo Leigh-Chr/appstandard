@@ -19,46 +19,6 @@ interface AttachmentsSectionProps {
 	isSubmitting: boolean;
 }
 
-/**
- * Get file icon based on URL extension
- */
-function getFileIcon(url?: string): string {
-	if (!url) return "file";
-	const ext = url.split(".").pop()?.toLowerCase();
-	switch (ext) {
-		case "pdf":
-			return "pdf";
-		case "doc":
-		case "docx":
-			return "word";
-		case "xls":
-		case "xlsx":
-			return "excel";
-		case "ppt":
-		case "pptx":
-			return "powerpoint";
-		case "jpg":
-		case "jpeg":
-		case "png":
-		case "gif":
-		case "webp":
-			return "image";
-		case "mp4":
-		case "mov":
-		case "avi":
-			return "video";
-		case "mp3":
-		case "wav":
-			return "audio";
-		case "zip":
-		case "rar":
-		case "7z":
-			return "archive";
-		default:
-			return "file";
-	}
-}
-
 export function AttachmentsSection({
 	attachments,
 	onAddAttachment,

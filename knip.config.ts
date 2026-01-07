@@ -48,6 +48,8 @@ const config: KnipConfig = {
 		"**/knip.config.ts",
 		// Codacy config files
 		".codacy/**",
+		// BMAD framework files (external tooling)
+		"_bmad/**",
 		// Components kept for planned features
 		"**/command-palette.tsx",
 		"**/page-transition.tsx",
@@ -171,6 +173,14 @@ const config: KnipConfig = {
 		"apps/calendar-web/src/lib/calendar-export.ts": ["exports"],
 		"apps/contacts-web/src/lib/address-book-export.ts": ["exports"],
 		"apps/tasks-web/src/lib/task-list-export.ts": ["exports"],
+		// Component barrel files - public API for reusable components
+		"apps/contacts-web/src/components/contact-item/index.ts": [
+			"exports",
+			"types",
+		],
+		"apps/tasks-web/src/components/task-item/index.ts": ["exports", "types"],
+		// Form validation utilities - public API
+		"apps/tasks-web/src/lib/task-form-validation.ts": ["exports"],
 	},
 	ignoreDependencies: [
 		// ===== Build/dev tools (used in vite/tsconfig) =====

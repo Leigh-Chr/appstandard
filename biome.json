@@ -28,7 +28,8 @@
 			"!**/*.html",
 			"!**/*.conf",
 			"!**/prisma/generated",
-			"!**/index.css"
+			"!**/index.css",
+			"!_bmad"
 		]
 	},
 	"formatter": {
@@ -103,6 +104,9 @@
 				"rules": {
 					"correctness": {
 						"noUnusedVariables": "off"
+					},
+					"suspicious": {
+						"noArrayIndexKey": "off"
 					},
 					"performance": {
 						"noBarrelFile": "off"
@@ -257,6 +261,7 @@
 		{
 			"includes": [
 				"**/contact-form/*.tsx",
+				"**/task-form/*.tsx",
 				"packages/ui/src/keyboard-shortcuts-dialog.tsx",
 				"packages/ui/src/collections/list-loading-state.tsx"
 			],
