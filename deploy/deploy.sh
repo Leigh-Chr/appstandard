@@ -139,7 +139,7 @@ if docker run --rm \
     --network "${DOCKER_NETWORK}" \
     -e DATABASE_URL="${MIGRATION_DB_URL}" \
     oven/bun:1.3.5-alpine \
-    sh -c "bun install --frozen-lockfile 2>/dev/null || bun install && bunx prisma db push --skip-generate && bunx prisma generate"; then
+    sh -c "bun install --frozen-lockfile 2>/dev/null || bun install && bunx prisma db push && bunx prisma generate"; then
     success "Database schema synchronized"
 else
     error "Database schema sync failed"
