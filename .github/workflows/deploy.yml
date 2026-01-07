@@ -22,4 +22,6 @@ jobs:
           script: |
             cd /root/appstandard
             git pull origin master
+            # Prune stale Docker build cache to prevent checksum errors
+            docker builder prune -f --filter "until=24h"
             ./deploy/deploy.sh sequential
