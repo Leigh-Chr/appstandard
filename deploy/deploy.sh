@@ -103,23 +103,27 @@ for i in {1..30}; do
     sleep 1
 done
 
-# Run database migrations
+# Run database migrations (inside a container since Bun isn't installed on host)
 log "Running database migrations..."
-cd packages/db
-if bunx prisma migrate deploy; then
+
+# Get database credentials from docker-compose environment
+DB_USER="${POSTGRES_USER:-appstandard}"
+DB_PASS="${POSTGRES_PASSWORD:-appstandard}"
+DB_NAME="${POSTGRES_DB:-appstandard}"
+MIGRATION_DB_URL="postgresql://${DB_USER}:${DB_PASS}@db:5432/${DB_NAME}"
+
+# Run migrations in a temporary Bun container connected to the docker network
+if docker run --rm \
+    -v "$(pwd)":/app \
+    -w /app/packages/db \
+    --network appstandard_default \
+    -e DATABASE_URL="${MIGRATION_DB_URL}" \
+    oven/bun:1.3.5-alpine \
+    sh -c "bun install --frozen-lockfile 2>/dev/null || bun install && bunx prisma migrate deploy && bunx prisma generate"; then
     success "Database migrations applied"
 else
     error "Database migration failed"
 fi
-
-# Generate Prisma client (in case schema changed)
-log "Generating Prisma client..."
-if bunx prisma generate; then
-    success "Prisma client generated"
-else
-    error "Prisma client generation failed"
-fi
-cd ../..
 
 build_service() {
     local service=$1
