@@ -35,8 +35,8 @@ RUN --mount=type=cache,target=/root/.bun/install/cache \
     bun install
 
 # -----------------------------------
-# Stage 3: Build
-FROM oven/bun:1.3.5-alpine AS builder
+# Stage 3: Build (using Node.js for stability - avoids Bun SIGILL crash on some VPS CPUs)
+FROM node:22-alpine AS builder
 
 WORKDIR /app
 
@@ -54,11 +54,7 @@ ENV TURBO_TEAM=$TURBO_TEAM
 ENV NODE_ENV=production
 
 # Build the frontend using Turbo (handles dependency builds automatically)
-# Note: || true ignores Bun's SIGILL crash on certain VPS CPUs (build succeeds before crash)
-RUN ./node_modules/.bin/turbo build --filter=landing... || true
-
-# Verify build succeeded (dist folder must exist with index.html)
-RUN test -f /app/apps/landing/dist/index.html || (echo "Build failed: dist/index.html not found" && exit 1)
+RUN ./node_modules/.bin/turbo build --filter=landing...
 
 # -----------------------------------
 # Stage 4: Production with Nginx (minimal ~25MB image)
