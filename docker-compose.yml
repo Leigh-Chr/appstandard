@@ -516,11 +516,18 @@ services:
 # -----------------------------------
 # Volumes
 # -----------------------------------
+# Note: These volumes are marked as external because they were created
+# before Docker Compose managed them. This prevents "volume already exists" warnings.
+# If deploying to a new server, create them first:
+#   docker volume create appstandard_postgres_data
+#   docker volume create appstandard_redis_data
 volumes:
   postgres_data:
-    driver: local
+    external: true
+    name: appstandard_postgres_data
   redis_data:
-    driver: local
+    external: true
+    name: appstandard_redis_data
 
 # -----------------------------------
 # Networks
