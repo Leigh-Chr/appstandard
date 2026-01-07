@@ -118,6 +118,7 @@ export function TaskSecondaryInfo({ task }: TaskDetailsProps) {
 								onClick={(e) => e.stopPropagation()}
 							>
 								{task.url}
+								<span className="sr-only">(opens in new tab)</span>
 							</a>
 						</div>
 					)}

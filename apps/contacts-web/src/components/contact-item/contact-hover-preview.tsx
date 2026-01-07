@@ -146,6 +146,7 @@ export function ContactHoverPreview({
 									onClick={(e) => e.stopPropagation()}
 								>
 									Website
+									<span className="sr-only">(opens in new tab)</span>
 								</a>
 							</div>
 						)}

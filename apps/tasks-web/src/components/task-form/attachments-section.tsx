@@ -92,6 +92,7 @@ export function AttachmentsSection({
 									>
 										<Link2 className="h-3 w-3" />
 										{attachment.filename || attachment.uri}
+										<span className="sr-only">(opens in new tab)</span>
 									</a>
 								</div>
 							)}

@@ -40,7 +40,9 @@ function NotFoundPage() {
 						<div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10">
 							<AlertCircle className="h-8 w-8 text-destructive" />
 						</div>
-						<CardTitle className="text-heading-1">Page Not Found</CardTitle>
+						<CardTitle>
+							<h1 className="text-heading-1">Page Not Found</h1>
+						</CardTitle>
 						<CardDescription>
 							The page you're looking for doesn't exist or has been moved.
 						</CardDescription>

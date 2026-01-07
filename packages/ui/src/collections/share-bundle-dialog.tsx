@@ -109,6 +109,7 @@ function BundleItem({
 							size="icon"
 							className="h-10 min-h-[44px] w-10 sm:h-6 sm:min-h-0 sm:w-6"
 							onClick={() => onCopy(bundle.token, bundle.id)}
+							aria-label={copiedId === bundle.id ? "Copied" : "Copy link"}
 						>
 							{copiedId === bundle.id ? (
 								<Check className="h-4 w-4 text-green-500 sm:h-3 sm:w-3" />
@@ -126,6 +127,7 @@ function BundleItem({
 								href={getShareUrl(bundle.token)}
 								target="_blank"
 								rel="noopener noreferrer"
+								aria-label="Open share link in new tab"
 							>
 								<ExternalLink className="h-3 w-3" />
 							</a>
@@ -172,6 +174,7 @@ function BundleItem({
 						className="h-8 w-8 text-destructive hover:bg-destructive/10 hover:text-destructive"
 						onClick={() => onDelete(bundle.id)}
 						disabled={isDeleting}
+						aria-label="Delete share link"
 					>
 						<Trash2 className="h-4 w-4" />
 					</Button>

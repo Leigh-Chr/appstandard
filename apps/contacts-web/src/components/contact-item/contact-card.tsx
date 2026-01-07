@@ -170,6 +170,7 @@ export function ContactCard({
 								rel="noopener noreferrer"
 								className="flex items-center gap-1 hover:text-primary"
 								onClick={(e) => e.stopPropagation()}
+								aria-label="Visit website (opens in new tab)"
 							>
 								<Globe className="h-3.5 w-3.5" />
 							</a>

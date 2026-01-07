@@ -188,6 +188,7 @@ export function QuickCreateEvent({
 							size="icon"
 							className="h-10 min-h-[44px] w-10 sm:h-6 sm:min-h-0 sm:w-6"
 							onClick={onClose}
+							aria-label="Close"
 						>
 							<X className="h-4 w-4" />
 						</Button>

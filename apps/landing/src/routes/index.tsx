@@ -198,6 +198,7 @@ function LandingPage() {
 								<a href={GITHUB_URL} target="_blank" rel="noopener noreferrer">
 									<Github className="size-4" aria-hidden="true" />
 									View on GitHub
+									<span className="sr-only">(opens in new tab)</span>
 								</a>
 							</Button>
 						</div>
@@ -371,6 +372,7 @@ function LandingPage() {
 								<a href={GITHUB_URL} target="_blank" rel="noopener noreferrer">
 									<Heart className="size-4" aria-hidden="true" />
 									Star on GitHub
+									<span className="sr-only">(opens in new tab)</span>
 								</a>
 							</Button>
 						</div>

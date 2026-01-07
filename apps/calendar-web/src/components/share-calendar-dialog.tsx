@@ -259,6 +259,9 @@ export function ShareCalendarDialog({
 													size="icon"
 													className="h-10 min-h-[44px] w-10 sm:h-6 sm:min-h-0 sm:w-6"
 													onClick={() => handleCopy(link.token, link.id)}
+													aria-label={
+														copiedId === link.id ? "Copied" : "Copy link"
+													}
 												>
 													{copiedId === link.id ? (
 														<Check className="h-4 w-4 text-green-500 sm:h-3 sm:w-3" />
@@ -276,6 +279,7 @@ export function ShareCalendarDialog({
 														href={getShareUrl(link.token)}
 														target="_blank"
 														rel="noopener noreferrer"
+														aria-label="Open share link in new tab"
 													>
 														<ExternalLink className="h-4 w-4 sm:h-3 sm:w-3" />
 													</a>
@@ -327,6 +331,7 @@ export function ShareCalendarDialog({
 												className="h-10 min-h-[44px] w-10 text-destructive hover:bg-destructive/10 hover:text-destructive sm:h-8 sm:min-h-0 sm:w-8"
 												onClick={() => handleDelete(link.id)}
 												disabled={deleteMutation.isPending}
+												aria-label="Delete share link"
 											>
 												<Trash2 className="h-4 w-4" />
 											</Button>

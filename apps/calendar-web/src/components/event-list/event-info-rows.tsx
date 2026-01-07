@@ -140,6 +140,7 @@ export function UrlRow({ url }: { url: string }) {
 				className="text-primary hover:underline"
 			>
 				{url}
+				<span className="sr-only">(opens in new tab)</span>
 			</a>
 		</div>
 	);

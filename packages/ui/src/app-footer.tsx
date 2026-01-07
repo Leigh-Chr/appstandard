@@ -17,7 +17,7 @@ export function AppFooter() {
 				<div className="grid grid-cols-1 gap-8 md:grid-cols-3">
 					{/* Brand section */}
 					<div className="space-y-3">
-						<h3 className="font-semibold text-base">{config.appName}</h3>
+						<p className="font-semibold text-base">{config.appName}</p>
 						<p className="text-muted-foreground text-sm">
 							{config.description}
 						</p>
@@ -30,13 +30,14 @@ export function AppFooter() {
 								className="font-medium text-primary hover:underline"
 							>
 								Support the project
+								<span className="sr-only"> (opens in new tab)</span>
 							</a>
 						</p>
 					</div>
 
 					{/* Links section */}
 					<div className="space-y-3">
-						<h3 className="font-semibold text-base">Resources</h3>
+						<p className="font-semibold text-base">Resources</p>
 						<ul className="space-y-2">
 							<li>
 								<Link
@@ -67,7 +68,7 @@ export function AppFooter() {
 
 					{/* Legal & Social section */}
 					<div className="space-y-3">
-						<h3 className="font-semibold text-base">Legal & Links</h3>
+						<p className="font-semibold text-base">Legal & Links</p>
 						<ul className="space-y-2">
 							<li>
 								<a
@@ -78,6 +79,7 @@ export function AppFooter() {
 								>
 									<Github className="h-4 w-4" />
 									GitHub
+									<span className="sr-only">(opens in new tab)</span>
 								</a>
 							</li>
 							<li>
@@ -89,6 +91,7 @@ export function AppFooter() {
 								>
 									<Heart className="h-4 w-4 fill-current text-primary/70" />
 									Support on Ko-fi
+									<span className="sr-only">(opens in new tab)</span>
 								</a>
 							</li>
 							<li>
@@ -99,6 +102,7 @@ export function AppFooter() {
 									className="text-muted-foreground text-sm transition-colors hover:text-foreground"
 								>
 									License
+									<span className="sr-only"> (opens in new tab)</span>
 								</a>
 							</li>
 						</ul>

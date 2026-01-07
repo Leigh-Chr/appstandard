@@ -257,7 +257,7 @@ function Footer() {
 					<div className="space-y-3">
 						<div className="flex items-center gap-2">
 							<Layers className="size-5 text-primary" aria-hidden="true" />
-							<h3 className="font-semibold text-base">AppStandard</h3>
+							<p className="font-semibold text-base">AppStandard</p>
 						</div>
 						<p className="text-muted-foreground text-sm">
 							Open-source productivity apps for calendars, contacts, and tasks.
@@ -272,13 +272,14 @@ function Footer() {
 								className="font-medium text-primary hover:underline"
 							>
 								Support the project
+								<span className="sr-only"> (opens in new tab)</span>
 							</a>
 						</p>
 					</div>
 
 					{/* Apps section */}
 					<div className="space-y-3">
-						<h3 className="font-semibold text-base">Apps</h3>
+						<p className="font-semibold text-base">Apps</p>
 						<ul className="space-y-2">
 							<li>
 								<a
@@ -312,7 +313,7 @@ function Footer() {
 
 					{/* Legal & Links section */}
 					<div className="space-y-3">
-						<h3 className="font-semibold text-base">Legal & Links</h3>
+						<p className="font-semibold text-base">Legal & Links</p>
 						<ul className="space-y-2">
 							<li>
 								<a
@@ -323,6 +324,7 @@ function Footer() {
 								>
 									<Github className="h-4 w-4" aria-hidden="true" />
 									GitHub
+									<span className="sr-only">(opens in new tab)</span>
 								</a>
 							</li>
 							<li>
@@ -337,6 +339,7 @@ function Footer() {
 										aria-hidden="true"
 									/>
 									Support on Ko-fi
+									<span className="sr-only">(opens in new tab)</span>
 								</a>
 							</li>
 							<li>
@@ -347,6 +350,7 @@ function Footer() {
 									className="text-muted-foreground text-sm transition-colors hover:text-foreground"
 								>
 									License
+									<span className="sr-only"> (opens in new tab)</span>
 								</a>
 							</li>
 						</ul>

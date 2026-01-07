@@ -93,7 +93,12 @@ export function SharingStats({
 						<LinkIcon className="h-5 w-5" />
 						Sharing & collaboration
 					</div>
-					<Button variant="ghost" size="icon" className="h-8 w-8">
+					<Button
+						variant="ghost"
+						size="icon"
+						className="h-8 w-8"
+						aria-label={isExpanded ? "Collapse section" : "Expand section"}
+					>
 						{isExpanded ? (
 							<ChevronUp className="h-4 w-4" />
 						) : (

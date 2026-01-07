@@ -120,6 +120,7 @@ function MobileActions({
 				onClick={onExit}
 				className="h-10 min-h-[44px] w-10 sm:h-8 sm:min-h-0 sm:w-8"
 				disabled={isPending}
+				aria-label="Exit selection mode"
 			>
 				<X className="h-4 w-4" />
 			</Button>
@@ -212,6 +213,7 @@ function DesktopActions({
 				onClick={onExit}
 				className="h-8 w-8"
 				disabled={isPending}
+				aria-label="Exit selection mode"
 			>
 				<X className="h-4 w-4" />
 			</Button>

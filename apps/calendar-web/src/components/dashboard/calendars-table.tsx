@@ -101,7 +101,7 @@ export function CalendarsTable({
 											<Link
 												to="/calendars/$calendarId"
 												params={{ calendarId: calendar.id }}
-												title="Settings"
+												aria-label="Calendar settings"
 											>
 												<Settings className="h-4 w-4" />
 											</Link>
