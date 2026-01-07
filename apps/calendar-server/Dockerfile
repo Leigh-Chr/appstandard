@@ -31,8 +31,9 @@ COPY --from=pruner /app/out/json/ .
 COPY bun.lock ./bun.lock
 
 # Install dependencies with BuildKit cache mount for faster rebuilds
+# Note: No --frozen-lockfile because turbo prune creates subset package.json files
 RUN --mount=type=cache,target=/root/.bun/install/cache \
-    bun install --frozen-lockfile
+    bun install
 
 # -----------------------------------
 # Stage 3: Build
@@ -82,7 +83,7 @@ COPY bun.lock ./bun.lock
 
 # Install production dependencies only with cache mount
 RUN --mount=type=cache,target=/root/.bun/install/cache \
-    bun install --frozen-lockfile --production --ignore-scripts
+    bun install --production --ignore-scripts
 
 # Copy config package (no dist, just tsconfig)
 COPY --chown=bunjs:nodejs --from=builder /app/packages/config ./packages/config
