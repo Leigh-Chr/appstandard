@@ -12,7 +12,20 @@ import { env } from "./env";
 
 const connectionString = env.DATABASE_URL;
 
-const adapter = new PrismaPg({ connectionString });
+// Configure connection pool for better performance
+// These settings optimize for serverless/container environments
+// See: https://www.prisma.io/docs/orm/more/upgrade-guides/upgrading-versions/upgrading-to-prisma-7
+const adapter = new PrismaPg({
+	connectionString,
+	// Pool size optimized for container environments
+	max: 10, // Maximum connections in pool
+	min: 2, // Keep minimum connections warm
+	// Connection timeout settings - match Prisma v6 defaults for reliability
+	idleTimeoutMillis: 30000, // Close idle connections after 30s
+	connectionTimeoutMillis: 5000, // Fail fast on connection issues (v6 default was 5s)
+	// Keep connections alive
+	allowExitOnIdle: false,
+});
 
 // Singleton pattern for long-running processes (recommended by Prisma)
 // This prevents multiple PrismaClient instances and connection pool exhaustion

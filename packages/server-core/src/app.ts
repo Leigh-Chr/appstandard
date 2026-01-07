@@ -5,6 +5,7 @@
 
 import * as Sentry from "@sentry/bun";
 import { Hono } from "hono";
+import { compress } from "hono/compress";
 import { cors } from "hono/cors";
 import { csrf } from "hono/csrf";
 import { logger as honoLogger } from "hono/logger";
@@ -279,6 +280,10 @@ export function createServerApp(config: ServerConfig) {
 		app.use(honoLogger());
 	}
 
+	// Enable response compression for better performance
+	// This reduces payload size significantly for JSON responses
+	app.use(compress());
+
 	// CORS configuration - apply FIRST before security headers
 	app.use(
 		"/*",
@@ -527,8 +532,39 @@ export function createServerApp(config: ServerConfig) {
 		return c.text(`${config.serviceName} API OK`);
 	});
 
+	// Warmup endpoint - prewarms database connections without full health check
+	// Use this endpoint for container/serverless warmup to reduce cold start latency
+	app.get("/warmup", async (c) => {
+		try {
+			const prisma = (await import("@appstandard/db")).default;
+			// Simple query to warm up the connection pool
+			await prisma.$queryRaw`SELECT 1`;
+			return c.text("warm", 200);
+		} catch {
+			// Don't expose errors on warmup - just return OK
+			// The health endpoint will catch real issues
+			return c.text("warm", 200);
+		}
+	});
+
 	// Health check endpoint with database verification
+	// Supports ?quick=true for fast checks without DB verification
 	app.get("/health", async (c) => {
+		const quick = c.req.query("quick") === "true";
+
+		// Quick mode: skip DB check for load balancer health checks
+		if (quick) {
+			return c.json(
+				{
+					status: "healthy",
+					service: config.serviceName,
+					timestamp: new Date().toISOString(),
+					mode: "quick",
+				},
+				200,
+			);
+		}
+
 		try {
 			const prisma = (await import("@appstandard/db")).default;
 			await prisma.$queryRaw`SELECT 1`;

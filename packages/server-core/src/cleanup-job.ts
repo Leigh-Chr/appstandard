@@ -19,6 +19,8 @@ export const CLEANUP_DEFAULTS = {
 	daysInactiveActiveShares: 365,
 	/** Days after which pending group invitations are deleted */
 	daysPendingInvitations: 30,
+	/** Delay before running cleanup on startup (ms) - allows server to warm up first */
+	startupDelayMs: 30000, // 30 seconds
 } as const;
 
 /**
@@ -37,8 +39,10 @@ export interface CleanupConfig {
 	daysInactiveActiveShares?: number | undefined;
 	/** Days after which pending group invitations are deleted */
 	daysPendingInvitations?: number | undefined;
-	/** Whether to run cleanup immediately on startup */
+	/** Whether to run cleanup on startup (deferred to not block server) */
 	runOnStartup?: boolean | undefined;
+	/** Delay before running startup cleanup (allows server to warm up first) */
+	startupDelayMs?: number | undefined;
 }
 
 /**
@@ -88,6 +92,7 @@ export function createCleanupJob(
 		daysInactiveActiveShares = CLEANUP_DEFAULTS.daysInactiveActiveShares,
 		daysPendingInvitations = CLEANUP_DEFAULTS.daysPendingInvitations,
 		runOnStartup = true,
+		startupDelayMs = CLEANUP_DEFAULTS.startupDelayMs,
 	} = config || {};
 
 	/**
@@ -181,11 +186,18 @@ export function createCleanupJob(
 	 */
 	function startCleanupJob() {
 		const intervalHours = Math.round(intervalMs / (60 * 60 * 1000));
+		const delaySeconds = Math.round(startupDelayMs / 1000);
 		logger.info(`Cleanup job started (runs every ${intervalHours} hours)`);
 
-		// Run immediately on startup if configured
+		// Run cleanup after startup delay if configured
+		// This prevents blocking the server during cold start
 		if (runOnStartup) {
-			runCleanup();
+			logger.info(
+				`Cleanup will run in ${delaySeconds}s to allow server warmup`,
+			);
+			setTimeout(() => {
+				runCleanup();
+			}, startupDelayMs);
 		}
 
 		// Schedule periodic cleanup
