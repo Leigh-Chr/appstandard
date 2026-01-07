@@ -46,6 +46,8 @@ const config: KnipConfig = {
 		"**/*.config.ts",
 		"**/tsdown.config.ts",
 		"**/knip.config.ts",
+		// TanStack Router lazy-loaded route files (loaded dynamically by convention)
+		"**/*.lazy.tsx",
 		// Codacy config files
 		".codacy/**",
 		// BMAD framework files (external tooling)
@@ -59,6 +61,10 @@ const config: KnipConfig = {
 		"**/recoverable-error-boundary.tsx",
 		// Group card components for planned group functionality
 		"**/group-card.tsx",
+		// Components used in lazy-loaded routes (not detected since .lazy.tsx is ignored)
+		"**/group-members-list.tsx",
+		"**/invite-group-member-dialog.tsx",
+		"**/file-drop-zone.tsx",
 		// Server utilities kept for future use / reference
 		"apps/calendar-server/src/lib/secrets.ts",
 		// ICS utils internal files (re-exported via barrel files)
