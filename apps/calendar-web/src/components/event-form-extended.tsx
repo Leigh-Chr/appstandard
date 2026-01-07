@@ -8,6 +8,7 @@ import {
 	CardDescription,
 	CardHeader,
 	CardTitle,
+	CollapsibleSection,
 	Progress,
 	SelectItem,
 	TooltipProvider,
@@ -33,7 +34,6 @@ import { AdditionalInfoSection } from "@/components/event-form/additional-info-s
 import { AlarmsSection } from "@/components/event-form/alarms-section";
 import { AttendeesSection } from "@/components/event-form/attendees-section";
 import { BasicInfoSection } from "@/components/event-form/basic-info-section";
-import { CollapsibleSection } from "@/components/event-form/collapsible-section";
 import { ExpertModeSection } from "@/components/event-form/expert-mode-section";
 import { LocationSection } from "@/components/event-form/location-section";
 import { MetadataSection } from "@/components/event-form/metadata-section";

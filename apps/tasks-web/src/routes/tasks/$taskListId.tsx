@@ -13,6 +13,7 @@ import {
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuTrigger,
+	Loader,
 } from "@appstandard/ui";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -355,7 +356,7 @@ function TaskListDetailPage() {
 				</div>
 				<div className="container mx-auto max-w-3xl px-4 py-6 sm:py-10">
 					<div className="flex min-h-[400px] items-center justify-center">
-						<Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+						<Loader size="lg" />
 					</div>
 				</div>
 			</div>

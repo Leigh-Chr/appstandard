@@ -1,5 +1,11 @@
+import { cn } from "@appstandard/react-utils";
 import type { LucideIcon } from "lucide-react";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown } from "lucide-react";
+import {
+	Collapsible,
+	CollapsibleContent,
+	CollapsibleTrigger,
+} from "../collapsible";
 
 export interface CollapsibleSectionProps {
 	/** Unique identifier for the section (used for aria attributes) */
@@ -22,9 +28,11 @@ export interface CollapsibleSectionProps {
 
 /**
  * Reusable collapsible section component for forms
+ * Built on Radix UI Collapsible primitive for better accessibility
  *
  * Features:
- * - Accessible with aria-expanded and aria-controls
+ * - Built on @radix-ui/react-collapsible
+ * - Accessible with proper ARIA attributes (handled by Radix)
  * - Optional icon, badge, and description
  * - Smooth hover transitions
  * - Left border accent when expanded
@@ -53,12 +61,13 @@ export function CollapsibleSection({
 	icon: Icon,
 }: CollapsibleSectionProps) {
 	return (
-		<div className="space-y-4">
-			<button
-				type="button"
-				onClick={onToggle}
+		<Collapsible
+			open={isExpanded}
+			onOpenChange={onToggle}
+			className="space-y-4"
+		>
+			<CollapsibleTrigger
 				className="group flex w-full items-center justify-between text-left font-semibold transition-colors hover:text-primary"
-				aria-expanded={isExpanded}
 				aria-controls={`section-${id}`}
 			>
 				<div className="flex flex-col items-start gap-1">
@@ -79,19 +88,15 @@ export function CollapsibleSection({
 						</span>
 					)}
 				</div>
-				{isExpanded ? (
-					<ChevronUp
-						className="h-4 w-4 flex-shrink-0 text-muted-foreground transition-colors group-hover:text-primary"
-						aria-hidden="true"
-					/>
-				) : (
-					<ChevronDown
-						className="h-4 w-4 flex-shrink-0 text-muted-foreground transition-colors group-hover:text-primary"
-						aria-hidden="true"
-					/>
-				)}
-			</button>
-			{isExpanded && (
+				<ChevronDown
+					className={cn(
+						"h-4 w-4 flex-shrink-0 text-muted-foreground transition-all group-hover:text-primary",
+						isExpanded && "rotate-180",
+					)}
+					aria-hidden="true"
+				/>
+			</CollapsibleTrigger>
+			<CollapsibleContent>
 				<section
 					id={`section-${id}`}
 					className="space-y-4 border-muted/50 border-l-2 pl-4"
@@ -99,7 +104,7 @@ export function CollapsibleSection({
 				>
 					{children}
 				</section>
-			)}
-		</div>
+			</CollapsibleContent>
+		</Collapsible>
 	);
 }

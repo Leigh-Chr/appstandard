@@ -15,6 +15,7 @@ const FormMessage = React.forwardRef<HTMLParagraphElement, FormMessageProps>(
 		return (
 			<p
 				ref={ref}
+				data-slot="form-message"
 				className={cn("font-medium text-destructive text-sm", className)}
 				{...props}
 			>

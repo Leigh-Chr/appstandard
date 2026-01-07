@@ -8,6 +8,7 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 	Button,
+	Loader,
 } from "@appstandard/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
@@ -62,7 +63,7 @@ function LoadingState() {
 	return (
 		<div className="container mx-auto max-w-2xl px-4 py-6 sm:py-10">
 			<div className="flex items-center justify-center py-12">
-				<Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+				<Loader size="lg" />
 			</div>
 		</div>
 	);

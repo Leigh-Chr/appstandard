@@ -3,8 +3,8 @@
  * Location, URL, categories, color
  */
 
-import { Badge, Input, Label } from "@appstandard/ui";
-import { Globe, MapPin, Palette, Tag } from "lucide-react";
+import { Badge, ColorPicker, Input, Label } from "@appstandard/ui";
+import { Globe, MapPin, Tag } from "lucide-react";
 
 interface AdditionalInfoSectionProps {
 	location: string;
@@ -98,23 +98,12 @@ export function AdditionalInfoSection({
 			</div>
 
 			{/* Color */}
-			<div className="space-y-2">
-				<Label htmlFor="color" className="flex items-center gap-2">
-					<Palette className="h-4 w-4" />
-					Color
-				</Label>
-				<div className="flex items-center gap-2">
-					<input
-						id="color"
-						type="color"
-						value={color}
-						onChange={(e) => onColorChange(e.target.value)}
-						className="h-10 w-20 cursor-pointer rounded border"
-						disabled={isSubmitting}
-					/>
-					<span className="text-muted-foreground text-sm">{color}</span>
-				</div>
-			</div>
+			<ColorPicker
+				value={color || null}
+				onChange={(newColor) => onColorChange(newColor || "")}
+				disabled={isSubmitting}
+				label="Color"
+			/>
 		</div>
 	);
 }

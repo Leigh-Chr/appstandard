@@ -1,12 +1,17 @@
 /**
- * FileDropZone - Generic drag & drop zone for files
- * Supports drag & drop and click to select with customizable validation
+ * FileDropZone - Drag & drop zone for files
+ * Built with react-dropzone for robust file handling
  */
 
 import { cn } from "@appstandard/react-utils";
 import { AlertCircle, CheckCircle2, FileUp, Loader2, X } from "lucide-react";
 import type { ReactNode } from "react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useState } from "react";
+import {
+	type DropzoneOptions,
+	type FileRejection,
+	useDropzone,
+} from "react-dropzone";
 import { Button } from "./button";
 
 export type DropState =
@@ -114,11 +119,11 @@ function ErrorContent({
 }
 
 function IdleContent({
-	isDragOver,
+	isDragActive,
 	maxSizeMB,
 	idleText,
 }: {
-	isDragOver: boolean;
+	isDragActive: boolean;
 	maxSizeMB: number;
 	idleText: string;
 }) {
@@ -127,11 +132,11 @@ function IdleContent({
 			<FileUp
 				className={cn(
 					"mb-4 h-12 w-12 transition-transform",
-					isDragOver ? "scale-110 text-primary" : "text-muted-foreground",
+					isDragActive ? "scale-110 text-primary" : "text-muted-foreground",
 				)}
 			/>
 			<p className="font-medium text-body-large">
-				{isDragOver ? "Drop your file here" : idleText}
+				{isDragActive ? "Drop your file here" : idleText}
 			</p>
 			<p className="mt-1 text-muted-foreground text-sm">or click to browse</p>
 			<p className="mt-4 text-muted-foreground/60 text-xs">
@@ -141,34 +146,46 @@ function IdleContent({
 	);
 }
 
-function defaultValidateFile(
-	file: File,
+/**
+ * Convert accept string (e.g., ".ics,.vcf") to react-dropzone accept format
+ */
+function parseAcceptString(
 	accept: string,
-	maxSizeMB: number,
-): FileValidationResult {
-	// Validate extension
-	const extension = file.name.split(".").pop()?.toLowerCase();
-	const acceptedExtensions = accept
-		.split(",")
-		.map((ext) => ext.trim().replace(".", "").toLowerCase());
+): DropzoneOptions["accept"] | undefined {
+	if (!accept) return undefined;
 
-	if (extension && !acceptedExtensions.includes(extension)) {
-		return {
-			valid: false,
-			error: `File must be in ${accept} format`,
+	const extensions = accept.split(",").map((ext) => ext.trim().toLowerCase());
+	const mimeTypes: Record<string, string[]> = {};
+
+	for (const ext of extensions) {
+		const normalizedExt = ext.startsWith(".") ? ext : `.${ext}`;
+
+		// Map common extensions to MIME types
+		const mimeMap: Record<string, string> = {
+			".ics": "text/calendar",
+			".vcf": "text/vcard",
+			".vcard": "text/vcard",
+			".csv": "text/csv",
+			".json": "application/json",
+			".txt": "text/plain",
+			".xml": "application/xml",
+			".pdf": "application/pdf",
+			".png": "image/png",
+			".jpg": "image/jpeg",
+			".jpeg": "image/jpeg",
+			".gif": "image/gif",
+			".webp": "image/webp",
+			".svg": "image/svg+xml",
 		};
+
+		const mimeType = mimeMap[normalizedExt] || "application/octet-stream";
+		if (!mimeTypes[mimeType]) {
+			mimeTypes[mimeType] = [];
+		}
+		mimeTypes[mimeType].push(normalizedExt);
 	}
 
-	// Validate size
-	const maxSizeBytes = maxSizeMB * 1024 * 1024;
-	if (file.size > maxSizeBytes) {
-		return {
-			valid: false,
-			error: `File too large (max ${maxSizeMB}MB). Size: ${(file.size / 1024 / 1024).toFixed(2)}MB`,
-		};
-	}
-
-	return { valid: true };
+	return mimeTypes;
 }
 
 export function FileDropZone({
@@ -186,106 +203,80 @@ export function FileDropZone({
 	const [state, setState] = useState<DropState>("idle");
 	const [file, setFile] = useState<File | null>(null);
 	const [error, setError] = useState<string | null>(null);
-	const inputRef = useRef<HTMLInputElement>(null);
-	const dragCountRef = useRef(0);
 
-	const processFile = async (selectedFile: File) => {
-		setError(null);
+	const maxSizeBytes = maxSizeMB * 1024 * 1024;
 
-		// Validate file
-		const validation = validateFile
-			? validateFile(selectedFile)
-			: defaultValidateFile(selectedFile, accept, maxSizeMB);
+	const processFile = useCallback(
+		async (selectedFile: File) => {
+			setError(null);
 
-		if (!validation.valid) {
-			setError(validation.error || "Invalid file");
-			setState("error");
-			return;
-		}
+			// Custom validation if provided
+			if (validateFile) {
+				const validation = validateFile(selectedFile);
+				if (!validation.valid) {
+					setError(validation.error || "Invalid file");
+					setState("error");
+					return;
+				}
+			}
 
-		setState("processing");
-		setFile(selectedFile);
+			setState("processing");
+			setFile(selectedFile);
 
-		try {
-			const content = await selectedFile.text();
-			onFileContent?.(content);
-			onFileSelect(selectedFile);
-			setState("success");
-		} catch {
-			setError("Error reading file");
-			setState("error");
-		}
-	};
+			try {
+				const content = await selectedFile.text();
+				onFileContent?.(content);
+				onFileSelect(selectedFile);
+				setState("success");
+			} catch {
+				setError("Error reading file");
+				setState("error");
+			}
+		},
+		[validateFile, onFileContent, onFileSelect],
+	);
 
-	const handleDragEnter = (e: React.DragEvent<HTMLButtonElement>) => {
-		e.preventDefault();
-		e.stopPropagation();
-		if (disabled) return;
+	const onDrop = useCallback(
+		(acceptedFiles: File[], rejectedFiles: FileRejection[]) => {
+			// Handle rejected files
+			if (rejectedFiles.length > 0) {
+				const rejection = rejectedFiles[0];
+				const errorCode = rejection?.errors[0]?.code;
 
-		dragCountRef.current++;
-		if (e.dataTransfer.types.includes("Files")) {
-			setState("drag-over");
-		}
-	};
+				if (errorCode === "file-too-large") {
+					setError(`File too large (max ${maxSizeMB}MB)`);
+				} else if (errorCode === "file-invalid-type") {
+					setError(`File must be in ${accept} format`);
+				} else {
+					setError(rejection?.errors[0]?.message || "Invalid file");
+				}
+				setState("error");
+				return;
+			}
 
-	const handleDragLeave = (e: React.DragEvent<HTMLButtonElement>) => {
-		e.preventDefault();
-		e.stopPropagation();
-		if (disabled) return;
+			// Process accepted file
+			const selectedFile = acceptedFiles[0];
+			if (selectedFile) {
+				processFile(selectedFile);
+			}
+		},
+		[accept, maxSizeMB, processFile],
+	);
 
-		dragCountRef.current--;
-		if (dragCountRef.current === 0) {
-			setState((prev) => (prev === "drag-over" ? "idle" : prev));
-		}
-	};
-
-	const handleDragOver = (e: React.DragEvent<HTMLButtonElement>) => {
-		e.preventDefault();
-		e.stopPropagation();
-	};
-
-	const handleDrop = (e: React.DragEvent<HTMLButtonElement>) => {
-		e.preventDefault();
-		e.stopPropagation();
-		dragCountRef.current = 0;
-
-		if (disabled) return;
-
-		const droppedFile = e.dataTransfer.files[0];
-		if (droppedFile) {
-			processFile(droppedFile);
-		} else {
-			setState("idle");
-		}
-	};
-
-	const handleClick = () => {
-		if (!disabled) {
-			inputRef.current?.click();
-		}
-	};
-
-	const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		const selectedFile = e.target.files?.[0];
-		if (selectedFile) {
-			processFile(selectedFile);
-		}
-	};
-
-	const handleReset = () => {
+	const handleReset = useCallback(() => {
 		setFile(null);
 		setError(null);
 		setState("idle");
-		if (inputRef.current) {
-			inputRef.current.value = "";
-		}
-	};
-
-	useEffect(() => {
-		return () => {
-			dragCountRef.current = 0;
-		};
 	}, []);
+
+	const { getRootProps, getInputProps, isDragActive } = useDropzone({
+		onDrop,
+		accept: parseAcceptString(accept),
+		maxSize: maxSizeBytes,
+		maxFiles: 1,
+		disabled: disabled || state === "processing",
+		noClick: state === "success" || state === "error",
+	});
 
 	const renderContent = () => {
 		if (state === "processing") {
@@ -302,19 +293,19 @@ export function FileDropZone({
 		}
 		return (
 			<IdleContent
-				isDragOver={state === "drag-over"}
+				isDragActive={isDragActive}
 				maxSizeMB={maxSizeMB}
 				idleText={idleText}
 			/>
 		);
 	};
 
-	const buttonClassName = cn(
+	const containerClassName = cn(
 		"relative flex w-full flex-col items-center justify-center rounded-xl border-2 border-dashed p-6 text-center transition-all duration-200 sm:p-8",
 		"cursor-pointer hover:border-primary/50 hover:bg-primary/5",
 		"focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-		state === "idle" && "border-muted-foreground/25",
-		state === "drag-over" && "scale-[1.02] border-primary bg-primary/10",
+		state === "idle" && !isDragActive && "border-muted-foreground/25",
+		isDragActive && "scale-[1.02] border-primary bg-primary/10",
 		state === "processing" && "border-primary/50 bg-primary/5",
 		state === "success" && "border-green-500/50 bg-green-500/5",
 		state === "error" && "border-destructive/50 bg-destructive/5",
@@ -323,27 +314,14 @@ export function FileDropZone({
 
 	return (
 		<div className={cn("space-y-4", className)}>
-			<button
-				type="button"
-				onDragEnter={handleDragEnter}
-				onDragLeave={handleDragLeave}
-				onDragOver={handleDragOver}
-				onDrop={handleDrop}
-				onClick={handleClick}
-				disabled={disabled}
-				className={buttonClassName}
+			<div
+				{...getRootProps()}
+				data-slot="file-drop-zone"
+				className={containerClassName}
 			>
-				<input
-					ref={inputRef}
-					type="file"
-					accept={accept}
-					onChange={handleInputChange}
-					disabled={disabled}
-					className="hidden"
-					aria-label="Select a file"
-				/>
+				<input {...getInputProps()} aria-label="Select a file" />
 				{renderContent()}
-			</button>
+			</div>
 
 			{state === "success" && previewContent}
 		</div>

@@ -10,6 +10,7 @@ import {
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
+	Loader,
 	Select,
 	SelectContent,
 	SelectItem,
@@ -112,7 +113,7 @@ export function MoveTaskDialog({
 				<div className="py-4">
 					{isLoadingTaskLists ? (
 						<div className="flex items-center justify-center py-8">
-							<Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+							<Loader size="md" />
 						</div>
 					) : !moveDestinations || moveDestinations.length === 0 ? (
 						<div className="flex flex-col items-center justify-center gap-2 py-8 text-center">

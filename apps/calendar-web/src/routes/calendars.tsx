@@ -1,3 +1,4 @@
+import { Button } from "@appstandard/ui";
 import { createFileRoute, stripSearchParams } from "@tanstack/react-router";
 import { zodValidator } from "@tanstack/zod-adapter";
 import {
@@ -26,13 +27,13 @@ export const Route = createFileRoute("/calendars")({
 						{error?.message ||
 							"An unexpected error occurred. Please try again."}
 					</p>
-					<button
+					<Button
 						type="button"
 						onClick={() => window.location.reload()}
-						className="mt-4 rounded-md bg-primary px-4 py-2 font-medium text-primary-foreground text-sm hover:bg-primary/90"
+						className="mt-4"
 					>
 						Reload page
-					</button>
+					</Button>
 				</div>
 			</div>
 		);

@@ -9,10 +9,11 @@ import {
 	CardDescription,
 	CardHeader,
 	CardTitle,
+	Loader,
 } from "@appstandard/ui";
 import { useMutation } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { CheckCircle2, Loader2, XCircle } from "lucide-react";
+import { CheckCircle2, XCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { trpc } from "@/utils/trpc";
@@ -72,7 +73,7 @@ function AcceptInvitationComponent() {
 					<CardContent>
 						{acceptMutation.isPending && (
 							<div className="flex flex-col items-center justify-center py-8">
-								<Loader2 className="mb-4 h-12 w-12 animate-spin text-primary" />
+								<Loader size="2xl" className="mb-4" />
 								<p className="text-muted-foreground">Accepting invitation...</p>
 							</div>
 						)}

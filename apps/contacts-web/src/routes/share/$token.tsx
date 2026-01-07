@@ -6,6 +6,7 @@ import {
 	CardDescription,
 	CardHeader,
 	CardTitle,
+	Loader,
 } from "@appstandard/ui";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
@@ -179,7 +180,7 @@ function ShareLoadingView() {
 	return (
 		<div className="relative min-h-screen">
 			<div className="container mx-auto flex min-h-screen max-w-lg flex-col items-center justify-center px-4 py-6 sm:py-10">
-				<Loader2 className="h-10 w-10 animate-spin text-primary" />
+				<Loader size="xl" />
 				<p className="mt-4 text-muted-foreground">Loading...</p>
 			</div>
 		</div>

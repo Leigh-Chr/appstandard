@@ -1,11 +1,6 @@
-import { cn } from "@appstandard/react-utils";
 import {
-	Button,
-	Input,
+	ColorPicker,
 	Label,
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
 	RadioGroup,
 	RadioGroupItem,
 	Select,
@@ -15,14 +10,7 @@ import {
 	SelectValue,
 	TagInput,
 } from "@appstandard/ui";
-import {
-	AlertCircle,
-	Check,
-	CheckCircle2,
-	Circle,
-	Palette,
-} from "lucide-react";
-import { useState } from "react";
+import { AlertCircle, CheckCircle2, Circle } from "lucide-react";
 import type { EventFormData } from "@/lib/event-form-types";
 import { FIELD_LIMITS } from "@/lib/field-limits";
 
@@ -30,82 +18,6 @@ interface MetadataSectionProps {
 	formData: EventFormData;
 	onChange: (data: Partial<EventFormData>) => void;
 	isSubmitting: boolean;
-}
-
-/**
- * Color picker popover component with predefined colors
- */
-function ColorPickerPopover({
-	value,
-	onChange,
-	disabled,
-}: {
-	value?: string;
-	onChange: (color: string) => void;
-	disabled?: boolean;
-}) {
-	const [open, setOpen] = useState(false);
-
-	const colors = [
-		{ name: "Solar Yellow", value: "#D4A017" },
-		{ name: "Orange", value: "#F97316" },
-		{ name: "Red", value: "#EF4444" },
-		{ name: "Yellow", value: "#EAB308" },
-		{ name: "Green", value: "#22C55E" },
-		{ name: "Blue", value: "#3B82F6" },
-		{ name: "Purple", value: "#8B5CF6" },
-		{ name: "Pink", value: "#EC4899" },
-		{ name: "Gray", value: "#6B7280" },
-		{ name: "Black", value: "#000000" },
-	];
-
-	return (
-		<Popover open={open} onOpenChange={setOpen}>
-			<PopoverTrigger asChild>
-				<Button
-					type="button"
-					variant="outline"
-					className="w-auto"
-					disabled={disabled}
-					aria-label="Select a predefined color"
-				>
-					<Palette className="mr-2 h-4 w-4" />
-					Colors
-				</Button>
-			</PopoverTrigger>
-			<PopoverContent className="w-[calc(100vw-2rem)] max-w-xs sm:w-64">
-				<div className="space-y-2">
-					<Label className="font-medium text-xs">Predefined colors</Label>
-					<div className="grid grid-cols-4 gap-2 sm:grid-cols-6">
-						{colors.map((color) => (
-							<button
-								key={color.value}
-								type="button"
-								onClick={() => {
-									onChange(color.value);
-									setOpen(false);
-								}}
-								disabled={disabled}
-								className={cn(
-									"h-10 min-h-[44px] w-10 rounded-md border-2 transition-all hover:scale-110 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:h-8 sm:min-h-0 sm:w-8",
-									value === color.value
-										? "border-foreground ring-2 ring-offset-2"
-										: "border-muted",
-								)}
-								style={{ backgroundColor: color.value }}
-								aria-label={color.name}
-								title={color.name}
-							>
-								{value === color.value && (
-									<Check className="m-auto h-4 w-4 text-white drop-shadow-md" />
-								)}
-							</button>
-						))}
-					</div>
-				</div>
-			</PopoverContent>
-		</Popover>
-	);
 }
 
 /**
@@ -242,45 +154,12 @@ export function MetadataSection({
 					maxTotalLength={500}
 				/>
 
-				<div className="space-y-2">
-					<Label htmlFor="color">Display color</Label>
-					<div className="flex flex-wrap gap-2">
-						<ColorPickerPopover
-							value={formData.color}
-							onChange={(color) => onChange({ color })}
-							disabled={isSubmitting}
-						/>
-						<Input
-							id="color"
-							type="color"
-							value={formData.color || "#000000"}
-							onChange={(e) =>
-								onChange({ color: e.target.value.toUpperCase() })
-							}
-							disabled={isSubmitting}
-							className="h-10 w-16 cursor-pointer"
-							aria-label="Custom color picker"
-						/>
-						<Input
-							value={formData.color || ""}
-							onChange={(e) =>
-								onChange({ color: e.target.value.toUpperCase() })
-							}
-							disabled={isSubmitting}
-							placeholder="#FF0000"
-							pattern="^#[0-9A-Fa-f]{6}$"
-							className="min-w-[120px] flex-1"
-							aria-label="Hexadecimal color code"
-						/>
-					</div>
-					<p className="text-muted-foreground text-xs">
-						Choose a color to easily identify this event in your calendar.
-						<span className="mt-1 block">
-							Use predefined colors, the visual picker, or enter a hexadecimal
-							code.
-						</span>
-					</p>
-				</div>
+				<ColorPicker
+					value={formData.color || null}
+					onChange={(color) => onChange({ color: color || undefined })}
+					disabled={isSubmitting}
+					label="Display color"
+				/>
 			</div>
 
 			{/* Privacy metadata */}

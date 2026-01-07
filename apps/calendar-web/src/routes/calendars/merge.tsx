@@ -193,13 +193,13 @@ function MergeCalendarsComponent() {
 												checked={selectedIds.has(calendar.id)}
 												onCheckedChange={() => handleToggle(calendar.id)}
 											/>
-											<label
+											<Label
 												htmlFor={calendar.id}
-												className="flex-1 cursor-pointer text-sm"
+												className="flex-1 cursor-pointer font-normal text-sm"
 											>
 												{calendar.name} ({calendar.eventCount} event
 												{calendar.eventCount !== 1 ? "s" : ""})
-											</label>
+											</Label>
 										</div>
 									))
 								)}
@@ -226,12 +226,12 @@ function MergeCalendarsComponent() {
 								}}
 								disabled={mergeMutation.isPending}
 							/>
-							<label
+							<Label
 								htmlFor="removeDuplicates"
-								className="cursor-pointer text-sm"
+								className="cursor-pointer font-normal text-sm"
 							>
 								Remove duplicates (same title + same times)
-							</label>
+							</Label>
 						</div>
 
 						<div className="flex gap-2">

@@ -159,13 +159,13 @@ function MergeTaskListsComponent() {
 													checked={selectedIds.has(list.id)}
 													onCheckedChange={() => handleToggle(list.id)}
 												/>
-												<label
+												<Label
 													htmlFor={list.id}
-													className="flex-1 cursor-pointer text-sm"
+													className="flex-1 cursor-pointer font-normal text-sm"
 												>
 													{list.name} ({list.taskCount ?? 0} task
 													{(list.taskCount ?? 0) !== 1 ? "s" : ""})
-												</label>
+												</Label>
 											</div>
 										),
 									)
@@ -193,12 +193,12 @@ function MergeTaskListsComponent() {
 								}}
 								disabled={mergeMutation.isPending}
 							/>
-							<label
+							<Label
 								htmlFor="removeDuplicates"
-								className="cursor-pointer text-sm"
+								className="cursor-pointer font-normal text-sm"
 							>
 								Remove duplicates (same title + same due date)
-							</label>
+							</Label>
 						</div>
 
 						<div className="flex gap-2">

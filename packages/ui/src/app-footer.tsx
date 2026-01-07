@@ -12,7 +12,7 @@ export function AppFooter() {
 	const currentYear = new Date().getFullYear();
 
 	return (
-		<footer className="border-t bg-muted/30">
+		<footer data-slot="app-footer" className="border-t bg-muted/30">
 			<div className="container mx-auto px-4 py-8">
 				<div className="grid grid-cols-1 gap-8 md:grid-cols-3">
 					{/* Brand section */}

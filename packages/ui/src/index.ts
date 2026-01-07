@@ -93,8 +93,16 @@ export { Badge } from "./badge";
 // Breadcrumb
 export {
 	Breadcrumb,
+	// Primitives for custom usage
+	BreadcrumbEllipsis,
 	type BreadcrumbItem,
+	BreadcrumbLink,
+	BreadcrumbList,
+	BreadcrumbListItem,
+	BreadcrumbPage,
 	type BreadcrumbProps,
+	BreadcrumbRoot,
+	BreadcrumbSeparator,
 } from "./breadcrumb";
 // Button
 export { Button, buttonVariants } from "./button";
@@ -111,6 +119,12 @@ export {
 } from "./card";
 // Checkbox
 export { Checkbox } from "./checkbox";
+// Collapsible
+export {
+	Collapsible,
+	CollapsibleContent,
+	CollapsibleTrigger,
+} from "./collapsible";
 // Collection Management Components
 export {
 	BulkActionsBar,
@@ -301,6 +315,8 @@ export {
 } from "./pwa-update-prompt";
 // Radio Group
 export { RadioGroup, RadioGroupItem } from "./radio-group";
+// Scroll Area
+export { ScrollArea, ScrollBar } from "./scroll-area";
 // Select
 export {
 	Select,
@@ -309,8 +325,12 @@ export {
 	SelectTrigger,
 	SelectValue,
 } from "./select";
+// Separator
+export { Separator } from "./separator";
 // Skeleton
 export { Skeleton } from "./skeleton";
+// Slider
+export { Slider } from "./slider";
 // Sonner (Toast)
 export { Toaster } from "./sonner";
 // Switch

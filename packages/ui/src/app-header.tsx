@@ -101,7 +101,10 @@ export function AppHeader({
 	const Icon = config.appIcon;
 
 	return (
-		<header className="header-glow sticky top-0 z-50 border-b bg-background/95 backdrop-blur-md supports-[backdrop-filter]:bg-background/80">
+		<header
+			data-slot="app-header"
+			className="header-glow sticky top-0 z-50 border-b bg-background/95 backdrop-blur-md supports-[backdrop-filter]:bg-background/80"
+		>
 			<div className="container flex items-center justify-between px-4 py-3">
 				<Link
 					to="/"

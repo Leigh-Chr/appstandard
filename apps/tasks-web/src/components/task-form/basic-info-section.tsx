@@ -13,6 +13,7 @@ import {
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
+	Slider,
 	Textarea,
 } from "@appstandard/ui";
 import { Flag, Percent } from "lucide-react";
@@ -179,16 +180,15 @@ export function BasicInfoSection({
 					</span>
 				</div>
 				<Progress value={percentComplete} className="h-2" />
-				<input
-					type="range"
+				<Slider
 					id="percentComplete"
-					min="0"
-					max="100"
-					step="5"
-					value={percentComplete}
-					onChange={(e) => onPercentCompleteChange(Number(e.target.value))}
-					className="w-full"
+					min={0}
+					max={100}
+					step={5}
+					value={[percentComplete ?? 0]}
+					onValueChange={(values) => onPercentCompleteChange(values[0] ?? 0)}
 					disabled={isSubmitting}
+					className="w-full"
 				/>
 			</div>
 		</div>

@@ -1,6 +1,12 @@
+/**
+ * ColorPicker - Color selection component
+ * Built with react-colorful for accessible, lightweight color picking
+ */
+
 import { cn } from "@appstandard/react-utils";
 import { Check, Palette } from "lucide-react";
-import { useState } from "react";
+import { useCallback, useState } from "react";
+import { HexColorPicker } from "react-colorful";
 import { Button } from "./button";
 import { Input } from "./input";
 import { Label } from "./label";
@@ -28,7 +34,8 @@ interface ColorPickerProps {
 }
 
 /**
- * Color picker component with predefined colors and optional custom input
+ * Color picker component with predefined colors and full spectrum picker
+ * Uses react-colorful for the color spectrum picker
  */
 export function ColorPicker({
 	value,
@@ -38,6 +45,23 @@ export function ColorPicker({
 	label = "Color",
 }: ColorPickerProps) {
 	const [open, setOpen] = useState(false);
+
+	const handleColorChange = useCallback(
+		(color: string) => {
+			onChange(color.toUpperCase());
+		},
+		[onChange],
+	);
+
+	const handleInputChange = useCallback(
+		(e: React.ChangeEvent<HTMLInputElement>) => {
+			const val = e.target.value.toUpperCase();
+			if (val === "" || /^#[0-9A-F]{0,6}$/i.test(val)) {
+				onChange(val || null);
+			}
+		},
+		[onChange],
+	);
 
 	return (
 		<div className="space-y-2">
@@ -50,7 +74,7 @@ export function ColorPicker({
 							variant="outline"
 							className="w-auto"
 							disabled={disabled}
-							aria-label="Select a predefined color"
+							aria-label="Select a color"
 						>
 							{value ? (
 								<div
@@ -63,35 +87,69 @@ export function ColorPicker({
 							{value || "Color"}
 						</Button>
 					</PopoverTrigger>
-					<PopoverContent className="w-[calc(100vw-2rem)] max-w-xs sm:w-64">
-						<div className="space-y-3">
-							<Label className="font-medium text-xs">Predefined colors</Label>
-							<div className="grid grid-cols-4 gap-2 sm:grid-cols-5">
-								{PREDEFINED_COLORS.map((color) => (
-									<button
-										key={color.value}
-										type="button"
-										onClick={() => {
-											onChange(color.value);
-											setOpen(false);
-										}}
-										disabled={disabled}
-										className={cn(
-											"h-10 min-h-[44px] w-10 rounded-md border-2 transition-all hover:scale-110 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:h-8 sm:min-h-0 sm:w-8",
-											value === color.value
-												? "border-foreground ring-2 ring-offset-2"
-												: "border-muted",
-										)}
-										style={{ backgroundColor: color.value }}
-										aria-label={color.name}
-										title={color.name}
-									>
-										{value === color.value && (
-											<Check className="m-auto h-4 w-4 text-white drop-shadow-md" />
-										)}
-									</button>
-								))}
+					<PopoverContent
+						className="w-[calc(100vw-2rem)] max-w-xs p-4 sm:w-64"
+						align="start"
+					>
+						<div className="space-y-4">
+							{/* Predefined colors */}
+							<div className="space-y-2">
+								<Label className="font-medium text-xs">Predefined colors</Label>
+								<div className="grid grid-cols-5 gap-2">
+									{PREDEFINED_COLORS.map((color) => (
+										<button
+											key={color.value}
+											type="button"
+											onClick={() => {
+												onChange(color.value);
+												setOpen(false);
+											}}
+											disabled={disabled}
+											className={cn(
+												"h-8 w-8 rounded-md border-2 transition-all hover:scale-110 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+												value === color.value
+													? "border-foreground ring-2 ring-offset-2"
+													: "border-muted",
+											)}
+											style={{ backgroundColor: color.value }}
+											aria-label={color.name}
+											title={color.name}
+										>
+											{value === color.value && (
+												<Check className="m-auto h-4 w-4 text-white drop-shadow-md" />
+											)}
+										</button>
+									))}
+								</div>
 							</div>
+
+							{/* Full spectrum picker */}
+							<div className="space-y-2">
+								<Label className="font-medium text-xs">Custom color</Label>
+								<HexColorPicker
+									color={value || "#3B82F6"}
+									onChange={handleColorChange}
+									className="!w-full"
+								/>
+							</div>
+
+							{/* Hex input */}
+							<div className="flex items-center gap-2">
+								<div
+									className="h-9 w-9 shrink-0 rounded-md border"
+									style={{ backgroundColor: value || "#3B82F6" }}
+								/>
+								<Input
+									value={value || ""}
+									onChange={handleInputChange}
+									disabled={disabled}
+									placeholder="#3B82F6"
+									className="font-mono text-sm"
+									aria-label="Hexadecimal color code"
+								/>
+							</div>
+
+							{/* Clear button */}
 							<Button
 								variant="ghost"
 								size="sm"
@@ -106,30 +164,16 @@ export function ColorPicker({
 						</div>
 					</PopoverContent>
 				</Popover>
+
 				{showInput && (
-					<>
-						<Input
-							type="color"
-							value={value || "#3B82F6"}
-							onChange={(e) => onChange(e.target.value.toUpperCase())}
-							disabled={disabled}
-							className="h-10 w-14 cursor-pointer p-1"
-							aria-label="Custom color picker"
-						/>
-						<Input
-							value={value || ""}
-							onChange={(e) => {
-								const val = e.target.value.toUpperCase();
-								if (val === "" || /^#[0-9A-F]{0,6}$/i.test(val)) {
-									onChange(val || null);
-								}
-							}}
-							disabled={disabled}
-							placeholder="#3B82F6"
-							className="w-24"
-							aria-label="Hexadecimal color code"
-						/>
-					</>
+					<Input
+						value={value || ""}
+						onChange={handleInputChange}
+						disabled={disabled}
+						placeholder="#3B82F6"
+						className="w-24 font-mono"
+						aria-label="Hexadecimal color code"
+					/>
 				)}
 			</div>
 		</div>
@@ -139,7 +183,7 @@ export function ColorPicker({
 /**
  * Compact color indicator for displaying calendar color
  */
-function ColorIndicator({
+export function ColorIndicator({
 	color,
 	size = "md",
 	className,
@@ -158,6 +202,7 @@ function ColorIndicator({
 
 	return (
 		<div
+			data-slot="color-indicator"
 			className={cn(
 				"rounded-full border border-border/50",
 				sizeClasses[size],

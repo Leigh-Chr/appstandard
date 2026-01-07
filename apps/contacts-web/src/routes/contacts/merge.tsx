@@ -159,13 +159,13 @@ function MergeAddressBooksComponent() {
 												checked={selectedIds.has(book.id)}
 												onCheckedChange={() => handleToggle(book.id)}
 											/>
-											<label
+											<Label
 												htmlFor={book.id}
-												className="flex-1 cursor-pointer text-sm"
+												className="flex-1 cursor-pointer font-normal text-sm"
 											>
 												{book.name} ({book.contactCount ?? 0} contact
 												{(book.contactCount ?? 0) !== 1 ? "s" : ""})
-											</label>
+											</Label>
 										</div>
 									))
 								)}
@@ -192,12 +192,12 @@ function MergeAddressBooksComponent() {
 								}}
 								disabled={mergeMutation.isPending}
 							/>
-							<label
+							<Label
 								htmlFor="removeDuplicates"
-								className="cursor-pointer text-sm"
+								className="cursor-pointer font-normal text-sm"
 							>
 								Remove duplicates (same name + same email)
-							</label>
+							</Label>
 						</div>
 
 						<div className="flex gap-2">
