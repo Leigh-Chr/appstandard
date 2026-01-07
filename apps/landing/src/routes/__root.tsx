@@ -73,6 +73,20 @@ export const Route = createRootRoute({
 			{ name: "theme-color", content: "#18181b" },
 		],
 		links: [{ rel: "canonical", href: BASE_URL }],
+		scripts: [
+			{
+				type: "application/ld+json",
+				children: JSON.stringify({
+					"@context": "https://schema.org",
+					"@type": "Organization",
+					name: "AppStandard",
+					url: BASE_URL,
+					description:
+						"Open-source productivity apps for calendars, contacts, and tasks. Free forever, privacy first.",
+					sameAs: [GITHUB_URL],
+				}),
+			},
+		],
 	}),
 });
 

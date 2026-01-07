@@ -139,6 +139,39 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
 				rel: "apple-touch-icon",
 				href: "/apple-touch-icon-180x180.png",
 			},
+			// Preconnect to API server for faster tRPC calls
+			{
+				rel: "preconnect",
+				href: "https://contacts-api.appstandard.io",
+			},
+		],
+		scripts: [
+			{
+				type: "application/ld+json",
+				children: JSON.stringify({
+					"@context": "https://schema.org",
+					"@type": "WebApplication",
+					name: "AppStandard Contacts",
+					description:
+						"Free, open-source contact manager. Import, edit, organize your vCard files in seconds.",
+					url: BASE_URL,
+					applicationCategory: "ProductivityApplication",
+					operatingSystem: "Web",
+					offers: {
+						"@type": "Offer",
+						price: "0",
+						priceCurrency: "USD",
+					},
+					featureList: [
+						"Import vCard/VCF files",
+						"Create and edit contacts",
+						"Organize with groups",
+						"Export to vCard format",
+						"Works offline (PWA)",
+						"No account required",
+					],
+				}),
+			},
 		],
 	}),
 });

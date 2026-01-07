@@ -1,11 +1,9 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import EditProfile from "@/components/edit-profile";
 import { authClient } from "@/lib/auth-client";
 
 const BASE_URL = "https://contacts.appstandard.app";
 
 export const Route = createFileRoute("/edit-profile")({
-	component: EditProfile,
 	head: () => ({
 		meta: [
 			{ title: "Edit Profile - AppStandard Contacts" },

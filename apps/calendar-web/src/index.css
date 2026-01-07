@@ -558,12 +558,12 @@ body {
 	font-weight: 700;
 	-webkit-text-stroke: 2.5px var(--primary);
 	color: transparent;
-	opacity: 0.4;
+	opacity: 0.6;
 	transition: opacity 0.3s ease;
 }
 
 .group:hover .step-number {
-	opacity: 0.6;
+	opacity: 0.8;
 }
 
 /* Header glow */

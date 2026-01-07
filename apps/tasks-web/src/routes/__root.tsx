@@ -139,6 +139,38 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
 				rel: "apple-touch-icon",
 				href: "/apple-touch-icon-180x180.png",
 			},
+			// Preconnect to API server for faster tRPC calls
+			{
+				rel: "preconnect",
+				href: "https://tasks-api.appstandard.io",
+			},
+		],
+		scripts: [
+			{
+				type: "application/ld+json",
+				children: JSON.stringify({
+					"@context": "https://schema.org",
+					"@type": "WebApplication",
+					name: "AppStandard Tasks",
+					description:
+						"Free, open-source task manager. Create, organize, and track your todos in seconds.",
+					url: BASE_URL,
+					applicationCategory: "ProductivityApplication",
+					operatingSystem: "Web",
+					offers: {
+						"@type": "Offer",
+						price: "0",
+						priceCurrency: "USD",
+					},
+					featureList: [
+						"Create and organize tasks",
+						"Track task progress",
+						"Set due dates and priorities",
+						"Works offline (PWA)",
+						"No account required",
+					],
+				}),
+			},
 		],
 	}),
 });

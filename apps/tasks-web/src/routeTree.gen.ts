@@ -68,17 +68,19 @@ const EditProfileRoute = EditProfileRouteImport.update({
   id: '/edit-profile',
   path: '/edit-profile',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any).lazy(() => import('./routes/edit-profile.lazy').then((d) => d.Route))
 const DeleteAccountRoute = DeleteAccountRouteImport.update({
   id: '/delete-account',
   path: '/delete-account',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any).lazy(() =>
+  import('./routes/delete-account.lazy').then((d) => d.Route),
+)
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any).lazy(() => import('./routes/dashboard.lazy').then((d) => d.Route))
 const CheckEmailRoute = CheckEmailRouteImport.update({
   id: '/check-email',
   path: '/check-email',
@@ -88,12 +90,14 @@ const ChangePasswordRoute = ChangePasswordRouteImport.update({
   id: '/change-password',
   path: '/change-password',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any).lazy(() =>
+  import('./routes/change-password.lazy').then((d) => d.Route),
+)
 const AccountRoute = AccountRouteImport.update({
   id: '/account',
   path: '/account',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any).lazy(() => import('./routes/account.lazy').then((d) => d.Route))
 const R404Route = R404RouteImport.update({
   id: '/404',
   path: '/404',
@@ -118,7 +122,7 @@ const TasksMergeRoute = TasksMergeRouteImport.update({
   id: '/merge',
   path: '/merge',
   getParentRoute: () => TasksRoute,
-} as any)
+} as any).lazy(() => import('./routes/tasks/merge.lazy').then((d) => d.Route))
 const TasksImportRoute = TasksImportRouteImport.update({
   id: '/import',
   path: '/import',
@@ -128,7 +132,9 @@ const TasksTaskListIdRoute = TasksTaskListIdRouteImport.update({
   id: '/$taskListId',
   path: '/$taskListId',
   getParentRoute: () => TasksRoute,
-} as any)
+} as any).lazy(() =>
+  import('./routes/tasks/$taskListId.lazy').then((d) => d.Route),
+)
 const ShareTokenRoute = ShareTokenRouteImport.update({
   id: '/share/$token',
   path: '/share/$token',

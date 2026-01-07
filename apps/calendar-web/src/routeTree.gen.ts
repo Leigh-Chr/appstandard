@@ -63,12 +63,14 @@ const EditProfileRoute = EditProfileRouteImport.update({
   id: '/edit-profile',
   path: '/edit-profile',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any).lazy(() => import('./routes/edit-profile.lazy').then((d) => d.Route))
 const DeleteAccountRoute = DeleteAccountRouteImport.update({
   id: '/delete-account',
   path: '/delete-account',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any).lazy(() =>
+  import('./routes/delete-account.lazy').then((d) => d.Route),
+)
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -83,7 +85,9 @@ const ChangePasswordRoute = ChangePasswordRouteImport.update({
   id: '/change-password',
   path: '/change-password',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any).lazy(() =>
+  import('./routes/change-password.lazy').then((d) => d.Route),
+)
 const CalendarsRoute = CalendarsRouteImport.update({
   id: '/calendars',
   path: '/calendars',
@@ -93,7 +97,7 @@ const AccountRoute = AccountRouteImport.update({
   id: '/account',
   path: '/account',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any).lazy(() => import('./routes/account.lazy').then((d) => d.Route))
 const R404Route = R404RouteImport.update({
   id: '/404',
   path: '/404',
@@ -118,7 +122,9 @@ const CalendarsMergeRoute = CalendarsMergeRouteImport.update({
   id: '/merge',
   path: '/merge',
   getParentRoute: () => CalendarsRoute,
-} as any)
+} as any).lazy(() =>
+  import('./routes/calendars/merge.lazy').then((d) => d.Route),
+)
 const CalendarsImportRoute = CalendarsImportRouteImport.update({
   id: '/import',
   path: '/import',

@@ -3,6 +3,7 @@ import { sentryVitePlugin } from "@sentry/vite-plugin";
 import tailwindcss from "@tailwindcss/vite";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import react from "@vitejs/plugin-react";
+import { visualizer } from "rollup-plugin-visualizer";
 import { defineConfig, loadEnv } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
 
@@ -177,34 +178,7 @@ export default defineConfig(({ mode }) => {
 								networkTimeoutSeconds: 10,
 							},
 						},
-						{
-							urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
-							handler: "CacheFirst",
-							options: {
-								cacheName: "google-fonts-cache",
-								expiration: {
-									maxEntries: 10,
-									maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
-								},
-								cacheableResponse: {
-									statuses: [0, 200],
-								},
-							},
-						},
-						{
-							urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
-							handler: "CacheFirst",
-							options: {
-								cacheName: "gstatic-fonts-cache",
-								expiration: {
-									maxEntries: 10,
-									maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
-								},
-								cacheableResponse: {
-									statuses: [0, 200],
-								},
-							},
-						},
+						// Note: Fonts are self-hosted via @fontsource-variable, no external font caching needed
 					],
 				},
 			}),
@@ -219,7 +193,15 @@ export default defineConfig(({ mode }) => {
 				// Disable plugin if no auth token (local development)
 				disable: !env["SENTRY_AUTH_TOKEN"],
 			}),
-		],
+			// Bundle analyzer (run with ANALYZE=true bun run build)
+			env["ANALYZE"] === "true" &&
+				visualizer({
+					open: true,
+					filename: "dist/stats.html",
+					gzipSize: true,
+					brotliSize: true,
+				}),
+		].filter(Boolean),
 		resolve: {
 			alias: {
 				"@": path.resolve(__dirname, "./src"),

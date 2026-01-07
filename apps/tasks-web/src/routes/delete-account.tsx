@@ -1,11 +1,9 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import DeleteAccount from "@/components/delete-account";
 import { authClient } from "@/lib/auth-client";
 
 const BASE_URL = "https://tasks.appstandard.app";
 
 export const Route = createFileRoute("/delete-account")({
-	component: DeleteAccount,
 	head: () => ({
 		meta: [
 			{ title: "Delete Account - AppStandard Tasks" },

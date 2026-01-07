@@ -118,6 +118,39 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
 				rel: "apple-touch-icon",
 				href: "/apple-touch-icon-180x180.png",
 			},
+			// Preconnect to API server for faster tRPC calls
+			{
+				rel: "preconnect",
+				href: "https://calendar-api.appstandard.io",
+			},
+		],
+		scripts: [
+			{
+				type: "application/ld+json",
+				children: JSON.stringify({
+					"@context": "https://schema.org",
+					"@type": "WebApplication",
+					name: "AppStandard Calendar",
+					description:
+						"Free, open-source calendar manager. Import, edit, merge your calendar files in seconds.",
+					url: BASE_URL,
+					applicationCategory: "ProductivityApplication",
+					operatingSystem: "Web",
+					offers: {
+						"@type": "Offer",
+						price: "0",
+						priceCurrency: "USD",
+					},
+					featureList: [
+						"Import ICS/iCal files",
+						"Create and edit calendar events",
+						"Merge multiple calendars",
+						"Export to ICS format",
+						"Works offline (PWA)",
+						"No account required",
+					],
+				}),
+			},
 		],
 	}),
 });

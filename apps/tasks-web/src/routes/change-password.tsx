@@ -1,11 +1,9 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import ChangePassword from "@/components/change-password";
 import { authClient } from "@/lib/auth-client";
 
 const BASE_URL = "https://tasks.appstandard.app";
 
 export const Route = createFileRoute("/change-password")({
-	component: ChangePassword,
 	head: () => ({
 		meta: [
 			{ title: "Change Password - AppStandard Tasks" },

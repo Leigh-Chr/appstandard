@@ -63,17 +63,19 @@ const EditProfileRoute = EditProfileRouteImport.update({
   id: '/edit-profile',
   path: '/edit-profile',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any).lazy(() => import('./routes/edit-profile.lazy').then((d) => d.Route))
 const DeleteAccountRoute = DeleteAccountRouteImport.update({
   id: '/delete-account',
   path: '/delete-account',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any).lazy(() =>
+  import('./routes/delete-account.lazy').then((d) => d.Route),
+)
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any).lazy(() => import('./routes/dashboard.lazy').then((d) => d.Route))
 const ContactsRoute = ContactsRouteImport.update({
   id: '/contacts',
   path: '/contacts',
@@ -88,12 +90,14 @@ const ChangePasswordRoute = ChangePasswordRouteImport.update({
   id: '/change-password',
   path: '/change-password',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any).lazy(() =>
+  import('./routes/change-password.lazy').then((d) => d.Route),
+)
 const AccountRoute = AccountRouteImport.update({
   id: '/account',
   path: '/account',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any).lazy(() => import('./routes/account.lazy').then((d) => d.Route))
 const R404Route = R404RouteImport.update({
   id: '/404',
   path: '/404',
@@ -123,7 +127,9 @@ const ContactsMergeRoute = ContactsMergeRouteImport.update({
   id: '/merge',
   path: '/merge',
   getParentRoute: () => ContactsRoute,
-} as any)
+} as any).lazy(() =>
+  import('./routes/contacts/merge.lazy').then((d) => d.Route),
+)
 const ContactsImportRoute = ContactsImportRouteImport.update({
   id: '/import',
   path: '/import',
@@ -133,7 +139,9 @@ const ContactsAddressBookIdRoute = ContactsAddressBookIdRouteImport.update({
   id: '/$addressBookId',
   path: '/$addressBookId',
   getParentRoute: () => ContactsRoute,
-} as any)
+} as any).lazy(() =>
+  import('./routes/contacts/$addressBookId.lazy').then((d) => d.Route),
+)
 const GroupsGroupIdAcceptInvitationRoute =
   GroupsGroupIdAcceptInvitationRouteImport.update({
     id: '/groups/$groupId/accept-invitation',
