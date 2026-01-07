@@ -1,12 +1,7 @@
 name: Deploy
 
 on:
-  workflow_dispatch: # Manual trigger button
-  push:
-    branches: [master]
-    paths-ignore:
-      - "*.md"
-      - "docs/**"
+  workflow_dispatch: # Manual trigger only
 
 jobs:
   deploy:
