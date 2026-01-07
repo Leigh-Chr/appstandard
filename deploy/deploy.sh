@@ -106,7 +106,16 @@ done
 # Run database migrations (inside a container since Bun isn't installed on host)
 log "Running database migrations..."
 
-# Get database credentials from docker-compose environment
+# Source the .env file if it exists (same as docker-compose does)
+# This ensures we use the same credentials as the running containers
+if [[ -f ".env" ]]; then
+    log "Loading credentials from .env file..."
+    set -a  # Export all variables
+    source .env
+    set +a
+fi
+
+# Get database credentials from environment (now potentially loaded from .env)
 # IMPORTANT: defaults must match docker-compose.yml
 DB_USER="${POSTGRES_USER:-appstandard}"
 DB_PASS="${POSTGRES_PASSWORD:-appstandard_secret}"
