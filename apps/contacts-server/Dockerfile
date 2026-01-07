@@ -25,12 +25,12 @@ FROM oven/bun:1.3.5-alpine AS installer
 
 WORKDIR /app
 
-# Copy pruned package.json files (lockfile-relevant files only)
+# Copy pruned package.json files
 COPY --from=pruner /app/out/json/ .
-COPY --from=pruner /app/out/bun.lock ./bun.lock
+# Use original lockfile from build context (turbo prune lockfile may have minor diffs)
+COPY bun.lock ./bun.lock
 
 # Install dependencies with BuildKit cache mount for faster rebuilds
-# Cache is persisted across builds on the same machine
 RUN --mount=type=cache,target=/root/.bun/install/cache \
     bun install --frozen-lockfile
 
@@ -77,7 +77,8 @@ RUN apk add --no-cache curl
 
 # Copy pruned package.json files for production install
 COPY --from=pruner /app/out/json/ .
-COPY --from=pruner /app/out/bun.lock ./bun.lock
+# Use original lockfile from build context
+COPY bun.lock ./bun.lock
 
 # Install production dependencies only with cache mount
 RUN --mount=type=cache,target=/root/.bun/install/cache \
