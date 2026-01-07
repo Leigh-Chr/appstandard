@@ -78,11 +78,11 @@ RUN apk add --no-cache curl
 
 # Copy pruned package.json files for production install
 COPY --from=pruner /app/out/json/ .
-# Use original lockfile from build context
-COPY bun.lock ./bun.lock
+# Use pruned lockfile from turbo (matches pruned package.json files)
+COPY --from=pruner /app/out/bun.lock ./bun.lock
 
-# Install production dependencies only
-RUN bun install --production --ignore-scripts
+# Install production dependencies only (allow lockfile updates for pruned subset)
+RUN bun install --production --ignore-scripts --no-save
 
 # Copy config package (no dist, just tsconfig)
 COPY --chown=bunjs:nodejs --from=builder /app/packages/config ./packages/config
