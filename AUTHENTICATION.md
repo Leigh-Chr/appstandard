@@ -37,9 +37,9 @@ The server exposes Better-Auth endpoints via `/api/auth/*`.
 The client uses `better-auth/react` for authentication. The client is configured in `apps/calendar-web/src/lib/auth-client.ts` with the backend server URL.
 
 **Components**:
-- `SignInForm`: Sign-in form (`apps/calendar-web/src/components/sign-in-form.tsx`)
-- `SignUpForm`: Sign-up form (`apps/calendar-web/src/components/sign-up-form.tsx`)
-- Route `/login`: Sign-in/sign-up page
+- `SignInForm`: Sign-in form (`packages/ui/src/auth/sign-in-form.tsx`)
+- `SignUpForm`: Sign-up form (`packages/ui/src/auth/sign-up-form.tsx`)
+- Route `/login`: Sign-in/sign-up page (`apps/calendar-web/src/routes/login.tsx`)
 
 ## Required Environment Variables
 

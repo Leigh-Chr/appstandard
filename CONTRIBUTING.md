@@ -14,7 +14,7 @@ Thank you for your interest in contributing to AppStandard! This guide will help
 
 ## Code of Conduct
 
-By participating in this project, you agree to maintain a respectful and inclusive environment. Be kind to other contributors.
+By participating in this project, you agree to abide by our [Code of Conduct](CODE_OF_CONDUCT.md). Please read it before contributing.
 
 ## How to Contribute
 
@@ -56,34 +56,6 @@ bun run db:push
 bun run dev
 ```
 
-### Project Structure
-
-```
-appstandard/
-├── apps/
-│   ├── landing/             # Landing page
-│   ├── calendar-web/        # Calendar frontend (React + TanStack Router)
-│   ├── calendar-server/     # Calendar API server (Hono + tRPC)
-│   ├── tasks-web/           # Tasks frontend
-│   ├── tasks-server/        # Tasks API server
-│   ├── contacts-web/        # Contacts frontend
-│   └── contacts-server/     # Contacts API server
-├── packages/
-│   ├── api/                 # Calendar tRPC routers
-│   ├── api-core/            # Shared tRPC infrastructure
-│   ├── auth/                # Better-Auth configuration
-│   ├── config/              # Shared TypeScript configuration
-│   ├── core/                # Calendar business logic and types
-│   ├── db/                  # Prisma schemas
-│   ├── ics-utils/           # ICS parsing/generation
-│   ├── react-utils/         # React hooks and utilities
-│   ├── schemas/             # Calendar Zod validation schemas
-│   ├── server-core/         # Shared server middleware
-│   ├── ui/                  # Shared UI components
-│   ├── appstandard-contacts/  # Contacts packages (api, core, schemas, vcard-utils)
-│   └── appstandard-tasks/     # Tasks packages (api, core, schemas, todo-utils)
-```
-
 ## Development Standards
 
 ### Code Style
@@ -97,60 +69,18 @@ bun run check
 
 ### Naming Conventions
 
-- **Files**: `kebab-case.ts` for files, `PascalCase.tsx` for React components
+- **Files**: `kebab-case.ts`, React components: `PascalCase.tsx`
 - **Variables/Functions**: `camelCase`
 - **Types/Interfaces**: `PascalCase`
 - **Constants**: `SCREAMING_SNAKE_CASE`
 
 ### Commits
 
-Use descriptive commit messages:
-
 ```
-type(scope): short description
+type(scope): description
 
-Optional body with more details
-
-Fixes #123
+Types: feat, fix, docs, style, refactor, test, chore
 ```
-
-Common types:
-- `feat`: New feature
-- `fix`: Bug fix
-- `docs`: Documentation
-- `style`: Formatting (no code change)
-- `refactor`: Refactoring
-- `test`: Add/modify tests
-- `chore`: Maintenance
-
-### TypeScript
-
-- Use explicit types, avoid `any`
-- Prefer `interface` over `type` for objects
-- Use Zod schemas from the `@appstandard/schemas` package for validation
-
-### React - Preventing Hook Errors
-
-**IMPORTANT**: This project uses several measures to prevent "Invalid hook call" and "dispatcher is null" errors:
-
-1. **Vite Configuration** (`apps/calendar-web/vite.config.ts`):
-   - `resolve.dedupe: ["react", "react-dom"]` - Forces a single instance of React
-   - `optimizeDeps.include: ["react", "react-dom"]` - Pre-bundles React
-   - `manualChunks` - Ensures React and ReactDOM are in the same chunk
-
-2. **Root Package.json**:
-   - `overrides` to force React 19.2.0 across the entire workspace
-
-3. **Peer Dependencies**:
-   - All packages with React must declare `react` and `react-dom` in peerDependencies
-
-4. **Biome Rules**:
-   - `useHookAtTopLevel: "error"` - Prevents using hooks outside components
-
-**If you encounter hook errors**:
-- Check that you don't have multiple versions of React installed
-- Check that all React imports use the same instance
-- Restart the development server after modifying dependencies
 
 ### Tests
 

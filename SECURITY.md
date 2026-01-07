@@ -122,21 +122,14 @@ base-uri 'none';
 
 ### User Limitations
 
-To prevent abuse, limits are applied to all users:
+| Feature | Anonymous | Authenticated |
+|---------|-----------|---------------|
+| Collections | 5 | 150 |
+| Items per collection | 250 | 3,000 |
+| Groups | 3 | 100 |
+| Collections per group | 10 | 30 |
 
-**Anonymous users:**
-- Maximum 5 collections (calendars, address books, or task lists)
-- Maximum 250 items per collection
-- Maximum 3 groups
-- Maximum 10 collections per group
-- Automatic deletion after 60 days of inactivity
-
-**Authenticated users:**
-- Maximum 150 collections (calendars, address books, or task lists)
-- Maximum 3,000 items per collection
-- Maximum 100 groups
-- Maximum 30 collections per group
-- No automatic deletion
+Anonymous data is automatically deleted after 60 days of inactivity.
 
 ### Security Logging
 
@@ -147,14 +140,7 @@ The following security events are logged:
 
 ## Deployment Best Practices
 
-See [DEPLOYMENT.md](DEPLOYMENT.md) for production security recommendations:
-
-- [ ] HTTPS required (SSL/TLS certificate)
-- [ ] `CORS_ORIGIN` defined explicitly (no `*`)
-- [ ] `BETTER_AUTH_SECRET` generated securely (min 32 characters)
-- [ ] Environment variables not committed to the repo
-- [ ] `NODE_ENV=production` in production
-- [ ] Reverse proxy configured (nginx, Caddy) with additional security headers
+See [DEPLOYMENT.md](DEPLOYMENT.md) for production security recommendations and configuration.
 
 ### Secret Rotation
 

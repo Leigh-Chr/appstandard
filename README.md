@@ -146,16 +146,14 @@ EMAIL_FROM=noreply@appstandard.io
 VITE_SERVER_URL=http://localhost:3000
 ```
 
-Repeat for Tasks and Contacts with their respective ports (see Development Ports below).
+Repeat for Tasks and Contacts with their respective ports:
 
-### Development Ports
-
-| Application | Frontend | Backend | CORS Origin |
-|-------------|----------|---------|-------------|
-| Landing Page | 3010 | - | - |
-| Calendar | 3001 | 3000 | 3001 |
-| Tasks | 3004 | 3002 | 3004 |
-| Contacts | 3005 | 3003 | 3005 |
+| Application | Frontend | Backend |
+|-------------|----------|---------|
+| Calendar | 3001 | 3000 |
+| Tasks | 3004 | 3002 |
+| Contacts | 3005 | 3003 |
+| Landing | 3010 | - |
 
 ### Starting
 
@@ -209,34 +207,6 @@ docker compose up -d --build
 
 See [DEPLOYMENT.md](./DEPLOYMENT.md) for complete Docker deployment guide.
 
-## Project Structure
-
-```
-appstandard/
-├── apps/
-│   ├── landing/             # Landing page (React + Vite)
-│   ├── calendar-web/        # Calendar frontend (React + TanStack Router)
-│   ├── calendar-server/     # Calendar API server (Hono + tRPC)
-│   ├── tasks-web/           # Tasks frontend (React + TanStack Router)
-│   ├── tasks-server/        # Tasks API server (Hono + tRPC)
-│   ├── contacts-web/        # Contacts frontend (React + TanStack Router)
-│   └── contacts-server/     # Contacts API server (Hono + tRPC)
-├── packages/
-│   ├── api/                 # Calendar tRPC routers
-│   ├── api-core/            # Shared tRPC infrastructure
-│   ├── auth/                # Better-Auth configuration
-│   ├── config/              # Shared TypeScript configuration
-│   ├── core/                # Calendar business logic and types
-│   ├── db/                  # Prisma client and schemas
-│   ├── ics-utils/           # ICS parsing and generation
-│   ├── react-utils/         # React hooks and utilities
-│   ├── schemas/             # Calendar Zod validation schemas
-│   ├── server-core/         # Shared server middleware
-│   ├── ui/                  # Shared UI components
-│   ├── appstandard-contacts/  # Contacts packages (api, core, schemas, vcard-utils)
-│   └── appstandard-tasks/     # Tasks packages (api, core, schemas, todo-utils)
-```
-
 ## User Guide
 
 ### Anonymous Mode (without account)
@@ -262,7 +232,7 @@ appstandard/
 
 | Feature | Anonymous | Authenticated |
 |---------|-----------|---------------|
-| Collections (calendars/address books/task lists) | 5 | 150 |
+| Collections | 5 | 150 |
 | Items per collection | 250 | 3,000 |
 | Groups | 3 | 100 |
 | Collections per group | 10 | 30 |
@@ -280,18 +250,9 @@ See [SECURITY.md](./SECURITY.md) for full security documentation.
 
 To deploy in production, consult the complete guide: [DEPLOYMENT.md](./DEPLOYMENT.md)
 
-### Production Management Scripts
+### Production Management
 
-For managing the application in production, scripts are available in [`scripts/production/`](./scripts/production/):
-
-- **Deployment**: `deploy.sh` - Automated deployment with backup and migrations
-- **Backup & Restore**: `backup.sh` - Database backup and restoration
-- **Rollback**: `rollback.sh` - Revert to a previous version
-- **Monitoring**: `monitor.sh`, `health-check.sh`, `report.sh` - Service health and resource monitoring
-- **Security**: `security-audit.sh` - Security configuration audit
-- **Maintenance**: `cleanup.sh`, `verify-backup.sh` - Cleanup and verification tools
-
-See [`PRODUCTION_COMMANDS.md`](./PRODUCTION_COMMANDS.md) for detailed usage.
+See [`PRODUCTION_COMMANDS.md`](./PRODUCTION_COMMANDS.md) for production scripts documentation.
 
 ### Quick Production Checklist
 
@@ -333,6 +294,7 @@ See [`PRODUCTION_COMMANDS.md`](./PRODUCTION_COMMANDS.md) for detailed usage.
 | [VPS_DEPLOYMENT.md](VPS_DEPLOYMENT.md) | VPS initial setup and deployment guide |
 | [PRODUCTION_COMMANDS.md](PRODUCTION_COMMANDS.md) | Production management scripts guide |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Project contribution guide |
+| [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) | Community code of conduct |
 | [SECURITY.md](SECURITY.md) | Security policy and vulnerability reporting |
 | [AUTHENTICATION.md](AUTHENTICATION.md) | Authentication flow and configuration |
 

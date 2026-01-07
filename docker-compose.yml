@@ -6,7 +6,7 @@
 # IMPORTANT: Memory Management
 # - The deploy.resources.limits only work in Docker Swarm mode (docker stack deploy)
 # - For docker compose, use sequential builds to avoid memory exhaustion
-# - VPS requires 4GB+ swap for parallel builds, see deploy/VPS_SETUP.md
+# - VPS requires 4GB+ swap for parallel builds, see VPS_DEPLOYMENT.md
 #
 # Recommended deployment:
 #   docker compose up -d db redis && sleep 10

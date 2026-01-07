@@ -32,7 +32,29 @@ Complete step-by-step guide to deploy AppStandard on a VPS with Docker Compose.
 3. Note the public IP address
 4. Note the root/SSH credentials
 
-### 1.3 Connect to the VPS
+### 1.3 Configure Swap (Required - 4GB minimum)
+
+Without swap, Docker builds will crash the server when memory is exhausted.
+
+```bash
+# Create 4GB swap file
+fallocate -l 4G /swapfile
+chmod 600 /swapfile
+mkswap /swapfile
+swapon /swapfile
+
+# Make persistent
+echo '/swapfile none swap sw 0 0' >> /etc/fstab
+
+# Set swappiness to 10 (prefer RAM, use swap only when needed)
+echo 'vm.swappiness=10' >> /etc/sysctl.conf
+sysctl -p
+
+# Verify
+free -h
+```
+
+### 1.4 Connect to the VPS
 
 ```bash
 # From your local machine
@@ -199,7 +221,7 @@ chmod 600 .env
 
 ## Step 4: Start Services
 
-> 📖 **Complete details**: See [DEPLOYMENT.md](./DEPLOYMENT.md#deployment-with-docker-recommended) for the complete Docker deployment guide.
+> 📖 **Complete details**: See [DEPLOYMENT.md](./DEPLOYMENT.md#docker-compose-services) for the complete Docker deployment guide.
 
 ### 4.1 Start and Initialize
 
@@ -223,7 +245,7 @@ curl http://localhost:3000/health
 
 ## Step 5: Nginx and SSL Configuration
 
-> 📖 **Detailed configuration**: See [DEPLOYMENT.md](./DEPLOYMENT.md#nginx-configuration-example) for complete Nginx configuration examples.
+> 📖 **Detailed configuration**: See [DEPLOYMENT.md](./DEPLOYMENT.md#nginx-reverse-proxy) for complete Nginx configuration examples.
 
 ### 5.1 Install Nginx and Certbot
 

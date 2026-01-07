@@ -528,23 +528,7 @@ docker compose exec calendar-server curl localhost:3000/health
 
 ## Security
 
-### Active Protections
-
-- Rate limiting (Redis-backed, with in-memory fallback)
-- SSRF protection for external imports
-- Content Security Policy (CSP) headers
-- HTTP security headers (HSTS, X-Frame-Options, etc.)
-- Input validation with Zod
-- High entropy anonymous IDs (192 bits)
-- Docker security: no-new-privileges, read-only filesystems
-
-### Secret Rotation
-
-| Secret | Frequency | Method |
-|--------|-----------|--------|
-| `BETTER_AUTH_SECRET` | 6 months | `openssl rand -base64 32` |
-| `POSTGRES_PASSWORD` | 6 months | Update `.env` and redeploy |
-| `REDIS_PASSWORD` | 6 months | Update `.env` and redeploy |
+See [SECURITY.md](SECURITY.md) for security measures, secret rotation, and best practices.
 
 ## Monitoring
 
