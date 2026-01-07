@@ -107,8 +107,9 @@ done
 log "Running database migrations..."
 
 # Get database credentials from docker-compose environment
+# IMPORTANT: defaults must match docker-compose.yml
 DB_USER="${POSTGRES_USER:-appstandard}"
-DB_PASS="${POSTGRES_PASSWORD:-appstandard}"
+DB_PASS="${POSTGRES_PASSWORD:-appstandard_secret}"
 DB_NAME="${POSTGRES_DB:-appstandard}"
 MIGRATION_DB_URL="postgresql://${DB_USER}:${DB_PASS}@db:5432/${DB_NAME}"
 
