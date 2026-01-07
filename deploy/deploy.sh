@@ -103,6 +103,24 @@ for i in {1..30}; do
     sleep 1
 done
 
+# Run database migrations
+log "Running database migrations..."
+cd packages/db
+if bunx prisma migrate deploy; then
+    success "Database migrations applied"
+else
+    error "Database migration failed"
+fi
+
+# Generate Prisma client (in case schema changed)
+log "Generating Prisma client..."
+if bunx prisma generate; then
+    success "Prisma client generated"
+else
+    error "Prisma client generation failed"
+fi
+cd ../..
+
 build_service() {
     local service=$1
     local start=$(date +%s)
