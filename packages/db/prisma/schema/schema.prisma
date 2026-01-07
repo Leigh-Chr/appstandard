@@ -3,6 +3,9 @@ generator client {
   output       = "../generated"
   moduleFormat = "esm"
   runtime      = "bun"
+  // Use pure JS client instead of Rust binary engine for smaller Docker images
+  // and faster Prisma generate (no native binary download/compilation)
+  engineType   = "client"
 }
 
 datasource db {

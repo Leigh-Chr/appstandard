@@ -117,6 +117,9 @@ services:
     build:
       context: .
       dockerfile: apps/landing/Dockerfile
+      args:
+        TURBO_TOKEN: ${TURBO_TOKEN:-}
+        TURBO_TEAM: ${TURBO_TEAM:-}
     container_name: appstandard-landing
     restart: unless-stopped
     ports:
@@ -167,6 +170,9 @@ services:
     build:
       context: .
       dockerfile: apps/calendar-server/Dockerfile
+      args:
+        TURBO_TOKEN: ${TURBO_TOKEN:-}
+        TURBO_TEAM: ${TURBO_TEAM:-}
     container_name: appstandard-calendar-server
     restart: unless-stopped
     depends_on:
@@ -229,6 +235,8 @@ services:
       args:
         VITE_SERVER_URL: ${CALENDAR_API_URL:-https://api.appstandard.io}
         VITE_SENTRY_DSN: ${VITE_SENTRY_DSN:-}
+        TURBO_TOKEN: ${TURBO_TOKEN:-}
+        TURBO_TEAM: ${TURBO_TEAM:-}
     container_name: appstandard-calendar-web
     restart: unless-stopped
     depends_on:
@@ -282,6 +290,9 @@ services:
     build:
       context: .
       dockerfile: apps/tasks-server/Dockerfile
+      args:
+        TURBO_TOKEN: ${TURBO_TOKEN:-}
+        TURBO_TEAM: ${TURBO_TEAM:-}
     container_name: appstandard-tasks-server
     restart: unless-stopped
     depends_on:
@@ -339,6 +350,8 @@ services:
       args:
         VITE_SERVER_URL: ${TASKS_API_URL:-https://api-tasks.appstandard.io}
         VITE_SENTRY_DSN: ${VITE_SENTRY_DSN:-}
+        TURBO_TOKEN: ${TURBO_TOKEN:-}
+        TURBO_TEAM: ${TURBO_TEAM:-}
     container_name: appstandard-tasks-web
     restart: unless-stopped
     depends_on:
@@ -392,6 +405,9 @@ services:
     build:
       context: .
       dockerfile: apps/contacts-server/Dockerfile
+      args:
+        TURBO_TOKEN: ${TURBO_TOKEN:-}
+        TURBO_TEAM: ${TURBO_TEAM:-}
     container_name: appstandard-contacts-server
     restart: unless-stopped
     depends_on:
@@ -449,6 +465,8 @@ services:
       args:
         VITE_SERVER_URL: ${CONTACTS_API_URL:-https://api-contacts.appstandard.io}
         VITE_SENTRY_DSN: ${VITE_SENTRY_DSN:-}
+        TURBO_TOKEN: ${TURBO_TOKEN:-}
+        TURBO_TEAM: ${TURBO_TEAM:-}
     container_name: appstandard-contacts-web
     restart: unless-stopped
     depends_on:

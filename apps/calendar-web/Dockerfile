@@ -1,70 +1,54 @@
 # syntax=docker/dockerfile:1
 # ===================================
 # AppStandard Calendar Frontend - Dockerfile
-# Optimized multi-stage build for production
+# Optimized multi-stage build with turbo prune + BuildKit cache
 # ===================================
 
-# Stage 1: Build application
-# Using specific version tag instead of :latest for reproducibility
+# Stage 1: Prune monorepo to only include needed packages
+FROM oven/bun:1.3.5-alpine AS pruner
+
+WORKDIR /app
+
+# Install turbo globally for pruning
+RUN bun add -g turbo
+
+# Copy entire monorepo for pruning
+COPY . .
+
+# Prune to only calendar-web and its dependencies
+RUN turbo prune calendar-web --docker
+
+# -----------------------------------
+# Stage 2: Install dependencies
+FROM oven/bun:1.3.5-alpine AS installer
+
+WORKDIR /app
+
+# Copy pruned package.json files (lockfile-relevant files only)
+COPY --from=pruner /app/out/json/ .
+COPY --from=pruner /app/out/bun.lock ./bun.lock
+
+# Install dependencies with BuildKit cache mount for faster rebuilds
+RUN --mount=type=cache,target=/root/.bun/install/cache \
+    bun install --frozen-lockfile
+
+# -----------------------------------
+# Stage 3: Build
 FROM oven/bun:1.3.5-alpine AS builder
 
 WORKDIR /app
 
-# Copy package files first for better layer caching
-# (this layer is cached until package files change)
-COPY package.json bun.lock ./
-# Core packages
-COPY packages/config/package.json ./packages/config/
-COPY packages/core/package.json ./packages/core/
-COPY packages/schemas/package.json ./packages/schemas/
-COPY packages/ics-utils/package.json ./packages/ics-utils/
-COPY packages/db/package.json ./packages/db/
-COPY packages/auth/package.json ./packages/auth/
-COPY packages/api/package.json ./packages/api/
-COPY packages/api-core/package.json ./packages/api-core/
-COPY packages/server-core/package.json ./packages/server-core/
-COPY packages/ui/package.json ./packages/ui/
-COPY packages/react-utils/package.json ./packages/react-utils/
-# AppStandard Contacts packages
-COPY packages/appstandard-contacts/api/package.json ./packages/appstandard-contacts/api/
-COPY packages/appstandard-contacts/core/package.json ./packages/appstandard-contacts/core/
-COPY packages/appstandard-contacts/schemas/package.json ./packages/appstandard-contacts/schemas/
-COPY packages/appstandard-contacts/vcard-utils/package.json ./packages/appstandard-contacts/vcard-utils/
-# AppStandard Tasks packages
-COPY packages/appstandard-tasks/api/package.json ./packages/appstandard-tasks/api/
-COPY packages/appstandard-tasks/core/package.json ./packages/appstandard-tasks/core/
-COPY packages/appstandard-tasks/schemas/package.json ./packages/appstandard-tasks/schemas/
-COPY packages/appstandard-tasks/todo-utils/package.json ./packages/appstandard-tasks/todo-utils/
-# Apps
-COPY apps/calendar-server/package.json ./apps/calendar-server/
-COPY apps/calendar-web/package.json ./apps/calendar-web/
-COPY apps/contacts-server/package.json ./apps/contacts-server/
-COPY apps/contacts-web/package.json ./apps/contacts-web/
-COPY apps/tasks-server/package.json ./apps/tasks-server/
-COPY apps/tasks-web/package.json ./apps/tasks-web/
-COPY apps/landing/package.json ./apps/landing/
+# Copy installed node_modules from installer
+COPY --from=installer /app/ .
 
-# Install dependencies (cached until package files change)
-RUN bun install --frozen-lockfile
+# Copy pruned source files
+COPY --from=pruner /app/out/full/ .
 
-# Copy source code (separate layer - changes more frequently)
-COPY packages ./packages
-COPY apps/calendar-web ./apps/calendar-web
-COPY turbo.json ./
-
-# Link workspace packages for module resolution
-RUN mkdir -p node_modules/@appstandard && \
-    ln -s /app/packages/config node_modules/@appstandard/config && \
-    ln -s /app/packages/core node_modules/@appstandard/core && \
-    ln -s /app/packages/schemas node_modules/@appstandard/schemas && \
-    ln -s /app/packages/ics-utils node_modules/@appstandard/ics-utils && \
-    ln -s /app/packages/react-utils node_modules/@appstandard/react-utils && \
-    ln -s /app/packages/api node_modules/@appstandard/api && \
-    ln -s /app/packages/api-core node_modules/@appstandard/api-core && \
-    ln -s /app/packages/server-core node_modules/@appstandard/server-core && \
-    ln -s /app/packages/ui node_modules/@appstandard/ui && \
-    ln -s /app/packages/auth node_modules/@appstandard/auth && \
-    ln -s /app/packages/db node_modules/@appstandard/db
+# Turbo Remote Cache configuration (optional - speeds up CI/CD builds)
+ARG TURBO_TOKEN
+ARG TURBO_TEAM
+ENV TURBO_TOKEN=$TURBO_TOKEN
+ENV TURBO_TEAM=$TURBO_TEAM
 
 # Build arguments for Vite environment variables (compiled at build time)
 ARG VITE_SERVER_URL=http://localhost:3000
@@ -73,11 +57,11 @@ ENV VITE_SERVER_URL=$VITE_SERVER_URL
 ENV VITE_SENTRY_DSN=$VITE_SENTRY_DSN
 ENV NODE_ENV=production
 
-# Build the frontend (production mode)
-RUN cd apps/calendar-web && NODE_ENV=production ./node_modules/.bin/vite build
+# Build the frontend using Turbo (handles dependency builds automatically)
+RUN ./node_modules/.bin/turbo build --filter=calendar-web...
 
 # -----------------------------------
-# Stage 2: Production with Nginx (minimal ~25MB image)
+# Stage 4: Production with Nginx (minimal ~25MB image)
 # Using nginx-unprivileged for security best practices (non-root user)
 FROM nginxinc/nginx-unprivileged:1.27-alpine AS runner
 
@@ -88,14 +72,9 @@ RUN rm -f /etc/nginx/conf.d/default.conf
 COPY apps/calendar-web/nginx.conf /etc/nginx/conf.d/appstandard.conf
 
 # Copy only the built static assets (no node_modules, no source)
-# Note: /usr/share/nginx/html is owned by root, nginx user (101) can read it
 COPY --from=builder /app/apps/calendar-web/dist /usr/share/nginx/html
 
-# Note: Cache directories (/var/cache/nginx, /var/run) are created via tmpfs
-# in docker-compose.yml, so no need to create them here
-
 # nginx-unprivileged runs as user 101 (nginx)
-# Explicit USER directive for security scanners (redundant but explicit)
 USER nginx
 
 EXPOSE 8080

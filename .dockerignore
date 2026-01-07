@@ -1,6 +1,8 @@
 # ===================================
-# AppStandard Calendar - Docker Ignore
+# AppStandard - Docker Ignore
 # Exclude unnecessary files from Docker builds
+# Note: With turbo prune, most files are filtered anyway,
+# but this reduces initial COPY size for faster builds.
 # ===================================
 
 # Dependencies (will be installed in container)

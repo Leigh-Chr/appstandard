@@ -151,11 +151,33 @@ systemctl start nginx
 
 ## 6. Deploy Containers
 
+### Option A: Using the Deploy Script (RECOMMENDED)
+
 ```bash
-# Method 1: Sequential build (RECOMMENDED - memory safe)
-# Build and start services one by one to avoid memory exhaustion
+# Make script executable (first time only)
+chmod +x deploy/deploy.sh
+
+# Run deployment (sequential mode - memory safe)
+./deploy/deploy.sh
+
+# Or deploy a single service
+./deploy/deploy.sh calendar-server
+
+# Or parallel mode (requires 16GB+ RAM)
+./deploy/deploy.sh parallel
+
+# Skip git pull (useful for testing)
+SKIP_PULL=true ./deploy/deploy.sh
+```
+
+### Option B: Manual Deployment
+
+```bash
+# Start infrastructure first
 docker compose up -d db redis
 sleep 10
+
+# Build and deploy (sequential - memory safe)
 docker compose up -d --build calendar-server
 docker compose up -d --build tasks-server
 docker compose up -d --build contacts-server
@@ -164,12 +186,22 @@ docker compose up -d --build calendar-web
 docker compose up -d --build tasks-web
 docker compose up -d --build contacts-web
 
-# Method 2: Parallel build (requires 16GB+ RAM or swap configured)
-# DOCKER_BUILDKIT=1 docker compose up -d --build
-
 # Verify all containers are healthy
 docker compose ps
 ```
+
+### Turbo Remote Cache (Optional - Faster Rebuilds)
+
+To enable Turbo Remote Cache for faster Docker builds:
+
+1. Get a token from https://vercel.com/account/tokens (with "Turborepo" scope)
+2. Add to your `.env` file:
+   ```env
+   TURBO_TOKEN=your-token-here
+   TURBO_TEAM=your-team-name
+   ```
+
+With remote cache enabled, unchanged packages are fetched from cache instead of being rebuilt.
 
 > **Important**: The `deploy.resources.limits` in docker-compose.yml only work with Docker Swarm.
 > For regular docker compose, memory limits are not enforced. Always ensure swap is configured.

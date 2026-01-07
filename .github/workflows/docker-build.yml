@@ -1,0 +1,194 @@
+name: Docker Build & Push
+
+on:
+  push:
+    branches: [master, main]
+    paths:
+      - 'apps/**'
+      - 'packages/**'
+      - 'package.json'
+      - 'bun.lock'
+      - 'turbo.json'
+      - 'docker-compose.yml'
+      - '.github/workflows/docker-build.yml'
+  workflow_dispatch:
+    inputs:
+      service:
+        description: 'Service to build (or "all")'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - calendar-server
+          - calendar-web
+          - tasks-server
+          - tasks-web
+          - contacts-server
+          - contacts-web
+          - landing
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ${{ github.repository_owner }}/appstandard
+
+jobs:
+  changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    outputs:
+      calendar-server: ${{ steps.filter.outputs.calendar-server }}
+      calendar-web: ${{ steps.filter.outputs.calendar-web }}
+      tasks-server: ${{ steps.filter.outputs.tasks-server }}
+      tasks-web: ${{ steps.filter.outputs.tasks-web }}
+      contacts-server: ${{ steps.filter.outputs.contacts-server }}
+      contacts-web: ${{ steps.filter.outputs.contacts-web }}
+      landing: ${{ steps.filter.outputs.landing }}
+      shared: ${{ steps.filter.outputs.shared }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Filter paths
+        uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3
+        id: filter
+        with:
+          filters: |
+            shared:
+              - 'packages/config/**'
+              - 'packages/db/**'
+              - 'packages/auth/**'
+              - 'packages/api-core/**'
+              - 'packages/server-core/**'
+              - 'package.json'
+              - 'bun.lock'
+              - 'turbo.json'
+            calendar-server:
+              - 'apps/calendar-server/**'
+              - 'packages/api/**'
+              - 'packages/core/**'
+              - 'packages/schemas/**'
+              - 'packages/ics-utils/**'
+            calendar-web:
+              - 'apps/calendar-web/**'
+              - 'packages/ui/**'
+              - 'packages/react-utils/**'
+            tasks-server:
+              - 'apps/tasks-server/**'
+              - 'packages/appstandard-tasks/**'
+            tasks-web:
+              - 'apps/tasks-web/**'
+            contacts-server:
+              - 'apps/contacts-server/**'
+              - 'packages/appstandard-contacts/**'
+            contacts-web:
+              - 'apps/contacts-web/**'
+            landing:
+              - 'apps/landing/**'
+
+  build-and-push:
+    name: Build ${{ matrix.service }}
+    runs-on: ubuntu-latest
+    needs: changes
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      needs.changes.outputs.shared == 'true' ||
+      needs.changes.outputs[matrix.service] == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - service: calendar-server
+            dockerfile: apps/calendar-server/Dockerfile
+          - service: calendar-web
+            dockerfile: apps/calendar-web/Dockerfile
+          - service: tasks-server
+            dockerfile: apps/tasks-server/Dockerfile
+          - service: tasks-web
+            dockerfile: apps/tasks-web/Dockerfile
+          - service: contacts-server
+            dockerfile: apps/contacts-server/Dockerfile
+          - service: contacts-web
+            dockerfile: apps/contacts-web/Dockerfile
+          - service: landing
+            dockerfile: apps/landing/Dockerfile
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Check if should build
+        id: should-build
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            if [[ "${{ github.event.inputs.service }}" == "all" || "${{ github.event.inputs.service }}" == "${{ matrix.service }}" ]]; then
+              echo "build=true" >> $GITHUB_OUTPUT
+            else
+              echo "build=false" >> $GITHUB_OUTPUT
+            fi
+          elif [[ "${{ needs.changes.outputs.shared }}" == "true" || "${{ needs.changes.outputs[matrix.service] }}" == "true" ]]; then
+            echo "build=true" >> $GITHUB_OUTPUT
+          else
+            echo "build=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Checkout
+        if: steps.should-build.outputs.build == 'true'
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Set up Docker Buildx
+        if: steps.should-build.outputs.build == 'true'
+        uses: docker/setup-buildx-action@c47758b77c9736f4b2ef4073d4d51994fabfe349 # v3
+
+      - name: Login to Container Registry
+        if: steps.should-build.outputs.build == 'true'
+        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        if: steps.should-build.outputs.build == 'true'
+        id: meta
+        uses: docker/metadata-action@8e5442c4ef9f78752691e2d8f8d19755c6f78e81 # v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix=
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push
+        if: steps.should-build.outputs.build == 'true'
+        uses: docker/build-push-action@4f58ea79222b3b9dc2c8bbdd6debcef730109a75 # v6
+        with:
+          context: .
+          file: ${{ matrix.dockerfile }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            TURBO_TOKEN=${{ secrets.TURBO_TOKEN }}
+            TURBO_TEAM=${{ vars.TURBO_TEAM }}
+            VITE_SERVER_URL=${{ matrix.service == 'calendar-web' && 'https://api.appstandard.io' || matrix.service == 'tasks-web' && 'https://api-tasks.appstandard.io' || matrix.service == 'contacts-web' && 'https://api-contacts.appstandard.io' || '' }}
+
+  notify:
+    name: Notify
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    if: always()
+    steps:
+      - name: Summary
+        run: |
+          echo "## Docker Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Service | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|---------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Build | ${{ needs.build-and-push.result }} |" >> $GITHUB_STEP_SUMMARY

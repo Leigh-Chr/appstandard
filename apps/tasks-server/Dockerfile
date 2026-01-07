@@ -1,140 +1,107 @@
 # syntax=docker/dockerfile:1
 # ===================================
 # AppStandard Tasks Backend - Dockerfile
-# Optimized multi-stage build for production
+# Optimized multi-stage build with turbo prune + BuildKit cache
 # ===================================
 
-# Stage 1: Build
-# Using specific version tag instead of :latest for reproducibility
+# Stage 1: Prune monorepo to only include needed packages
+FROM oven/bun:1.3.5-alpine AS pruner
+
+WORKDIR /app
+
+# Install turbo globally for pruning
+RUN bun add -g turbo
+
+# Copy entire monorepo for pruning
+COPY . .
+
+# Prune to only tasks-server and its dependencies
+# This creates out/json (package.json files) and out/full (source files)
+RUN turbo prune tasks-server --docker
+
+# -----------------------------------
+# Stage 2: Install dependencies
+FROM oven/bun:1.3.5-alpine AS installer
+
+WORKDIR /app
+
+# Copy pruned package.json files (lockfile-relevant files only)
+COPY --from=pruner /app/out/json/ .
+COPY --from=pruner /app/out/bun.lock ./bun.lock
+
+# Install dependencies with BuildKit cache mount for faster rebuilds
+# Cache is persisted across builds on the same machine
+RUN --mount=type=cache,target=/root/.bun/install/cache \
+    bun install --frozen-lockfile
+
+# -----------------------------------
+# Stage 3: Build
 FROM oven/bun:1.3.5-alpine AS builder
 
 WORKDIR /app
 
-# Copy package files first for better layer caching
-COPY package.json bun.lock ./
-# Core packages
-COPY packages/config/package.json ./packages/config/
-COPY packages/core/package.json ./packages/core/
-COPY packages/schemas/package.json ./packages/schemas/
-COPY packages/ics-utils/package.json ./packages/ics-utils/
-COPY packages/db/package.json ./packages/db/
-COPY packages/auth/package.json ./packages/auth/
-COPY packages/api/package.json ./packages/api/
-COPY packages/api-core/package.json ./packages/api-core/
-COPY packages/server-core/package.json ./packages/server-core/
-COPY packages/ui/package.json ./packages/ui/
-COPY packages/react-utils/package.json ./packages/react-utils/
-# AppStandard Contacts packages
-COPY packages/appstandard-contacts/api/package.json ./packages/appstandard-contacts/api/
-COPY packages/appstandard-contacts/core/package.json ./packages/appstandard-contacts/core/
-COPY packages/appstandard-contacts/schemas/package.json ./packages/appstandard-contacts/schemas/
-COPY packages/appstandard-contacts/vcard-utils/package.json ./packages/appstandard-contacts/vcard-utils/
-# AppStandard Tasks packages
-COPY packages/appstandard-tasks/api/package.json ./packages/appstandard-tasks/api/
-COPY packages/appstandard-tasks/core/package.json ./packages/appstandard-tasks/core/
-COPY packages/appstandard-tasks/schemas/package.json ./packages/appstandard-tasks/schemas/
-COPY packages/appstandard-tasks/todo-utils/package.json ./packages/appstandard-tasks/todo-utils/
-# Apps
-COPY apps/calendar-server/package.json ./apps/calendar-server/
-COPY apps/calendar-web/package.json ./apps/calendar-web/
-COPY apps/contacts-server/package.json ./apps/contacts-server/
-COPY apps/contacts-web/package.json ./apps/contacts-web/
-COPY apps/tasks-server/package.json ./apps/tasks-server/
-COPY apps/tasks-web/package.json ./apps/tasks-web/
-COPY apps/landing/package.json ./apps/landing/
+# Copy installed node_modules from installer
+COPY --from=installer /app/ .
 
-# Install dependencies (cached until package files change)
-RUN bun install --frozen-lockfile
+# Copy pruned source files
+COPY --from=pruner /app/out/full/ .
 
-# Copy source code
-COPY package.json bun.lock turbo.json ./
-COPY packages ./packages
-COPY apps/tasks-server ./apps/tasks-server
+# Turbo Remote Cache configuration (optional - speeds up CI/CD builds)
+ARG TURBO_TOKEN
+ARG TURBO_TEAM
+ENV TURBO_TOKEN=$TURBO_TOKEN
+ENV TURBO_TEAM=$TURBO_TEAM
 
 # Create empty .env for Prisma config
 RUN mkdir -p apps/tasks-server && touch apps/tasks-server/.env
 
-# Link workspace packages for build
-RUN mkdir -p node_modules/@appstandard && \
-    ln -s /app/packages/config node_modules/@appstandard/config
-
 # Generate Prisma client
 RUN cd packages/db && bun x prisma generate
 
-# Build server and ALL its dependencies
+# Build server and ALL its dependencies with Turbo
+# Remote cache will be used if TURBO_TOKEN is provided
 RUN ./node_modules/.bin/turbo build --filter=tasks-server...
 
 # -----------------------------------
-# Stage 2: Production runtime
-# Using specific version tag instead of :latest for reproducibility
+# Stage 4: Production runtime
 FROM oven/bun:1.3.5-alpine AS runner
 
 WORKDIR /app
 
-# Create non-root user
+# Create non-root user FIRST (before any file operations)
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 bunjs
 
 # Install curl for healthcheck
 RUN apk add --no-cache curl
 
-# Copy package files for production install (must match builder stage for lockfile)
-COPY package.json bun.lock ./
-# Core packages
-COPY packages/config/package.json ./packages/config/
-COPY packages/core/package.json ./packages/core/
-COPY packages/schemas/package.json ./packages/schemas/
-COPY packages/ics-utils/package.json ./packages/ics-utils/
-COPY packages/db/package.json ./packages/db/
-COPY packages/auth/package.json ./packages/auth/
-COPY packages/api/package.json ./packages/api/
-COPY packages/api-core/package.json ./packages/api-core/
-COPY packages/server-core/package.json ./packages/server-core/
-COPY packages/ui/package.json ./packages/ui/
-COPY packages/react-utils/package.json ./packages/react-utils/
-# AppStandard Contacts packages
-COPY packages/appstandard-contacts/api/package.json ./packages/appstandard-contacts/api/
-COPY packages/appstandard-contacts/core/package.json ./packages/appstandard-contacts/core/
-COPY packages/appstandard-contacts/schemas/package.json ./packages/appstandard-contacts/schemas/
-COPY packages/appstandard-contacts/vcard-utils/package.json ./packages/appstandard-contacts/vcard-utils/
-# AppStandard Tasks packages
-COPY packages/appstandard-tasks/api/package.json ./packages/appstandard-tasks/api/
-COPY packages/appstandard-tasks/core/package.json ./packages/appstandard-tasks/core/
-COPY packages/appstandard-tasks/schemas/package.json ./packages/appstandard-tasks/schemas/
-COPY packages/appstandard-tasks/todo-utils/package.json ./packages/appstandard-tasks/todo-utils/
-# Apps
-COPY apps/calendar-server/package.json ./apps/calendar-server/
-COPY apps/calendar-web/package.json ./apps/calendar-web/
-COPY apps/contacts-server/package.json ./apps/contacts-server/
-COPY apps/contacts-web/package.json ./apps/contacts-web/
-COPY apps/tasks-server/package.json ./apps/tasks-server/
-COPY apps/tasks-web/package.json ./apps/tasks-web/
-COPY apps/landing/package.json ./apps/landing/
+# Copy pruned package.json files for production install
+COPY --from=pruner /app/out/json/ .
+COPY --from=pruner /app/out/bun.lock ./bun.lock
 
-# Install production dependencies (skip prepare scripts like husky)
-RUN bun install --frozen-lockfile --production --ignore-scripts
+# Install production dependencies only with cache mount
+RUN --mount=type=cache,target=/root/.bun/install/cache \
+    bun install --frozen-lockfile --production --ignore-scripts
 
 # Copy config package (no dist, just tsconfig)
-COPY --from=builder /app/packages/config ./packages/config
+COPY --chown=bunjs:nodejs --from=builder /app/packages/config ./packages/config
 
 # Copy built packages needed by server
-# Note: Only tasks-specific packages - no calendar packages (core, schemas, api)
-COPY --from=builder /app/packages/db/dist ./packages/db/dist
-COPY --from=builder /app/packages/db/prisma ./packages/db/prisma
-COPY --from=builder /app/packages/db/prisma.config.ts ./packages/db/prisma.config.ts
-COPY --from=builder /app/packages/auth/dist ./packages/auth/dist
-COPY --from=builder /app/packages/api-core/dist ./packages/api-core/dist
-COPY --from=builder /app/packages/server-core/dist ./packages/server-core/dist
-COPY --from=builder /app/packages/appstandard-tasks/api/dist ./packages/appstandard-tasks/api/dist
-COPY --from=builder /app/packages/appstandard-tasks/core/dist ./packages/appstandard-tasks/core/dist
-COPY --from=builder /app/packages/appstandard-tasks/schemas/dist ./packages/appstandard-tasks/schemas/dist
-COPY --from=builder /app/packages/appstandard-tasks/todo-utils/dist ./packages/appstandard-tasks/todo-utils/dist
+COPY --chown=bunjs:nodejs --from=builder /app/packages/db/dist ./packages/db/dist
+COPY --chown=bunjs:nodejs --from=builder /app/packages/db/prisma ./packages/db/prisma
+COPY --chown=bunjs:nodejs --from=builder /app/packages/db/prisma.config.ts ./packages/db/prisma.config.ts
+COPY --chown=bunjs:nodejs --from=builder /app/packages/auth/dist ./packages/auth/dist
+COPY --chown=bunjs:nodejs --from=builder /app/packages/api-core/dist ./packages/api-core/dist
+COPY --chown=bunjs:nodejs --from=builder /app/packages/server-core/dist ./packages/server-core/dist
+COPY --chown=bunjs:nodejs --from=builder /app/packages/appstandard-tasks/api/dist ./packages/appstandard-tasks/api/dist
+COPY --chown=bunjs:nodejs --from=builder /app/packages/appstandard-tasks/core/dist ./packages/appstandard-tasks/core/dist
+COPY --chown=bunjs:nodejs --from=builder /app/packages/appstandard-tasks/schemas/dist ./packages/appstandard-tasks/schemas/dist
+COPY --chown=bunjs:nodejs --from=builder /app/packages/appstandard-tasks/todo-utils/dist ./packages/appstandard-tasks/todo-utils/dist
 
 # Copy built server
-COPY --from=builder /app/apps/tasks-server/dist ./apps/tasks-server/dist
+COPY --chown=bunjs:nodejs --from=builder /app/apps/tasks-server/dist ./apps/tasks-server/dist
 
 # Create workspace links for packages used at runtime
-# Note: Only tasks-specific packages - no calendar packages (core, schemas, api)
 RUN mkdir -p node_modules/@appstandard && \
     ln -s /app/packages/config node_modules/@appstandard/config && \
     ln -s /app/packages/db node_modules/@appstandard/db && \
@@ -147,8 +114,8 @@ RUN mkdir -p node_modules/@appstandard && \
     ln -s /app/packages/appstandard-tasks/schemas node_modules/@appstandard-tasks/schemas && \
     ln -s /app/packages/appstandard-tasks/todo-utils node_modules/@appstandard-tasks/todo-utils
 
-# Set ownership
-RUN chown -R bunjs:nodejs /app
+# Change ownership of symlinks only (much faster than chown -R /app)
+RUN chown -R bunjs:nodejs node_modules/@appstandard node_modules/@appstandard-tasks
 
 ENV NODE_ENV=production
 ENV PORT=3002
@@ -163,5 +130,5 @@ EXPOSE 3002
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
     CMD curl -f http://localhost:3002/health || exit 1
 
-# Start the server using the start script from package.json
+# Start the server
 CMD ["bun", "run", "start"]
