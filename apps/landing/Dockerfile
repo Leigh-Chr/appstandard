@@ -54,7 +54,11 @@ ENV TURBO_TEAM=$TURBO_TEAM
 ENV NODE_ENV=production
 
 # Build the frontend using Turbo (handles dependency builds automatically)
-RUN ./node_modules/.bin/turbo build --filter=landing...
+# Note: || true ignores Bun's SIGILL crash on certain VPS CPUs (build succeeds before crash)
+RUN ./node_modules/.bin/turbo build --filter=landing... || true
+
+# Verify build succeeded (dist folder must exist with index.html)
+RUN test -f /app/apps/landing/dist/index.html || (echo "Build failed: dist/index.html not found" && exit 1)
 
 # -----------------------------------
 # Stage 4: Production with Nginx (minimal ~25MB image)
