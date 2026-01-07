@@ -1,0 +1,29 @@
+#!/bin/sh
+
+echo "Running pre-push checks..."
+
+# Type check
+echo "Checking types..."
+bun run typecheck
+if [ $? -ne 0 ]; then
+    echo "❌ Type check failed. Fix errors before pushing."
+    exit 1
+fi
+
+# Biome check (lint + format)
+echo "Running Biome..."
+bun run check
+if [ $? -ne 0 ]; then
+    echo "❌ Biome check failed. Run 'bun run check' to fix."
+    exit 1
+fi
+
+# Knip (unused code)
+echo "Checking for unused code..."
+bunx knip
+if [ $? -ne 0 ]; then
+    echo "❌ Knip found unused code. Fix before pushing."
+    exit 1
+fi
+
+echo "✅ All checks passed!"
