@@ -57,7 +57,7 @@ function EmptyState() {
 			<div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
 				<ListTodo className="h-6 w-6 text-primary" />
 			</div>
-			<h3 className="mb-2 font-semibold text-lg">No task lists yet</h3>
+			<p className="mb-2 font-semibold text-lg">No task lists yet</p>
 			<p className="mb-4 text-muted-foreground text-sm">
 				Create your first task list to start tracking your tasks.
 			</p>

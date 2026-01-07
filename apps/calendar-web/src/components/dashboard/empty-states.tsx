@@ -15,9 +15,9 @@ export function EmptyState({ type }: EmptyStateProps) {
 						<div className="mb-4 rounded-full bg-primary/10 p-4">
 							<Calendar className="h-8 w-8 text-primary" />
 						</div>
-						<h3 className="mb-2 font-semibold text-lg">
+						<p className="mb-2 font-semibold text-lg">
 							Welcome to your Dashboard
-						</h3>
+						</p>
 						<p className="mb-6 max-w-md text-muted-foreground text-sm">
 							Create your first calendar to start tracking your events and see
 							analytics about your schedule.

@@ -63,7 +63,7 @@ export function CalendarsSection({
 						<div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-muted sm:mb-6 sm:h-16 sm:w-16">
 							<Calendar className="h-6 w-6 text-muted-foreground sm:h-8 sm:w-8" />
 						</div>
-						<h3 className="mb-2 text-heading-3">No calendars yet</h3>
+						<p className="mb-2 text-heading-3">No calendars yet</p>
 						<p className="mb-4 text-muted-foreground sm:mb-6">
 							Create your first calendar or import an existing .ics file.
 						</p>

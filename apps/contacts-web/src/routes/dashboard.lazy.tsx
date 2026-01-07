@@ -58,7 +58,7 @@ function EmptyState() {
 			<div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
 				<BookUser className="h-6 w-6 text-primary" />
 			</div>
-			<h3 className="mb-2 font-semibold text-lg">No address books yet</h3>
+			<p className="mb-2 font-semibold text-lg">No address books yet</p>
 			<p className="mb-4 text-muted-foreground text-sm">
 				Create your first address book to start managing contacts.
 			</p>
