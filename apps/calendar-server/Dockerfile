@@ -95,7 +95,6 @@ COPY --chown=bunjs:nodejs --from=builder /app/packages/auth/dist ./packages/auth
 COPY --chown=bunjs:nodejs --from=builder /app/packages/api/dist ./packages/api/dist
 COPY --chown=bunjs:nodejs --from=builder /app/packages/api-core/dist ./packages/api-core/dist
 COPY --chown=bunjs:nodejs --from=builder /app/packages/server-core/dist ./packages/server-core/dist
-COPY --chown=bunjs:nodejs --from=builder /app/packages/ics-utils/dist ./packages/ics-utils/dist
 
 # Copy built server
 COPY --chown=bunjs:nodejs --from=builder /app/apps/calendar-server/dist ./apps/calendar-server/dist
@@ -109,8 +108,7 @@ RUN mkdir -p node_modules/@appstandard && \
     ln -s /app/packages/auth node_modules/@appstandard/auth && \
     ln -s /app/packages/api node_modules/@appstandard/api && \
     ln -s /app/packages/api-core node_modules/@appstandard/api-core && \
-    ln -s /app/packages/server-core node_modules/@appstandard/server-core && \
-    ln -s /app/packages/ics-utils node_modules/@appstandard/ics-utils
+    ln -s /app/packages/server-core node_modules/@appstandard/server-core
 
 # Change ownership of symlinks and runtime directories only (much faster than chown -R /app)
 RUN chown -R bunjs:nodejs node_modules/@appstandard
