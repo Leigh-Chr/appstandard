@@ -3,6 +3,8 @@ import {
 	emailSchema,
 	nullableEmailSchema,
 	nullableTrimmedStringSchema,
+	optionalCoercedDateSchema,
+	requiredCoercedDateSchema,
 	urlSchema,
 } from "./common-schemas";
 import { FIELD_LIMITS } from "./field-limits";
@@ -279,8 +281,8 @@ const eventCreateSchemaBase = z.object({
 		.min(1, "Title is required")
 		.max(FIELD_LIMITS.TITLE)
 		.transform((val) => val.trim()),
-	startDate: z.coerce.date(),
-	endDate: z.coerce.date(),
+	startDate: requiredCoercedDateSchema,
+	endDate: requiredCoercedDateSchema,
 	description: nullableTrimmedStringSchema(FIELD_LIMITS.DESCRIPTION),
 	location: nullableTrimmedStringSchema(FIELD_LIMITS.LOCATION),
 
@@ -379,8 +381,8 @@ export const eventUpdateSchema = eventCreateSchemaBase
 			.max(FIELD_LIMITS.TITLE)
 			.transform((val) => val.trim())
 			.optional(),
-		startDate: z.coerce.date().optional(),
-		endDate: z.coerce.date().optional(),
+		startDate: optionalCoercedDateSchema,
+		endDate: optionalCoercedDateSchema,
 	})
 	.refine(
 		(data) => {

@@ -212,6 +212,8 @@ async function createContactFromParsed(
 						addresses: {
 							create: parsedContact.addresses.map((a) => ({
 								type: a.type || null,
+								poBox: a.poBox || null,
+								extendedAddress: a.extendedAddress || null,
 								streetAddress: a.streetAddress || null,
 								locality: a.locality || null,
 								region: a.region || null,

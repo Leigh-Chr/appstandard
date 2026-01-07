@@ -4,6 +4,7 @@ import {
 	emailSchema,
 	nullableEmailSchema,
 	nullableTrimmedStringSchema,
+	optionalCoercedDateSchema,
 	optionalDateStringSchema,
 	urlSchema,
 } from "./common-schemas";
@@ -239,10 +240,10 @@ const taskBaseSchema = z.object({
 	priority: prioritySchema,
 	percentComplete: percentCompleteSchema,
 
-	// Dates
-	startDate: z.coerce.date().optional().nullable(),
-	dueDate: z.coerce.date().optional().nullable(),
-	completedAt: z.coerce.date().optional().nullable(),
+	// Dates (RFC 5545: DTSTART and DUE are optional for VTODO)
+	startDate: optionalCoercedDateSchema,
+	dueDate: optionalCoercedDateSchema,
+	completedAt: optionalCoercedDateSchema,
 
 	// Location
 	location: nullableTrimmedStringSchema(FIELD_LIMITS.LOCATION),

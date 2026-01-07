@@ -126,16 +126,18 @@ model ContactPhone {
 }
 
 model ContactAddress {
-  id            String   @id @default(uuid())
-  contactId     String
-  contact       Contact  @relation(fields: [contactId], references: [id], onDelete: Cascade)
-  type          String?  // TYPE: home, work
-  streetAddress String?  // Street address (can be multiline)
-  locality      String?  // City
-  region        String?  // State/Province
-  postalCode    String?  // Postal/ZIP code
-  country       String?  // Country name
-  isPrimary     Boolean  @default(false) // PREF parameter
+  id              String   @id @default(uuid())
+  contactId       String
+  contact         Contact  @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  type            String?  // TYPE: home, work
+  poBox           String?  // RFC 6350: Post office box
+  extendedAddress String?  // RFC 6350: Extended address (apt, suite, etc.)
+  streetAddress   String?  // Street address (can be multiline)
+  locality        String?  // City
+  region          String?  // State/Province
+  postalCode      String?  // Postal/ZIP code
+  country         String?  // Country name
+  isPrimary       Boolean  @default(false) // PREF parameter
 
   @@index([contactId])
   @@index([locality])

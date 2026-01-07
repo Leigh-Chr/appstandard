@@ -367,6 +367,8 @@ export const shareRouter = router({
 				})),
 				addresses: contact.addresses.map((a) => ({
 					type: a.type || undefined,
+					poBox: a.poBox || undefined,
+					extendedAddress: a.extendedAddress || undefined,
 					streetAddress: a.streetAddress || undefined,
 					locality: a.locality || undefined,
 					region: a.region || undefined,
@@ -823,6 +825,8 @@ export const shareRouter = router({
 						})),
 						addresses: contact.addresses.map((a) => ({
 							type: a.type || undefined,
+							poBox: a.poBox || undefined,
+							extendedAddress: a.extendedAddress || undefined,
 							streetAddress: a.streetAddress || undefined,
 							locality: a.locality || undefined,
 							region: a.region || undefined,

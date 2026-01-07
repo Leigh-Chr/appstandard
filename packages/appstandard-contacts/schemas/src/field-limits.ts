@@ -16,7 +16,9 @@ export const FIELD_LIMITS = {
 	EMAIL: 254,
 	PHONE: 50,
 
-	// Address fields
+	// Address fields (RFC 6350)
+	PO_BOX: 100,
+	EXTENDED_ADDRESS: 200,
 	STREET_ADDRESS: 500,
 	LOCALITY: 100,
 	REGION: 100,

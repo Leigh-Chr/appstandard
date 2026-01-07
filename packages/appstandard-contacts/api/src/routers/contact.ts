@@ -205,6 +205,10 @@ export const contactRouter = router({
 									create: input.addresses.map((a) => ({
 										isPrimary: a.isPrimary ?? false,
 										...(a.type !== undefined ? { type: a.type } : {}),
+										...(a.poBox !== undefined ? { poBox: a.poBox } : {}),
+										...(a.extendedAddress !== undefined
+											? { extendedAddress: a.extendedAddress }
+											: {}),
 										...(a.streetAddress !== undefined
 											? { streetAddress: a.streetAddress }
 											: {}),
@@ -455,6 +459,8 @@ export const contactRouter = router({
 					addresses: {
 						create: original.addresses.map((a) => ({
 							type: a.type,
+							poBox: a.poBox,
+							extendedAddress: a.extendedAddress,
 							streetAddress: a.streetAddress,
 							locality: a.locality,
 							region: a.region,

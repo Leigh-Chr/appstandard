@@ -23,20 +23,21 @@ interface AttendeeData {
 	rsvp?: boolean;
 }
 
+// RFC 5545 attendee roles - using underscores to match database schema
 const ROLE_OPTIONS = [
-	{ value: "REQ-PARTICIPANT", label: "Required" },
-	{ value: "OPT-PARTICIPANT", label: "Optional" },
+	{ value: "REQ_PARTICIPANT", label: "Required" },
+	{ value: "OPT_PARTICIPANT", label: "Optional" },
 	{ value: "CHAIR", label: "Chair" },
-	{ value: "NON-PARTICIPANT", label: "Non-participant" },
+	{ value: "NON_PARTICIPANT", label: "Non-participant" },
 ] as const;
 
+// RFC 5545 attendee participation status (not task status)
 const STATUS_OPTIONS = [
-	{ value: "NEEDS-ACTION", label: "Needs Action" },
+	{ value: "NEEDS_ACTION", label: "Needs Action" },
 	{ value: "ACCEPTED", label: "Accepted" },
 	{ value: "DECLINED", label: "Declined" },
 	{ value: "TENTATIVE", label: "Tentative" },
-	{ value: "IN-PROCESS", label: "In Progress" },
-	{ value: "COMPLETED", label: "Completed" },
+	{ value: "DELEGATED", label: "Delegated" },
 ] as const;
 
 interface AttendeesSectionProps {
@@ -121,7 +122,7 @@ export function AttendeesSection({
 								<div className="space-y-2">
 									<Label htmlFor={`attendee-role-${index}`}>Role</Label>
 									<Select
-										value={attendee.role || "REQ-PARTICIPANT"}
+										value={attendee.role || "REQ_PARTICIPANT"}
 										onValueChange={(value) =>
 											onUpdateAttendee(index, { role: value })
 										}
@@ -143,7 +144,7 @@ export function AttendeesSection({
 								<div className="space-y-2">
 									<Label htmlFor={`attendee-status-${index}`}>Status</Label>
 									<Select
-										value={attendee.status || "NEEDS-ACTION"}
+										value={attendee.status || "NEEDS_ACTION"}
 										onValueChange={(value) =>
 											onUpdateAttendee(index, { status: value })
 										}

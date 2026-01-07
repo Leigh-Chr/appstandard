@@ -4,6 +4,7 @@ import {
 	dateStringSchema,
 	emailSchema,
 	nullableTrimmedStringSchema,
+	optionalCoercedDateSchema,
 	phoneSchema,
 	urlSchema,
 } from "./common-schemas";
@@ -94,10 +95,12 @@ const contactPhoneSchema = z.object({
 });
 
 /**
- * Address entry schema
+ * Address entry schema (RFC 6350 ADR property)
  */
 const contactAddressSchema = z.object({
 	type: z.string().max(50).optional().nullable(),
+	poBox: nullableTrimmedStringSchema(FIELD_LIMITS.PO_BOX),
+	extendedAddress: nullableTrimmedStringSchema(FIELD_LIMITS.EXTENDED_ADDRESS),
 	streetAddress: nullableTrimmedStringSchema(FIELD_LIMITS.STREET_ADDRESS),
 	locality: nullableTrimmedStringSchema(FIELD_LIMITS.LOCALITY),
 	region: nullableTrimmedStringSchema(FIELD_LIMITS.REGION),
@@ -198,8 +201,8 @@ const contactBaseSchema = z.object({
 	photoUrl: urlSchema,
 
 	// Dates
-	birthday: z.coerce.date().optional().nullable(),
-	anniversary: z.coerce.date().optional().nullable(),
+	birthday: optionalCoercedDateSchema,
+	anniversary: optionalCoercedDateSchema,
 
 	// Demographics
 	gender: genderSchema.optional().nullable(),

@@ -128,3 +128,50 @@ export const dateRangeSchema = z
 			path: ["endDate"],
 		},
 	);
+
+/**
+ * Required coerced date schema for API inputs.
+ * Handles valid date strings and Date objects, rejects empty strings.
+ */
+export const requiredCoercedDateSchema = z
+	.union([z.string(), z.date()])
+	.refine(
+		(val) => {
+			if (typeof val === "string") {
+				const trimmed = val.trim();
+				if (trimmed === "") return false;
+				const date = new Date(trimmed);
+				return !Number.isNaN(date.getTime());
+			}
+			return val instanceof Date && !Number.isNaN(val.getTime());
+		},
+		{ message: "Date is required and must be valid" },
+	)
+	.transform((val): Date => {
+		if (typeof val === "string") {
+			return new Date(val.trim());
+		}
+		return val;
+	});
+
+/**
+ * Optional coerced date schema for API inputs.
+ * Handles empty strings, null, undefined, valid date strings, and Date objects.
+ * Converts empty strings to null before coercion.
+ */
+export const optionalCoercedDateSchema = z
+	.union([z.string(), z.date(), z.null(), z.undefined()])
+	.optional()
+	.transform((val): Date | null | undefined => {
+		if (val === null || val === undefined) return null;
+		if (typeof val === "string") {
+			const trimmed = val.trim();
+			if (trimmed === "") return null;
+			const date = new Date(trimmed);
+			if (Number.isNaN(date.getTime())) {
+				throw new Error("Invalid date format");
+			}
+			return date;
+		}
+		return val;
+	});

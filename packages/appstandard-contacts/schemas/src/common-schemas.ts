@@ -127,3 +127,25 @@ export const optionalPhoneSchema = z
 	)
 	.optional()
 	.nullable();
+
+/**
+ * Optional coerced date schema for API inputs.
+ * Handles empty strings, null, undefined, valid date strings, and Date objects.
+ * Converts empty strings to null before coercion.
+ */
+export const optionalCoercedDateSchema = z
+	.union([z.string(), z.date(), z.null(), z.undefined()])
+	.optional()
+	.transform((val): Date | null | undefined => {
+		if (val === null || val === undefined) return null;
+		if (typeof val === "string") {
+			const trimmed = val.trim();
+			if (trimmed === "") return null;
+			const date = new Date(trimmed);
+			if (Number.isNaN(date.getTime())) {
+				throw new Error("Invalid date format");
+			}
+			return date;
+		}
+		return val;
+	});

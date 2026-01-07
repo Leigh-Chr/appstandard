@@ -220,6 +220,8 @@ export const userRouter = router({
 						})),
 						addresses: contact.addresses.map((a) => ({
 							type: a.type,
+							poBox: a.poBox,
+							extendedAddress: a.extendedAddress,
 							streetAddress: a.streetAddress,
 							locality: a.locality,
 							region: a.region,

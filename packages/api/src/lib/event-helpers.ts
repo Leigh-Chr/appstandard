@@ -31,8 +31,8 @@ function setValue(
 
 type EventInput = {
 	title?: string;
-	startDate?: Date;
-	endDate?: Date;
+	startDate?: Date | null;
+	endDate?: Date | null;
 	description?: string | null;
 	location?: string | null;
 	status?: string | null;

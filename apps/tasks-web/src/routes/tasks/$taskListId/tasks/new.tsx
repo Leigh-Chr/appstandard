@@ -61,6 +61,17 @@ function NewTaskComponent() {
 
 	const handleSubmit = (data: TaskFormData) => {
 		setServerValidationErrors(undefined);
+
+		// Filter out empty attendees and ensure required fields
+		const validAttendees = data.attendees?.filter((a) => a.email?.trim());
+		// Filter out empty alarms and ensure required action type
+		const validAlarms = data.alarms
+			?.filter((a) => a.trigger?.trim())
+			.map((a) => ({
+				trigger: a.trigger,
+				action: a.action as "DISPLAY" | "EMAIL" | "AUDIO",
+			}));
+
 		createMutation.mutate({
 			taskListId,
 			title: data.title,
@@ -74,6 +85,30 @@ function NewTaskComponent() {
 			url: data.url,
 			categories: data.categories,
 			color: data.color,
+			rrule: data.rrule,
+			relatedTo: data.relatedTo,
+			attendees:
+				validAttendees && validAttendees.length > 0
+					? validAttendees.map((a) => ({
+							email: a.email,
+							name: a.name || undefined,
+							role: a.role as
+								| "CHAIR"
+								| "REQ_PARTICIPANT"
+								| "OPT_PARTICIPANT"
+								| "NON_PARTICIPANT"
+								| undefined,
+							status: a.status as
+								| "NEEDS_ACTION"
+								| "ACCEPTED"
+								| "DECLINED"
+								| "TENTATIVE"
+								| "DELEGATED"
+								| undefined,
+							rsvp: a.rsvp,
+						}))
+					: undefined,
+			alarms: validAlarms && validAlarms.length > 0 ? validAlarms : undefined,
 		});
 	};
 
