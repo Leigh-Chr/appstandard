@@ -112,11 +112,18 @@ DB_PASS="${POSTGRES_PASSWORD:-appstandard}"
 DB_NAME="${POSTGRES_DB:-appstandard}"
 MIGRATION_DB_URL="postgresql://${DB_USER}:${DB_PASS}@db:5432/${DB_NAME}"
 
+# Get the docker network name from the running db container
+DOCKER_NETWORK=$(docker inspect appstandard-db --format '{{range $key, $value := .NetworkSettings.Networks}}{{$key}}{{end}}' 2>/dev/null || echo "")
+if [[ -z "${DOCKER_NETWORK}" ]]; then
+    error "Could not determine Docker network from db container"
+fi
+log "Using Docker network: ${DOCKER_NETWORK}"
+
 # Run migrations in a temporary Bun container connected to the docker network
 if docker run --rm \
     -v "$(pwd)":/app \
     -w /app/packages/db \
-    --network appstandard_default \
+    --network "${DOCKER_NETWORK}" \
     -e DATABASE_URL="${MIGRATION_DB_URL}" \
     oven/bun:1.3.5-alpine \
     sh -c "bun install --frozen-lockfile 2>/dev/null || bun install && bunx prisma migrate deploy && bunx prisma generate"; then
