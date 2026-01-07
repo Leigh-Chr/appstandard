@@ -129,17 +129,20 @@ if [[ -z "${DOCKER_NETWORK}" ]]; then
 fi
 log "Using Docker network: ${DOCKER_NETWORK}"
 
-# Run migrations in a temporary Bun container connected to the docker network
+# Run schema sync in a temporary Bun container connected to the docker network
+# Using 'db push' instead of 'migrate deploy' because the production database
+# was initially set up with db push, not migrations. This syncs the schema
+# without requiring migration history.
 if docker run --rm \
     -v "$(pwd)":/app \
     -w /app/packages/db \
     --network "${DOCKER_NETWORK}" \
     -e DATABASE_URL="${MIGRATION_DB_URL}" \
     oven/bun:1.3.5-alpine \
-    sh -c "bun install --frozen-lockfile 2>/dev/null || bun install && bunx prisma migrate deploy && bunx prisma generate"; then
-    success "Database migrations applied"
+    sh -c "bun install --frozen-lockfile 2>/dev/null || bun install && bunx prisma db push --skip-generate && bunx prisma generate"; then
+    success "Database schema synchronized"
 else
-    error "Database migration failed"
+    error "Database schema sync failed"
 fi
 
 build_service() {
