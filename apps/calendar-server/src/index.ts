@@ -15,7 +15,7 @@ const { app, port, isProduction } = createServerApp({
 	serviceName: "appstandard",
 	defaultCorsOrigin: "http://localhost:3001",
 	defaultPort: 3000,
-	baseUrl: "https://appstandard.app",
+	baseUrl: "https://calendar.appstandard.io",
 	redisKeyPrefix: "ratelimit",
 	sitemapRoutes: [
 		{ path: "/", changefreq: "weekly", priority: 1.0 },

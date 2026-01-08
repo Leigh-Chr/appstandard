@@ -15,7 +15,7 @@ const { app, port, isProduction } = createServerApp({
 	serviceName: "appstandard-tasks",
 	defaultCorsOrigin: "http://localhost:3004",
 	defaultPort: 3002,
-	baseUrl: "https://tasks.appstandard.app",
+	baseUrl: "https://tasks.appstandard.io",
 	redisKeyPrefix: "ratelimit:appstandard-tasks",
 	sitemapRoutes: [
 		{ path: "/", changefreq: "weekly", priority: 1.0 },

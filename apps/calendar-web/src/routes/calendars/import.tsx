@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-const BASE_URL = "https://appstandard.app";
+const BASE_URL = "https://calendar.appstandard.io";
 
 export const Route = createFileRoute("/calendars/import")({
 	head: () => ({

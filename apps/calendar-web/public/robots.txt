@@ -1,11 +1,11 @@
 # AppStandard Calendar - robots.txt
-# https://appstandard.app
+# https://calendar.appstandard.io
 
 User-agent: *
 Allow: /
 
 # Sitemap location
-Sitemap: https://appstandard.app/sitemap.xml
+Sitemap: https://calendar.appstandard.io/sitemap.xml
 
 # Crawl-delay for polite crawling
 Crawl-delay: 1
@@ -14,8 +14,7 @@ Crawl-delay: 1
 Disallow: /api/
 Disallow: /trpc/
 
-# Allow all pages
+# Allow public pages
 Allow: /
 Allow: /calendars
 Allow: /login
-

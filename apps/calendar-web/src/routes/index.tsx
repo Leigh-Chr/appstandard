@@ -16,7 +16,7 @@ import {
 	Zap,
 } from "lucide-react";
 
-const BASE_URL = "https://appstandard.app";
+const BASE_URL = "https://calendar.appstandard.io";
 const TITLE = "AppStandard Calendar - Calendar management simplified";
 const DESCRIPTION =
 	"Free, open-source calendar manager. Import, edit, merge your calendar files in seconds. No account required, works offline.";

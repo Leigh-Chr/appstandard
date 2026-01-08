@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import ResendVerification from "@/components/resend-verification";
 
-const BASE_URL = "https://contacts.appstandard.app";
+const BASE_URL = "https://contacts.appstandard.io";
 
 export const Route = createFileRoute("/resend-verification")({
 	component: ResendVerification,

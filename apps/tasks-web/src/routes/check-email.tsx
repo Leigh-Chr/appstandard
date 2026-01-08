@@ -3,7 +3,7 @@ import { zodValidator } from "@tanstack/zod-adapter";
 import { z } from "zod";
 import CheckEmail from "@/components/check-email";
 
-const BASE_URL = "https://tasks.appstandard.app";
+const BASE_URL = "https://tasks.appstandard.io";
 
 const checkEmailSearchSchema = z.object({
 	email: z.string().optional(),

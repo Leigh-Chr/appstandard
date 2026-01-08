@@ -2,28 +2,28 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <!-- Landing page - Main entry point -->
   <url>
-    <loc>https://tasks.appstandard.app/</loc>
-    <lastmod>2025-11-30</lastmod>
+    <loc>https://tasks.appstandard.io/</loc>
+    <lastmod>2026-01-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <!-- Public pages for creating/importing tasks -->
   <url>
-    <loc>https://tasks.appstandard.app/tasks/new</loc>
-    <lastmod>2025-11-30</lastmod>
+    <loc>https://tasks.appstandard.io/tasks/new</loc>
+    <lastmod>2026-01-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://tasks.appstandard.app/tasks/import</loc>
-    <lastmod>2025-11-30</lastmod>
+    <loc>https://tasks.appstandard.io/tasks/import</loc>
+    <lastmod>2026-01-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <!-- Authentication page -->
   <url>
-    <loc>https://tasks.appstandard.app/login</loc>
-    <lastmod>2025-11-30</lastmod>
+    <loc>https://tasks.appstandard.io/login</loc>
+    <lastmod>2026-01-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>

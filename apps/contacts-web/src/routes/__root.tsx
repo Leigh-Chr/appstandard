@@ -30,7 +30,7 @@ export interface RouterAppContext {
 	queryClient: QueryClient;
 }
 
-const BASE_URL = "https://contacts.appstandard.app";
+const BASE_URL = "https://contacts.appstandard.io";
 
 /**
  * App layout with tour integration
@@ -142,7 +142,7 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
 			// Preconnect to API server for faster tRPC calls
 			{
 				rel: "preconnect",
-				href: "https://contacts-api.appstandard.io",
+				href: "https://api-contacts.appstandard.io",
 			},
 		],
 		scripts: [

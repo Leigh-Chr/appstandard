@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import ForgotPassword from "@/components/forgot-password";
 
-const BASE_URL = "https://appstandard.app";
+const BASE_URL = "https://calendar.appstandard.io";
 
 export const Route = createFileRoute("/forgot-password")({
 	component: ForgotPassword,

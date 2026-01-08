@@ -2,28 +2,28 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <!-- Landing page - Main entry point -->
   <url>
-    <loc>https://contacts.appstandard.app/</loc>
-    <lastmod>2025-11-30</lastmod>
+    <loc>https://contacts.appstandard.io/</loc>
+    <lastmod>2026-01-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <!-- Public pages for creating/importing contacts -->
   <url>
-    <loc>https://contacts.appstandard.app/contacts/new</loc>
-    <lastmod>2025-11-30</lastmod>
+    <loc>https://contacts.appstandard.io/contacts/new</loc>
+    <lastmod>2026-01-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://contacts.appstandard.app/contacts/import</loc>
-    <lastmod>2025-11-30</lastmod>
+    <loc>https://contacts.appstandard.io/contacts/import</loc>
+    <lastmod>2026-01-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <!-- Authentication page -->
   <url>
-    <loc>https://contacts.appstandard.app/login</loc>
-    <lastmod>2025-11-30</lastmod>
+    <loc>https://contacts.appstandard.io/login</loc>
+    <lastmod>2026-01-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>

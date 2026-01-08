@@ -10,7 +10,7 @@ export const APP_CONFIG: AppConfig = {
 	appName: "AppStandard Tasks",
 	appSlug: "tasks",
 	appIcon: CheckSquare,
-	baseUrl: "https://tasks.appstandard.app",
+	baseUrl: "https://tasks.appstandard.io",
 	mainRoute: "/tasks",
 	protectedRoutePrefix: "/tasks",
 	mainLabel: "My tasks",

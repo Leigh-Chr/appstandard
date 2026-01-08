@@ -17,7 +17,7 @@ import {
 	Zap,
 } from "lucide-react";
 
-const BASE_URL = "https://tasks.appstandard.app";
+const BASE_URL = "https://tasks.appstandard.io";
 const TITLE = "AppStandard Tasks - Task management simplified";
 const DESCRIPTION =
 	"Free, open-source task manager. Create, organize, and track your todos in seconds. No account required, works offline.";

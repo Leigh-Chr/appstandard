@@ -26,7 +26,7 @@ import {
 } from "lucide-react";
 import "../index.css";
 
-const BASE_URL = "https://appstandard.app";
+const BASE_URL = "https://www.appstandard.io";
 const GITHUB_URL = "https://github.com/Leigh-Chr/appstandard";
 
 // Environment-aware URLs

@@ -9,7 +9,7 @@ import {
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AlertCircle, Home } from "lucide-react";
 
-const BASE_URL = "https://tasks.appstandard.app";
+const BASE_URL = "https://tasks.appstandard.io";
 
 export const Route = createFileRoute("/404")({
 	component: NotFoundPage,

@@ -30,7 +30,7 @@ export interface RouterAppContext {
 	queryClient: QueryClient;
 }
 
-const BASE_URL = "https://appstandard.app";
+const BASE_URL = "https://calendar.appstandard.io";
 
 export const Route = createRootRouteWithContext<RouterAppContext>()({
 	component: RootComponent,
@@ -121,7 +121,7 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
 			// Preconnect to API server for faster tRPC calls
 			{
 				rel: "preconnect",
-				href: "https://calendar-api.appstandard.io",
+				href: "https://api.appstandard.io",
 			},
 		],
 		scripts: [

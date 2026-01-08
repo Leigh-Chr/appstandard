@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { trpcClient } from "@/utils/trpc";
 
-const BASE_URL = "https://contacts.appstandard.app";
+const BASE_URL = "https://contacts.appstandard.io";
 
 export const Route = createFileRoute("/share/$token")({
 	loader: async ({ params }) => {

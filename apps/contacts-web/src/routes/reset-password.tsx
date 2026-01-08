@@ -3,7 +3,7 @@ import { zodValidator } from "@tanstack/zod-adapter";
 import { z } from "zod";
 import ResetPassword from "@/components/reset-password";
 
-const BASE_URL = "https://contacts.appstandard.app";
+const BASE_URL = "https://contacts.appstandard.io";
 
 const resetPasswordSearchSchema = z.object({
 	token: z.string().optional(),

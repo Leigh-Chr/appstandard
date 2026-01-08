@@ -1,11 +1,11 @@
 # AppStandard Tasks - robots.txt
-# https://tasks.appstandard.app
+# https://tasks.appstandard.io
 
 User-agent: *
 Allow: /
 
 # Sitemap location
-Sitemap: https://tasks.appstandard.app/sitemap.xml
+Sitemap: https://tasks.appstandard.io/sitemap.xml
 
 # Crawl-delay for polite crawling
 Crawl-delay: 1
@@ -14,7 +14,7 @@ Crawl-delay: 1
 Disallow: /api/
 Disallow: /trpc/
 
-# Allow all pages
+# Allow public pages
 Allow: /
 Allow: /tasks
 Allow: /login

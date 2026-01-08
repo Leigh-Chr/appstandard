@@ -38,7 +38,7 @@ export interface ServerConfig {
 	defaultCorsOrigin: string;
 	/** Default port for development */
 	defaultPort: number;
-	/** Base URL for sitemap (e.g., "https://appstandard.app") */
+	/** Base URL for sitemap (e.g., "https://calendar.appstandard.io") */
 	baseUrl: string;
 	/** Sitemap routes configuration */
 	sitemapRoutes: SitemapRoute[];

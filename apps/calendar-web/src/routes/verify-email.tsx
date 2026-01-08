@@ -3,7 +3,7 @@ import { zodValidator } from "@tanstack/zod-adapter";
 import { z } from "zod";
 import VerifyEmail from "@/components/verify-email";
 
-const BASE_URL = "https://appstandard.app";
+const BASE_URL = "https://calendar.appstandard.io";
 
 const verifyEmailSearchSchema = z.object({
 	error: z.string().optional(),

@@ -13,7 +13,7 @@ export interface AppConfig {
 	appSlug: string;
 	/** Icon component for the app (e.g., Calendar, CheckSquare, Contact) */
 	appIcon: LucideIcon;
-	/** Base URL for SEO meta tags (e.g., "https://appstandard.app") */
+	/** Base URL for SEO meta tags (e.g., "https://calendar.appstandard.io") */
 	baseUrl: string;
 	/** Main route for the app (e.g., "/calendars", "/tasks", "/contacts") */
 	mainRoute: string;

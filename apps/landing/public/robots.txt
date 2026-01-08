@@ -1,0 +1,11 @@
+# AppStandard Landing - robots.txt
+# https://www.appstandard.io
+
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://www.appstandard.io/sitemap.xml
+
+# Crawl-delay for polite crawling
+Crawl-delay: 1

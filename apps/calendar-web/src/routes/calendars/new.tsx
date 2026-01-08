@@ -17,7 +17,7 @@ import { useServerStatus } from "@/hooks/use-server-status";
 import { useCreateCalendar } from "@/hooks/use-storage";
 import { handleTRPCError } from "@/lib/error-handler";
 
-const BASE_URL = "https://appstandard.app";
+const BASE_URL = "https://calendar.appstandard.io";
 
 export const Route = createFileRoute("/calendars/new")({
 	component: NewCalendarComponent,

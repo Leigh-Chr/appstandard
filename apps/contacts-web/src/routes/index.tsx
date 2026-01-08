@@ -16,7 +16,7 @@ import {
 	Zap,
 } from "lucide-react";
 
-const BASE_URL = "https://contacts.appstandard.app";
+const BASE_URL = "https://contacts.appstandard.io";
 const TITLE = "AppStandard Contacts - Contact management simplified";
 const DESCRIPTION =
 	"Free, open-source contact manager. Import, edit, organize your vCard files in seconds. No account required, works offline.";

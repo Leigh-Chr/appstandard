@@ -1,11 +1,11 @@
 # AppStandard Contacts - robots.txt
-# https://contacts.appstandard.app
+# https://contacts.appstandard.io
 
 User-agent: *
 Allow: /
 
 # Sitemap location
-Sitemap: https://contacts.appstandard.app/sitemap.xml
+Sitemap: https://contacts.appstandard.io/sitemap.xml
 
 # Crawl-delay for polite crawling
 Crawl-delay: 1
@@ -14,7 +14,7 @@ Crawl-delay: 1
 Disallow: /api/
 Disallow: /trpc/
 
-# Allow all pages
+# Allow public pages
 Allow: /
 Allow: /contacts
 Allow: /login
