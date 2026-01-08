@@ -5,7 +5,7 @@ export default defineConfig({
 	test: {
 		globals: true,
 		environment: "jsdom",
-		setupFiles: ["./src/test-setup.ts"],
+		setupFiles: ["@appstandard/react-utils/testing/test-setup"],
 		coverage: {
 			provider: "v8",
 			reporter: ["text", "json", "html", "lcov"],

@@ -3,6 +3,7 @@
  * Inspired by Notion, Linear, Figma
  */
 
+import { authClient } from "@appstandard/react-utils";
 import {
 	CommandDialog,
 	CommandEmpty,
@@ -34,7 +35,6 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useCalendars } from "@/hooks/use-storage";
-import { authClient } from "@/lib/auth-client";
 
 interface CommandPaletteProps {
 	open: boolean;

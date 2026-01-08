@@ -3,7 +3,7 @@
  * Displays group details with address books and management actions
  */
 
-import { cn, useIsMobile } from "@appstandard/react-utils";
+import { authClient, cn, useIsMobile } from "@appstandard/react-utils";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -53,7 +53,6 @@ import { GroupMembersList } from "@/components/group-members-list";
 import { InviteGroupMemberDialog } from "@/components/invite-group-member-dialog";
 import { ShareAddressBooksDialog } from "@/components/share-address-books-dialog";
 import { exportGroupAsVCFFile } from "@/lib/address-book-export";
-import { authClient } from "@/lib/auth-client";
 import { QUERY_KEYS } from "@/lib/query-keys";
 import { trpc } from "@/utils/trpc";
 

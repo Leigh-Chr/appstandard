@@ -2,7 +2,7 @@
  * Storage hook for authentication status
  */
 
-import { authClient } from "@/lib/auth-client";
+import { authClient } from "@appstandard/react-utils";
 
 /**
  * Hook to check if user is authenticated

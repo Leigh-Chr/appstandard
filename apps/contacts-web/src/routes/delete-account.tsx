@@ -1,5 +1,5 @@
+import { authClient } from "@appstandard/react-utils";
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { authClient } from "@/lib/auth-client";
 
 const BASE_URL = "https://contacts.appstandard.io";
 

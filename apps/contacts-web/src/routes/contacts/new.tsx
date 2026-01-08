@@ -1,3 +1,4 @@
+import { useServerStatus } from "@appstandard/react-utils";
 import {
 	Button,
 	Card,
@@ -14,7 +15,6 @@ import { AlertCircle, Loader2, Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useCreateAddressBook } from "@/hooks/use-address-books";
-import { useServerStatus } from "@/hooks/use-server-status";
 import { handleTRPCError } from "@/lib/error-handler";
 
 export const Route = createFileRoute("/contacts/new")({

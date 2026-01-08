@@ -2,9 +2,9 @@
  * Unified storage hook for authenticated and anonymous users
  */
 
+import { authClient } from "@appstandard/react-utils";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { authClient } from "@/lib/auth-client";
 import { handleTRPCError } from "@/lib/error-handler";
 import { QUERY_KEYS } from "@/lib/query-keys";
 import { trpc } from "@/utils/trpc";

@@ -1,6 +1,9 @@
 /**
  * Test setup file for jsdom environment
  * Ensures document and window are available for React Testing Library
+ *
+ * Usage in vitest.config.ts:
+ *   setupFiles: ["@appstandard/react-utils/testing/test-setup"]
  */
 
 // @ts-expect-error - jsdom types are not available, but the module works at runtime

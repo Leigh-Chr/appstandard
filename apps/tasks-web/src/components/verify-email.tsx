@@ -1,6 +1,6 @@
+import { authClient } from "@appstandard/react-utils";
 import { VerifyEmailPage } from "@appstandard/ui";
 import { useNavigate, useSearch } from "@tanstack/react-router";
-import { authClient } from "@/lib/auth-client";
 
 export default function VerifyEmail() {
 	const navigate = useNavigate();

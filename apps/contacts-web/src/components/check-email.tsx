@@ -1,7 +1,7 @@
+import { authClient } from "@appstandard/react-utils";
 import { CheckEmailPage } from "@appstandard/ui";
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { Users } from "lucide-react";
-import { authClient } from "@/lib/auth-client";
 
 export default function CheckEmail() {
 	const navigate = useNavigate();

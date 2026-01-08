@@ -1,6 +1,6 @@
+import { authClient } from "@appstandard/react-utils";
 import { DeleteAccountForm } from "@appstandard/ui";
 import { useNavigate } from "@tanstack/react-router";
-import { authClient } from "@/lib/auth-client";
 
 export default function DeleteAccount() {
 	const navigate = useNavigate();

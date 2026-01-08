@@ -1,7 +1,7 @@
+import { authClient } from "@appstandard/react-utils";
 import { ResendVerificationForm } from "@appstandard/ui";
 import { useNavigate } from "@tanstack/react-router";
 import { CheckSquare } from "lucide-react";
-import { authClient } from "@/lib/auth-client";
 
 export default function ResendVerification() {
 	const navigate = useNavigate();

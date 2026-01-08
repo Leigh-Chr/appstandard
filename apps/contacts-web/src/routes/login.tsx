@@ -3,6 +3,7 @@
  * Uses shared auth forms from @appstandard/ui with AppConfig context
  */
 
+import { authClient } from "@appstandard/react-utils";
 import { Loader, SignInForm, SignUpForm } from "@appstandard/ui";
 import {
 	createFileRoute,
@@ -11,7 +12,6 @@ import {
 } from "@tanstack/react-router";
 import { zodValidator } from "@tanstack/zod-adapter";
 import { APP_CONFIG } from "@/lib/app-config";
-import { authClient } from "@/lib/auth-client";
 import { loginDefaults, loginSearchSchema } from "@/lib/search-params";
 
 export const Route = createFileRoute("/login")({

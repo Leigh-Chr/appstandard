@@ -14,6 +14,13 @@ export {
 	UserMenu,
 	type UserMenuProps,
 } from "./account";
+// Account Prompt
+export {
+	AccountPrompt,
+	type AccountPromptConfig,
+	type AccountPromptProps,
+	type AccountPromptUsage,
+} from "./account-prompt";
 // Alert
 export { Alert, AlertDescription, AlertTitle } from "./alert";
 // Alert Dialog

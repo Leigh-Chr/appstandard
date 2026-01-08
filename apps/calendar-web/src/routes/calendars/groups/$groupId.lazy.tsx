@@ -1,4 +1,4 @@
-import { cn, useIsMobile } from "@appstandard/react-utils";
+import { authClient, cn, useIsMobile } from "@appstandard/react-utils";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -47,7 +47,6 @@ import { CreateGroupDialog } from "@/components/calendar-list/create-group-dialo
 import { GroupMembersList } from "@/components/group-members-list";
 import { InviteGroupMemberDialog } from "@/components/invite-group-member-dialog";
 import { ShareCalendarsDialog } from "@/components/share-calendars-dialog";
-import { authClient } from "@/lib/auth-client";
 import { exportGroupAsICSFile } from "@/lib/calendar-export";
 import { QUERY_KEYS } from "@/lib/query-keys";
 import { trpc } from "@/utils/trpc";

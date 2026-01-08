@@ -1,3 +1,4 @@
+import { authClient } from "@appstandard/react-utils";
 import {
 	AppFooter,
 	AppHeader,
@@ -20,7 +21,6 @@ import { PWAUpdatePrompt } from "@/components/pwa-update-prompt";
 import { useTasksTour } from "@/components/tour";
 import UserMenu from "@/components/user-menu";
 import { APP_CONFIG } from "@/lib/app-config";
-import { authClient } from "@/lib/auth-client";
 import { logger } from "@/lib/logger";
 import type { trpc } from "@/utils/trpc";
 import "../index.css";

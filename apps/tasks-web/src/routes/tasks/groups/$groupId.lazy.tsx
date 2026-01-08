@@ -3,7 +3,7 @@
  * Displays group details with task lists and management actions
  */
 
-import { cn, useIsMobile } from "@appstandard/react-utils";
+import { authClient, cn, useIsMobile } from "@appstandard/react-utils";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -52,7 +52,6 @@ import {
 	TaskListSearchSortBar,
 	type TaskListSortBy,
 } from "@/components/task-list-view/task-list-filters";
-import { authClient } from "@/lib/auth-client";
 import { QUERY_KEYS } from "@/lib/query-keys";
 import { exportGroupAsICSFile } from "@/lib/task-list-export";
 import { trpc } from "@/utils/trpc";
