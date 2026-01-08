@@ -165,9 +165,9 @@ export default defineConfig(({ mode }) => {
 					// Increase limit to accommodate large JS bundle (current ~2.1MB)
 					maximumFileSizeToCacheInBytes: 3 * 1024 * 1024, // 3MB
 					// Force cache version update - increment when CSP or other server headers change
-					cacheId: "appstandard-tasks-v2",
-					// Offline fallback page
-					navigateFallback: "/offline.html",
+					cacheId: "appstandard-tasks-v3",
+					// SPA fallback - serves index.html for all navigation requests (client-side routing)
+					navigateFallback: "/index.html",
 					navigateFallbackDenylist: [/^\/api/, /^\/trpc/],
 					runtimeCaching: [
 						{
