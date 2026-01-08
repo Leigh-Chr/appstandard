@@ -47,6 +47,7 @@
       "dependencies": {
         "@appstandard/api": "workspace:*",
         "@appstandard/core": "workspace:*",
+        "@appstandard/ics-utils": "workspace:*",
         "@appstandard/react-utils": "workspace:*",
         "@appstandard/schemas": "workspace:*",
         "@appstandard/ui": "workspace:*",
@@ -352,6 +353,7 @@
       "name": "@appstandard-contacts/core",
       "version": "0.1.0",
       "dependencies": {
+        "@appstandard/core": "workspace:*",
         "dequal": "^2.0.3",
       },
       "devDependencies": {

@@ -2,6 +2,28 @@
  * Core utilities exports
  */
 
+// Comma-separated lists (generic utility)
+export {
+	addCategory,
+	addTag,
+	addToList,
+	getLastItem,
+	getLastTag,
+	hasCategory,
+	hasItem,
+	hasTag,
+	parseCategories,
+	parseList,
+	parseTags,
+	removeCategory,
+	removeFromList,
+	removeTag,
+	stringifyCategories,
+	stringifyList,
+	stringifyTags,
+} from "./comma-separated";
+
+// Dates
 export {
 	addDaysToDate,
 	addHoursToDate,
@@ -16,16 +38,9 @@ export {
 	startOfDay,
 	toDateTimeLocal,
 } from "./date";
+
+// Deep equality
 export { deepClone, deepEqual, shallowClone } from "./deep-equal";
-export {
-	initializeFormData,
-	transformEventFormData,
-} from "./form";
-export {
-	addTag,
-	getLastTag,
-	hasTag,
-	parseTags,
-	removeTag,
-	stringifyTags,
-} from "./tags";
+
+// Form
+export { initializeFormData, transformEventFormData } from "./form";

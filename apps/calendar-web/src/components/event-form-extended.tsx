@@ -1,3 +1,4 @@
+import { formatAlarmTrigger } from "@appstandard/ics-utils";
 import { useIsMobile } from "@appstandard/react-utils";
 import type { ValidationErrors } from "@appstandard/schemas";
 import {
@@ -39,7 +40,6 @@ import { LocationSection } from "@/components/event-form/location-section";
 import { MetadataSection } from "@/components/event-form/metadata-section";
 import { RecurrenceSection } from "@/components/event-form/recurrence-section";
 import { useAlarmTriggers } from "@/hooks/use-alarm-triggers";
-import { formatDuration } from "@/lib/alarm-parser";
 import { parseDateArray } from "@/lib/date-parser";
 import { deepEqual } from "@/lib/deep-equal";
 import type {
@@ -662,7 +662,7 @@ export function EventFormExtended({
 				updateAlarm(index, { trigger: "" });
 			}
 		} else {
-			const triggerStr = formatDuration(when, value, unit);
+			const triggerStr = formatAlarmTrigger(when, value, unit);
 			if (triggerStr) {
 				updateAlarm(index, { trigger: triggerStr });
 			}

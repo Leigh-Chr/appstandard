@@ -1,12 +1,9 @@
+import { type AlarmTrigger, parseAlarmTrigger } from "@appstandard/ics-utils";
 import { useEffect, useState } from "react";
-import { parseDuration } from "@/lib/alarm-parser";
 import type { AlarmFormData } from "@/lib/event-form-types";
 
-export interface AlarmTrigger {
-	when: "before" | "at" | "after";
-	value: number;
-	unit: "minutes" | "hours" | "days";
-}
+// Re-export AlarmTrigger type for consumers
+export type { AlarmTrigger } from "@appstandard/ics-utils";
 
 /**
  * Hook to manage alarm triggers UI state
@@ -21,7 +18,7 @@ export function useAlarmTriggers(alarms: AlarmFormData[] | undefined) {
 	useEffect(() => {
 		const triggers = new Map<number, AlarmTrigger>();
 		alarms?.forEach((alarm, index) => {
-			const parsed = parseDuration(alarm.trigger);
+			const parsed = parseAlarmTrigger(alarm.trigger);
 			if (parsed) {
 				triggers.set(index, parsed);
 			} else {

@@ -18,6 +18,7 @@
 	"dependencies": {
 		"@appstandard/api": "workspace:*",
 		"@appstandard/core": "workspace:*",
+		"@appstandard/ics-utils": "workspace:*",
 		"@appstandard/react-utils": "workspace:*",
 		"@appstandard/schemas": "workspace:*",
 		"@appstandard/ui": "workspace:*",

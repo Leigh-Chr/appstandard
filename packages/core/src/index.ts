@@ -24,30 +24,43 @@ export {
 // ----- Utils -----
 
 export {
+	// Categories (aliases for cross-product compatibility)
+	addCategory,
+	// Dates
 	addDaysToDate,
 	addHoursToDate,
 	addMinutesToDate,
+	// Tags (aliases for backwards compatibility)
 	addTag,
-	deepClone,
+	// Comma-separated lists (generic)
+	addToList,
 	// Deep equality
+	deepClone,
 	deepEqual,
 	endOfDay,
 	formatDateShort,
 	formatEventDuration,
 	getDurationMinutes,
+	getLastItem,
 	getLastTag,
+	hasCategory,
+	hasItem,
 	hasTag,
 	// Form
 	initializeFormData,
 	isSameDay,
 	isValidDate,
-	// Dates
 	normalizeDate,
-	// Tags
+	parseCategories,
+	parseList,
 	parseTags,
+	removeCategory,
+	removeFromList,
 	removeTag,
 	shallowClone,
 	startOfDay,
+	stringifyCategories,
+	stringifyList,
 	stringifyTags,
 	toDateTimeLocal,
 	transformEventFormData,

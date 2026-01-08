@@ -1,5 +1,6 @@
 /**
  * Hook to get the previous value of a state
+ * Note: This hook is not available in usehooks-ts, so we provide a custom implementation
  */
 
 import { useEffect, useRef } from "react";

@@ -1,3 +1,4 @@
+import { formatDateToICS, parseDateFromICS } from "@appstandard/ics-utils";
 import {
 	Input,
 	Label,
@@ -16,7 +17,6 @@ import { useEffect, useState } from "react";
 import { DateTimePicker } from "@/components/date-time-picker";
 import type { EventFormData } from "@/lib/event-form-types";
 import { validateUID } from "@/lib/event-form-validation-zod";
-import { formatDateToICS, parseDateFromICS } from "@/lib/ics-date-helper";
 
 interface ExpertModeSectionProps {
 	formData: EventFormData;

@@ -1,4 +1,9 @@
 import {
+	type AlarmTrigger,
+	formatDuration,
+	parseDuration,
+} from "@appstandard/ics-utils";
+import {
 	Button,
 	Card,
 	Input,
@@ -21,13 +26,8 @@ import {
 	X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import type { AlarmTrigger } from "@/hooks/use-alarm-triggers";
 import type { AlarmFormData } from "@/lib/event-form-types";
 import { FIELD_LIMITS } from "@/lib/field-limits";
-import {
-	formatDurationToICS,
-	parseDurationFromICS,
-} from "@/lib/ics-duration-helper";
 
 type AlarmValidationErrors = Record<
 	number,
@@ -191,7 +191,7 @@ function AlarmDurationInput({
 	disabled?: boolean;
 }) {
 	// Parse existing ICS duration to display simple values
-	const parsed = parseDurationFromICS(duration);
+	const parsed = parseDuration(duration);
 	const [value, setValue] = useState<string>(parsed?.value.toString() || "");
 	const [unit, setUnit] = useState<"minutes" | "hours" | "days" | "seconds">(
 		parsed?.unit || "minutes",
@@ -199,7 +199,7 @@ function AlarmDurationInput({
 
 	// Update when duration prop changes (e.g., from external source)
 	useEffect(() => {
-		const newParsed = parseDurationFromICS(duration);
+		const newParsed = parseDuration(duration);
 		if (newParsed) {
 			setValue(newParsed.value.toString());
 			setUnit(newParsed.unit);
@@ -215,7 +215,7 @@ function AlarmDurationInput({
 		if (newValue === "" || Number.isNaN(numValue) || numValue <= 0) {
 			onChange("");
 		} else {
-			onChange(formatDurationToICS(numValue, unit));
+			onChange(formatDuration(numValue, unit));
 		}
 	};
 
@@ -225,7 +225,7 @@ function AlarmDurationInput({
 		setUnit(newUnit);
 		const numValue = Number.parseInt(value, 10);
 		if (value && !Number.isNaN(numValue) && numValue > 0) {
-			onChange(formatDurationToICS(numValue, newUnit));
+			onChange(formatDuration(numValue, newUnit));
 		}
 	};
 

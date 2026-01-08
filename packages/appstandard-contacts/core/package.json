@@ -52,6 +52,7 @@
 	"author": "",
 	"license": "AGPL-3.0",
 	"dependencies": {
+		"@appstandard/core": "workspace:*",
 		"dequal": "^2.0.3"
 	},
 	"devDependencies": {
