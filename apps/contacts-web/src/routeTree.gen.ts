@@ -117,7 +117,7 @@ const ShareTokenRoute = ShareTokenRouteImport.update({
   id: '/share/$token',
   path: '/share/$token',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any).lazy(() => import('./routes/share/$token.lazy').then((d) => d.Route))
 const ContactsNewRoute = ContactsNewRouteImport.update({
   id: '/new',
   path: '/new',
@@ -134,7 +134,9 @@ const ContactsImportRoute = ContactsImportRouteImport.update({
   id: '/import',
   path: '/import',
   getParentRoute: () => ContactsRoute,
-} as any)
+} as any).lazy(() =>
+  import('./routes/contacts/import.lazy').then((d) => d.Route),
+)
 const ContactsAddressBookIdRoute = ContactsAddressBookIdRouteImport.update({
   id: '/$addressBookId',
   path: '/$addressBookId',
@@ -152,7 +154,9 @@ const ContactsGroupsGroupIdRoute = ContactsGroupsGroupIdRouteImport.update({
   id: '/groups/$groupId',
   path: '/groups/$groupId',
   getParentRoute: () => ContactsRoute,
-} as any)
+} as any).lazy(() =>
+  import('./routes/contacts/groups/$groupId.lazy').then((d) => d.Route),
+)
 const ContactsAddressBookIdContactsNewRoute =
   ContactsAddressBookIdContactsNewRouteImport.update({
     id: '/contacts/new',

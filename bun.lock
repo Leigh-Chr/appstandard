@@ -21,6 +21,7 @@
     },
     "apps/calendar-server": {
       "name": "calendar-server",
+      "version": "0.1.0",
       "dependencies": {
         "@appstandard/api": "workspace:*",
         "@appstandard/auth": "workspace:*",
@@ -43,7 +44,7 @@
     },
     "apps/calendar-web": {
       "name": "calendar-web",
-      "version": "0.0.0",
+      "version": "0.1.0",
       "dependencies": {
         "@appstandard/api": "workspace:*",
         "@appstandard/core": "workspace:*",
@@ -102,6 +103,7 @@
     },
     "apps/contacts-server": {
       "name": "contacts-server",
+      "version": "0.1.0",
       "dependencies": {
         "@appstandard-contacts/api": "workspace:*",
         "@appstandard/auth": "workspace:*",
@@ -123,7 +125,7 @@
     },
     "apps/contacts-web": {
       "name": "contacts-web",
-      "version": "0.0.0",
+      "version": "0.1.0",
       "dependencies": {
         "@appstandard-contacts/api": "workspace:*",
         "@appstandard-contacts/core": "workspace:*",
@@ -177,7 +179,7 @@
     },
     "apps/landing": {
       "name": "landing",
-      "version": "0.0.0",
+      "version": "0.1.0",
       "dependencies": {
         "@appstandard/react-utils": "workspace:*",
         "@appstandard/ui": "workspace:*",
@@ -205,6 +207,7 @@
     },
     "apps/tasks-server": {
       "name": "tasks-server",
+      "version": "0.1.0",
       "dependencies": {
         "@appstandard-tasks/api": "workspace:*",
         "@appstandard/auth": "workspace:*",
@@ -226,7 +229,7 @@
     },
     "apps/tasks-web": {
       "name": "tasks-web",
-      "version": "0.0.0",
+      "version": "0.1.0",
       "dependencies": {
         "@appstandard-tasks/api": "workspace:*",
         "@appstandard/react-utils": "workspace:*",
@@ -278,6 +281,7 @@
     },
     "packages/api": {
       "name": "@appstandard/api",
+      "version": "0.1.0",
       "dependencies": {
         "@appstandard/api-core": "workspace:*",
         "@appstandard/auth": "workspace:*",
@@ -326,6 +330,7 @@
     },
     "packages/appstandard-contacts/api": {
       "name": "@appstandard-contacts/api",
+      "version": "0.1.0",
       "dependencies": {
         "@appstandard-contacts/core": "workspace:*",
         "@appstandard-contacts/schemas": "workspace:*",
@@ -365,7 +370,7 @@
     },
     "packages/appstandard-contacts/schemas": {
       "name": "@appstandard-contacts/schemas",
-      "version": "0.0.0",
+      "version": "0.1.0",
       "dependencies": {
         "zod": "catalog:",
       },
@@ -390,6 +395,7 @@
     },
     "packages/appstandard-tasks/api": {
       "name": "@appstandard-tasks/api",
+      "version": "0.1.0",
       "dependencies": {
         "@appstandard-tasks/core": "workspace:*",
         "@appstandard-tasks/schemas": "workspace:*",
@@ -429,7 +435,7 @@
     },
     "packages/appstandard-tasks/schemas": {
       "name": "@appstandard-tasks/schemas",
-      "version": "0.0.0",
+      "version": "0.1.0",
       "dependencies": {
         "zod": "catalog:",
       },
@@ -446,7 +452,7 @@
       "name": "@appstandard-tasks/todo-utils",
       "version": "0.1.0",
       "dependencies": {
-        "ical.js": "catalog:",
+        "ical.js": "^2.2.1",
       },
       "devDependencies": {
         "@appstandard/config": "workspace:*",
@@ -458,6 +464,7 @@
     },
     "packages/auth": {
       "name": "@appstandard/auth",
+      "version": "0.1.0",
       "dependencies": {
         "@appstandard/db": "workspace:*",
         "better-auth": "catalog:",
@@ -477,7 +484,7 @@
     },
     "packages/config": {
       "name": "@appstandard/config",
-      "version": "0.0.0",
+      "version": "0.1.0",
     },
     "packages/core": {
       "name": "@appstandard/core",
@@ -495,6 +502,7 @@
     },
     "packages/db": {
       "name": "@appstandard/db",
+      "version": "0.1.0",
       "dependencies": {
         "@noble/hashes": "^2.0.1",
         "@prisma/adapter-pg": "^7.2.0",
@@ -515,7 +523,7 @@
       "name": "@appstandard/ics-utils",
       "version": "0.1.0",
       "dependencies": {
-        "ical.js": "catalog:",
+        "ical.js": "^2.2.1",
       },
       "devDependencies": {
         "@appstandard/config": "workspace:*",
@@ -554,7 +562,7 @@
     },
     "packages/schemas": {
       "name": "@appstandard/schemas",
-      "version": "0.0.0",
+      "version": "0.1.0",
       "dependencies": {
         "zod": "catalog:",
       },

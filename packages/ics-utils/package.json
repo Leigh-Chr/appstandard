@@ -1,5 +1,5 @@
 {
-	"name": "@leigh-chr/ics-utils",
+	"name": "@appstandard/ics-utils",
 	"version": "0.1.0",
 	"description": "TypeScript utilities for parsing and generating ICS/iCalendar files (RFC 5545)",
 	"type": "module",

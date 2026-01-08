@@ -1,5 +1,5 @@
 {
-	"name": "@leigh-chr/vtodo-utils",
+	"name": "@appstandard-tasks/todo-utils",
 	"version": "0.1.0",
 	"description": "TypeScript utilities for parsing and generating VTODO/iCalendar task files (RFC 5545)",
 	"type": "module",

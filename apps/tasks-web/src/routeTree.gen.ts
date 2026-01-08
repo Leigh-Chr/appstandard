@@ -127,7 +127,7 @@ const TasksImportRoute = TasksImportRouteImport.update({
   id: '/import',
   path: '/import',
   getParentRoute: () => TasksRoute,
-} as any)
+} as any).lazy(() => import('./routes/tasks/import.lazy').then((d) => d.Route))
 const TasksTaskListIdRoute = TasksTaskListIdRouteImport.update({
   id: '/$taskListId',
   path: '/$taskListId',
@@ -139,12 +139,14 @@ const ShareTokenRoute = ShareTokenRouteImport.update({
   id: '/share/$token',
   path: '/share/$token',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any).lazy(() => import('./routes/share/$token.lazy').then((d) => d.Route))
 const TasksGroupsGroupIdRoute = TasksGroupsGroupIdRouteImport.update({
   id: '/groups/$groupId',
   path: '/groups/$groupId',
   getParentRoute: () => TasksRoute,
-} as any)
+} as any).lazy(() =>
+  import('./routes/tasks/groups/$groupId.lazy').then((d) => d.Route),
+)
 const GroupsGroupIdAcceptInvitationRoute =
   GroupsGroupIdAcceptInvitationRouteImport.update({
     id: '/groups/$groupId/accept-invitation',

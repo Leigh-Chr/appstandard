@@ -45,28 +45,19 @@ jobs:
 
       - name: Publish ics-utils
         if: inputs.package == 'ics-utils' || inputs.package == 'all'
-        working-directory: packages/ics-utils
-        run: |
-          npm version ${{ inputs.version_bump }} --no-git-tag-version
-          npm publish --access public
+        run: ./scripts/publish-npm.sh ics-utils ${{ inputs.version_bump }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish vcard-utils
         if: inputs.package == 'vcard-utils' || inputs.package == 'all'
-        working-directory: packages/appstandard-contacts/vcard-utils
-        run: |
-          npm version ${{ inputs.version_bump }} --no-git-tag-version
-          npm publish --access public
+        run: ./scripts/publish-npm.sh vcard-utils ${{ inputs.version_bump }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish vtodo-utils
         if: inputs.package == 'vtodo-utils' || inputs.package == 'all'
-        working-directory: packages/appstandard-tasks/todo-utils
-        run: |
-          npm version ${{ inputs.version_bump }} --no-git-tag-version
-          npm publish --access public
+        run: ./scripts/publish-npm.sh vtodo-utils ${{ inputs.version_bump }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 

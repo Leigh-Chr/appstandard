@@ -112,7 +112,7 @@ const ShareTokenRoute = ShareTokenRouteImport.update({
   id: '/share/$token',
   path: '/share/$token',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any).lazy(() => import('./routes/share/$token.lazy').then((d) => d.Route))
 const CalendarsNewRoute = CalendarsNewRouteImport.update({
   id: '/new',
   path: '/new',
@@ -129,7 +129,9 @@ const CalendarsImportRoute = CalendarsImportRouteImport.update({
   id: '/import',
   path: '/import',
   getParentRoute: () => CalendarsRoute,
-} as any)
+} as any).lazy(() =>
+  import('./routes/calendars/import.lazy').then((d) => d.Route),
+)
 const CalendarsCalendarIdRoute = CalendarsCalendarIdRouteImport.update({
   id: '/$calendarId',
   path: '/$calendarId',
@@ -147,7 +149,9 @@ const CalendarsGroupsGroupIdRoute = CalendarsGroupsGroupIdRouteImport.update({
   id: '/groups/$groupId',
   path: '/groups/$groupId',
   getParentRoute: () => CalendarsRoute,
-} as any)
+} as any).lazy(() =>
+  import('./routes/calendars/groups/$groupId.lazy').then((d) => d.Route),
+)
 const CalendarsCalendarIdImportRoute =
   CalendarsCalendarIdImportRouteImport.update({
     id: '/import',
