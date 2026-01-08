@@ -21,7 +21,8 @@
 import { existsSync, readFileSync } from "node:fs";
 import { logger } from "./logger";
 
-const SECRETS_PATH = "/run/secrets";
+// nosemgrep: codacy.tools-configs.codacy.javascript.security.hard-coded-password
+const SECRETS_PATH = "/run/secrets"; // Standard Docker secrets path, not a hardcoded password
 
 /**
  * Read a secret from Docker secrets file or fallback to environment variable

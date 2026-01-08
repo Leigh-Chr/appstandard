@@ -1,0 +1,58 @@
+# Codacy Analysis Configuration
+# https://docs.codacy.com/repositories-configure/codacy-configuration-file/
+
+---
+# Exclude generated and build artifacts from analysis
+exclude_paths:
+  # Build outputs
+  - "**/dist/**"
+  - "**/dev-dist/**"
+  - "**/build/**"
+  - "**/.next/**"
+  - "**/.nuxt/**"
+
+  # Test coverage reports
+  - "**/coverage/**"
+  - "**/lcov-report/**"
+
+  # Dependencies
+  - "**/node_modules/**"
+
+  # Generated files
+  - "**/prisma/generated/**"
+  - "**/*.gen.ts"
+  - "**/routeTree.gen.ts"
+
+  # IDE and tool configurations
+  - "**/.turbo/**"
+  - "**/.vscode/**"
+  - "**/.zed/**"
+
+  # External/template files
+  - "_bmad/**"
+
+  # Tauri/native builds
+  - "**/src-tauri/**"
+  - "**/.expo/**"
+  - "**/.wrangler/**"
+  - "**/.alchemy/**"
+  - "**/.svelte-kit/**"
+
+# Tool-specific configurations
+engines:
+  eslint:
+    enabled: true
+    # Uses .codacy/tools-configs/eslint.config.mjs
+
+  semgrep:
+    enabled: true
+
+  trivy:
+    enabled: true
+
+  lizard:
+    enabled: true
+    # Complexity thresholds
+    # CCN (Cyclomatic Complexity Number): 15 (default: 15)
+    # NLOC (Non-commenting Lines of Code): 100 (default: 1000000)
+    # Parameters: 10 (default: 100)
