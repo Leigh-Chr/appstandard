@@ -1,7 +1,7 @@
 {
 	"name": "@appstandard-tasks/todo-utils",
 	"version": "0.1.0",
-	"description": "Pure VTODO utilities for parsing and generating task files (RFC 5545)",
+	"description": "TypeScript utilities for parsing and generating VTODO/iCalendar task files (RFC 5545)",
 	"type": "module",
 	"main": "./dist/index.mjs",
 	"module": "./dist/index.mjs",
@@ -32,24 +32,36 @@
 		"build": "rm -rf dist && tsdown",
 		"dev": "tsdown --watch",
 		"typecheck": "tsc --noEmit",
-		"test": "vitest run --passWithNoTests",
+		"test": "vitest run",
 		"test:watch": "vitest",
-		"clean": "rm -rf dist *.tsbuildinfo"
+		"clean": "rm -rf dist *.tsbuildinfo",
+		"prepublishOnly": "npm run build"
 	},
 	"keywords": [
 		"vtodo",
 		"ics",
 		"icalendar",
 		"tasks",
+		"todo",
 		"rfc5545",
 		"caldav",
 		"parser",
-		"generator"
+		"generator",
+		"typescript"
 	],
-	"author": "",
+	"author": "Leigh CHAREYRE",
 	"license": "AGPL-3.0",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/Leigh-Chr/appstandard.git",
+		"directory": "packages/appstandard-tasks/todo-utils"
+	},
+	"homepage": "https://github.com/Leigh-Chr/appstandard/tree/master/packages/appstandard-tasks/todo-utils#readme",
+	"bugs": {
+		"url": "https://github.com/Leigh-Chr/appstandard/issues"
+	},
 	"dependencies": {
-		"ical.js": "catalog:"
+		"ical.js": "^2.2.1"
 	},
 	"devDependencies": {
 		"@appstandard/config": "workspace:*",
@@ -58,8 +70,10 @@
 		"typescript": "catalog:",
 		"vitest": "catalog:"
 	},
-	"peerDependencies": {},
 	"publishConfig": {
 		"access": "public"
+	},
+	"engines": {
+		"node": ">=18"
 	}
 }

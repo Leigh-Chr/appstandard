@@ -1,7 +1,7 @@
 {
 	"name": "@appstandard-contacts/vcard-utils",
 	"version": "0.1.0",
-	"description": "Pure vCard utilities for parsing and generating contact files (RFC 6350)",
+	"description": "TypeScript utilities for parsing and generating vCard files (RFC 6350)",
 	"type": "module",
 	"main": "./dist/index.mjs",
 	"module": "./dist/index.mjs",
@@ -9,23 +9,19 @@
 	"exports": {
 		".": {
 			"types": "./dist/index.d.mts",
-			"import": "./dist/index.mjs",
-			"default": "./src/index.ts"
+			"import": "./dist/index.mjs"
 		},
 		"./parser": {
 			"types": "./dist/parser/index.d.mts",
-			"import": "./dist/parser/index.mjs",
-			"default": "./src/parser/index.ts"
+			"import": "./dist/parser/index.mjs"
 		},
 		"./generator": {
 			"types": "./dist/generator/index.d.mts",
-			"import": "./dist/generator/index.mjs",
-			"default": "./src/generator/index.ts"
+			"import": "./dist/generator/index.mjs"
 		},
 		"./utils": {
 			"types": "./dist/utils/index.d.mts",
-			"import": "./dist/utils/index.mjs",
-			"default": "./src/utils/index.ts"
+			"import": "./dist/utils/index.mjs"
 		}
 	},
 	"files": [
@@ -36,9 +32,10 @@
 		"build": "rm -rf dist && tsdown",
 		"dev": "tsdown --watch",
 		"typecheck": "tsc --noEmit",
-		"test": "vitest run --passWithNoTests",
+		"test": "vitest run",
 		"test:watch": "vitest",
-		"clean": "rm -rf dist *.tsbuildinfo"
+		"clean": "rm -rf dist *.tsbuildinfo",
+		"prepublishOnly": "npm run build"
 	},
 	"keywords": [
 		"vcard",
@@ -46,11 +43,22 @@
 		"contacts",
 		"rfc6350",
 		"carddav",
+		"address-book",
 		"parser",
-		"generator"
+		"generator",
+		"typescript"
 	],
-	"author": "",
+	"author": "Leigh CHAREYRE",
 	"license": "AGPL-3.0",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/Leigh-Chr/appstandard.git",
+		"directory": "packages/appstandard-contacts/vcard-utils"
+	},
+	"homepage": "https://github.com/Leigh-Chr/appstandard/tree/master/packages/appstandard-contacts/vcard-utils#readme",
+	"bugs": {
+		"url": "https://github.com/Leigh-Chr/appstandard/issues"
+	},
 	"dependencies": {},
 	"devDependencies": {
 		"@appstandard/config": "workspace:*",
@@ -58,8 +66,10 @@
 		"typescript": "catalog:",
 		"vitest": "catalog:"
 	},
-	"peerDependencies": {},
 	"publishConfig": {
 		"access": "public"
+	},
+	"engines": {
+		"node": ">=18"
 	}
 }
