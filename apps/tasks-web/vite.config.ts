@@ -149,6 +149,53 @@ export default defineConfig(({ mode }) => {
 							icons: [{ src: "pwa-192x192.png", sizes: "192x192" }],
 						},
 					],
+					// Screenshots for app store listings and install prompts
+					screenshots: [
+						{
+							src: "screenshots/desktop-tasks.svg",
+							sizes: "1280x720",
+							type: "image/svg+xml",
+							form_factor: "wide",
+							label: "Task list view on desktop",
+						},
+						{
+							src: "screenshots/mobile-tasks.svg",
+							sizes: "750x1334",
+							type: "image/svg+xml",
+							form_factor: "narrow",
+							label: "Task list on mobile",
+						},
+					],
+					// Launch handler - focus existing window if app is already open
+					launch_handler: {
+						client_mode: ["focus-existing", "auto"],
+					},
+					// File handlers - open .ics TODO files directly with the app
+					file_handlers: [
+						{
+							action: "/tasks/import",
+							accept: {
+								"text/calendar": [".ics", ".ical"],
+							},
+						},
+					],
+					// Share target - receive shared files
+					share_target: {
+						action: "/tasks/import",
+						method: "POST",
+						enctype: "multipart/form-data",
+						params: {
+							title: "title",
+							text: "text",
+							url: "url",
+							files: [
+								{
+									name: "file",
+									accept: ["text/calendar", ".ics"],
+								},
+							],
+						},
+					},
 				},
 				pwaAssets: { disabled: false, config: true },
 				devOptions: {
@@ -162,6 +209,8 @@ export default defineConfig(({ mode }) => {
 					cleanupOutdatedCaches: true,
 					clientsClaim: true,
 					skipWaiting: true,
+					// Enable navigation preload for faster page loads
+					navigationPreload: true,
 					// Increase limit to accommodate large JS bundle (current ~2.1MB)
 					maximumFileSizeToCacheInBytes: 3 * 1024 * 1024, // 3MB
 					// Force cache version update - increment when CSP or other server headers change

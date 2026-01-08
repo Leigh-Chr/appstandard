@@ -4,7 +4,7 @@
  * Enhanced with date-based grouping for better readability
  */
 
-import { cn } from "@appstandard/react-utils";
+import { cn, removeFromIndex } from "@appstandard/react-utils";
 import { Button } from "@appstandard/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
@@ -187,7 +187,7 @@ function useDeleteEvent(calendarId: string) {
 
 	const mutation = useMutation(
 		trpc.event.delete.mutationOptions({
-			onSuccess: () => {
+			onSuccess: (_, variables) => {
 				void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.event.all });
 				void queryClient.invalidateQueries({
 					queryKey: QUERY_KEYS.calendar.byId(calendarId),
@@ -195,6 +195,8 @@ function useDeleteEvent(calendarId: string) {
 				void queryClient.invalidateQueries({
 					queryKey: QUERY_KEYS.dashboard.all,
 				});
+				// Remove from OS content index
+				void removeFromIndex(`calendar-event-${variables.id}`);
 				toast.success("Event deleted");
 			},
 			onError: (error: unknown) => {

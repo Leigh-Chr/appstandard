@@ -30,6 +30,7 @@ import {
 	Link2,
 	Loader2,
 	Plus,
+	Share2,
 	Trash2,
 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -141,6 +142,15 @@ export function ShareCalendarDialog({
 		return `${baseUrl}/share/${token}`;
 	};
 
+	// Check if Web Share API is supported
+	const canShare =
+		typeof navigator !== "undefined" &&
+		"share" in navigator &&
+		// Only show on mobile or if explicitly supported
+		(navigator.maxTouchPoints > 0 ||
+			("canShare" in navigator &&
+				navigator.canShare({ url: window.location.href })));
+
 	// Copy to clipboard
 	const handleCopy = async (token: string, linkId: string) => {
 		const url = getShareUrl(token);
@@ -151,6 +161,25 @@ export function ShareCalendarDialog({
 			toast.success("Link copied!");
 		} catch {
 			toast.error("Unable to copy link");
+		}
+	};
+
+	// Share via Web Share API
+	const handleShare = async (token: string, linkName: string) => {
+		const url = getShareUrl(token);
+		try {
+			await navigator.share({
+				title: `${calendarName} - Calendar`,
+				text: linkName
+					? `Share link "${linkName}" for calendar: ${calendarName}`
+					: `Share link for calendar: ${calendarName}`,
+				url,
+			});
+		} catch (error) {
+			// User cancelled or share failed - only show error for non-abort
+			if (error instanceof Error && error.name !== "AbortError") {
+				toast.error("Unable to share");
+			}
 		}
 	};
 
@@ -269,6 +298,19 @@ export function ShareCalendarDialog({
 														<Copy className="h-4 w-4 sm:h-3 sm:w-3" />
 													)}
 												</Button>
+												{canShare && (
+													<Button
+														variant="ghost"
+														size="icon"
+														className="h-10 min-h-[44px] w-10 sm:h-6 sm:min-h-0 sm:w-6"
+														onClick={() =>
+															handleShare(link.token, link.name ?? "")
+														}
+														aria-label="Share link"
+													>
+														<Share2 className="h-4 w-4 sm:h-3 sm:w-3" />
+													</Button>
+												)}
 												<Button
 													variant="ghost"
 													size="icon"

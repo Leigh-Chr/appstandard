@@ -1,3 +1,4 @@
+import { indexCalendarEvent } from "@appstandard/react-utils";
 import type { ValidationErrors } from "@appstandard/schemas";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createLazyFileRoute, useNavigate } from "@tanstack/react-router";
@@ -45,13 +46,19 @@ function NewEventComponent() {
 
 	const createMutation = useMutation(
 		trpc.event.create.mutationOptions({
-			onSuccess: () => {
+			onSuccess: (createdEvent) => {
 				void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.event.all });
 				void queryClient.invalidateQueries({
 					queryKey: QUERY_KEYS.calendar.byId(calendarId),
 				});
 				void queryClient.invalidateQueries({
 					queryKey: QUERY_KEYS.dashboard.all,
+				});
+				// Index event for OS search (PWA Content Indexing API)
+				void indexCalendarEvent({
+					id: createdEvent.id,
+					summary: createdEvent.title,
+					description: createdEvent.description ?? undefined,
 				});
 				toast.success("Event created successfully");
 				navigate({ to: `/calendars/${calendarId}` });

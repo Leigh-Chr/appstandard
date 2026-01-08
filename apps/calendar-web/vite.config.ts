@@ -149,6 +149,64 @@ export default defineConfig(({ mode }) => {
 							icons: [{ src: "pwa-192x192.png", sizes: "192x192" }],
 						},
 					],
+					// Screenshots for app store listings and install prompts
+					screenshots: [
+						{
+							src: "screenshots/desktop-calendar.svg",
+							sizes: "1280x720",
+							type: "image/svg+xml",
+							form_factor: "wide",
+							label: "Monthly calendar view on desktop",
+						},
+						{
+							src: "screenshots/mobile-calendar.svg",
+							sizes: "750x1334",
+							type: "image/svg+xml",
+							form_factor: "narrow",
+							label: "Calendar view on mobile",
+						},
+					],
+					// Launch handler - focus existing window if app is already open
+					launch_handler: {
+						client_mode: ["focus-existing", "auto"],
+					},
+					// File handlers - open .ics files directly with the app
+					file_handlers: [
+						{
+							action: "/calendars/import",
+							accept: {
+								"text/calendar": [".ics", ".ical", ".ifb", ".icalendar"],
+							},
+						},
+					],
+					// Protocol handlers - handle webcal:// URLs
+					protocol_handlers: [
+						{
+							protocol: "web+webcal",
+							url: "/calendars/subscribe?url=%s",
+						},
+						{
+							protocol: "web+ical",
+							url: "/calendars/import?url=%s",
+						},
+					],
+					// Share target - receive shared files
+					share_target: {
+						action: "/calendars/import",
+						method: "POST",
+						enctype: "multipart/form-data",
+						params: {
+							title: "title",
+							text: "text",
+							url: "url",
+							files: [
+								{
+									name: "file",
+									accept: ["text/calendar", ".ics"],
+								},
+							],
+						},
+					},
 				},
 				pwaAssets: { disabled: false, config: true },
 				devOptions: {
@@ -162,6 +220,8 @@ export default defineConfig(({ mode }) => {
 					cleanupOutdatedCaches: true,
 					clientsClaim: true,
 					skipWaiting: true,
+					// Enable navigation preload for faster page loads
+					navigationPreload: true,
 					// Increase limit to accommodate large JS bundle (current ~2.1MB)
 					maximumFileSizeToCacheInBytes: 3 * 1024 * 1024, // 3MB
 					// Force cache version update - increment when CSP or other server headers change

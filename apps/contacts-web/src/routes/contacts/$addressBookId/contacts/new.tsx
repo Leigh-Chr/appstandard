@@ -1,3 +1,4 @@
+import { indexContact } from "@appstandard/react-utils";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
@@ -35,7 +36,7 @@ function NewContactComponent() {
 
 	const createMutation = useMutation(
 		trpc.contact.create.mutationOptions({
-			onSuccess: () => {
+			onSuccess: (contact) => {
 				void queryClient.invalidateQueries({
 					queryKey: QUERY_KEYS.contact.all,
 				});
@@ -47,6 +48,11 @@ function NewContactComponent() {
 				});
 				void queryClient.invalidateQueries({
 					queryKey: QUERY_KEYS.dashboard.all,
+				});
+				// Index contact for OS search
+				void indexContact({
+					id: contact.id,
+					name: contact.formattedName,
 				});
 				toast.success("Contact created successfully");
 				navigate({ to: `/contacts/${addressBookId}` });

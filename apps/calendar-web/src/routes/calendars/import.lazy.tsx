@@ -1,3 +1,4 @@
+import { useFileHandler } from "@appstandard/react-utils";
 import {
 	Button,
 	Card,
@@ -37,6 +38,23 @@ function ImportCalendarComponent() {
 	// URL import state
 	const [url, setUrl] = useState("");
 	const [urlCalendarName, setUrlCalendarName] = useState("");
+
+	// Handle files opened via PWA file handler (launchQueue API)
+	useFileHandler({
+		onFiles: async (files) => {
+			const launchFile = files[0];
+			if (!launchFile) return;
+			setFile(launchFile);
+			// Suggest calendar name from file name
+			const suggestedName = launchFile.name
+				.replace(/\.ics$/i, "")
+				.replace(/[-_]/g, " ")
+				.replace(/\b\w/g, (l) => l.toUpperCase());
+			setCalendarName(suggestedName);
+			toast.info(`File "${launchFile.name}" ready to import`);
+		},
+		immediate: true,
+	});
 
 	const importMutation = useMutation(
 		trpc.calendar.importIcs.mutationOptions({

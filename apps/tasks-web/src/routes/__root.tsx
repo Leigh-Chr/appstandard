@@ -1,14 +1,17 @@
-import { authClient } from "@appstandard/react-utils";
+import { authClient, useBadge } from "@appstandard/react-utils";
 import {
 	AppFooter,
 	AppHeader,
 	AppProvider,
 	ErrorBoundary,
+	InstallPrompt,
+	OfflineBanner,
 	ThemeProvider,
 	Toaster,
 	TourProvider,
 } from "@appstandard/ui";
 import type { QueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import {
 	createRootRouteWithContext,
@@ -22,7 +25,7 @@ import { useTasksTour } from "@/components/tour";
 import UserMenu from "@/components/user-menu";
 import { APP_CONFIG } from "@/lib/app-config";
 import { logger } from "@/lib/logger";
-import type { trpc } from "@/utils/trpc";
+import { trpc } from "@/utils/trpc";
 import "../index.css";
 
 export interface RouterAppContext {
@@ -33,6 +36,22 @@ export interface RouterAppContext {
 const BASE_URL = "https://tasks.appstandard.io";
 
 /**
+ * Component to manage the app badge showing overdue task count
+ * Uses the PWA Badge API to display count on the app icon
+ */
+function AppBadgeManager() {
+	const { data: stats } = useQuery({
+		...trpc.dashboard.getStats.queryOptions({ period: "week" }),
+		staleTime: 5 * 60 * 1000, // 5 minutes
+	});
+
+	// Set app badge with overdue task count
+	useBadge(stats?.hero?.overdueCount ?? 0);
+
+	return null;
+}
+
+/**
  * App layout with tour integration
  * Must be inside TourProvider to use the tour hook
  */
@@ -40,6 +59,8 @@ function AppLayout() {
 	const { startTour } = useTasksTour();
 	return (
 		<div className="flex min-h-svh flex-col">
+			<OfflineBanner />
+			<AppBadgeManager />
 			<AppHeader
 				authClient={authClient}
 				userMenu={<UserMenu />}
@@ -202,6 +223,10 @@ function RootComponent() {
 					</TourProvider>
 					<Toaster richColors />
 					<PWAUpdatePrompt />
+					<InstallPrompt
+						description="Install AppStandard Tasks for offline access and a better experience"
+						className="fixed right-4 bottom-4 left-4 z-50 md:right-4 md:left-auto md:w-96"
+					/>
 				</ThemeProvider>
 			</AppProvider>
 			<TanStackRouterDevtools position="bottom-left" />

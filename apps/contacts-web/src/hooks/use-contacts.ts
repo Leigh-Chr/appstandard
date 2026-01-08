@@ -3,6 +3,7 @@
  * Follows AppStandard Calendar patterns for consistency
  */
 
+import { removeFromIndex } from "@appstandard/react-utils";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { handleTRPCError } from "@/lib/error-handler";
@@ -128,7 +129,7 @@ export function useDeleteContact() {
 
 	const mutation = useMutation(
 		trpc.contact.delete.mutationOptions({
-			onSuccess: () => {
+			onSuccess: (_, variables) => {
 				void queryClient.invalidateQueries({
 					queryKey: QUERY_KEYS.contact.all,
 				});
@@ -138,6 +139,8 @@ export function useDeleteContact() {
 				void queryClient.invalidateQueries({
 					queryKey: QUERY_KEYS.dashboard.all,
 				});
+				// Remove from OS content index
+				void removeFromIndex(`contact-${variables.id}`);
 			},
 			onError: (error) => {
 				handleTRPCError(error, {

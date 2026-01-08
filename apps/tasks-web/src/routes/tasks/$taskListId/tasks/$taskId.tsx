@@ -1,3 +1,4 @@
+import { indexTask } from "@appstandard/react-utils";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -171,7 +172,7 @@ function EditTaskComponent() {
 
 	const updateMutation = useMutation(
 		trpc.task.update.mutationOptions({
-			onSuccess: () => {
+			onSuccess: (_, variables) => {
 				void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.task.all });
 				void queryClient.invalidateQueries({
 					queryKey: QUERY_KEYS.taskList.byId(taskListId),
@@ -182,6 +183,14 @@ function EditTaskComponent() {
 				void queryClient.invalidateQueries({
 					queryKey: QUERY_KEYS.dashboard.all,
 				});
+				// Update OS content index
+				if (variables.title) {
+					void indexTask({
+						id: variables.id,
+						summary: variables.title,
+						description: variables.description || undefined,
+					});
+				}
 				toast.success("Task updated successfully");
 				navigate({ to: `/tasks/${taskListId}` });
 			},

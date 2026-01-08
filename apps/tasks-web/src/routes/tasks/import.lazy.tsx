@@ -1,3 +1,4 @@
+import { useFileHandler } from "@appstandard/react-utils";
 import {
 	Button,
 	Card,
@@ -15,7 +16,7 @@ import {
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createLazyFileRoute, useNavigate } from "@tanstack/react-router";
 import { Globe, Loader2, Upload } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { FileDropZone } from "@/components/file-drop-zone";
 import { QUERY_KEYS } from "@/lib/query-keys";
@@ -33,10 +34,39 @@ function ImportTaskListComponent() {
 	const [fileContent, setFileContent] = useState<string | null>(null);
 	const [taskListName, setTaskListName] = useState("");
 	const [taskCount, setTaskCount] = useState(0);
+	const [launchQueueFile, setLaunchQueueFile] = useState<File | null>(null);
 
 	// URL import state
 	const [url, setUrl] = useState("");
 	const [urlTaskListName, setUrlTaskListName] = useState("");
+
+	// Handle files opened via PWA file handler (launchQueue API)
+	useFileHandler({
+		onFiles: async (files) => {
+			const file = files[0];
+			if (!file) return;
+			setLaunchQueueFile(file);
+			// Suggest name from file name
+			const suggestedName = file.name
+				.replace(/\.ics$/i, "")
+				.replace(/[-_]/g, " ")
+				.replace(/\b\w/g, (l) => l.toUpperCase());
+			setTaskListName(suggestedName);
+			// Read file content
+			const content = await file.text();
+			setFileContent(content);
+			toast.info(`File "${file.name}" ready to import`);
+		},
+		immediate: true,
+	});
+
+	// Process launch queue file when it's set
+	useEffect(() => {
+		if (launchQueueFile && fileContent) {
+			// File is ready, user can click import
+			setLaunchQueueFile(null);
+		}
+	}, [launchQueueFile, fileContent]);
 
 	const importMutation = useMutation({
 		mutationFn: (data: { fileContent: string; name?: string }) =>

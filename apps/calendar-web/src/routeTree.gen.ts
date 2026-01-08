@@ -24,6 +24,7 @@ import { Route as AccountRouteImport } from './routes/account'
 import { Route as R404RouteImport } from './routes/404'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ShareTokenRouteImport } from './routes/share/$token'
+import { Route as CalendarsSubscribeRouteImport } from './routes/calendars/subscribe'
 import { Route as CalendarsNewRouteImport } from './routes/calendars/new'
 import { Route as CalendarsMergeRouteImport } from './routes/calendars/merge'
 import { Route as CalendarsImportRouteImport } from './routes/calendars/import'
@@ -113,6 +114,13 @@ const ShareTokenRoute = ShareTokenRouteImport.update({
   path: '/share/$token',
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() => import('./routes/share/$token.lazy').then((d) => d.Route))
+const CalendarsSubscribeRoute = CalendarsSubscribeRouteImport.update({
+  id: '/subscribe',
+  path: '/subscribe',
+  getParentRoute: () => CalendarsRoute,
+} as any).lazy(() =>
+  import('./routes/calendars/subscribe.lazy').then((d) => d.Route),
+)
 const CalendarsNewRoute = CalendarsNewRouteImport.update({
   id: '/new',
   path: '/new',
@@ -198,6 +206,7 @@ export interface FileRoutesByFullPath {
   '/calendars/import': typeof CalendarsImportRoute
   '/calendars/merge': typeof CalendarsMergeRoute
   '/calendars/new': typeof CalendarsNewRoute
+  '/calendars/subscribe': typeof CalendarsSubscribeRoute
   '/share/$token': typeof ShareTokenRoute
   '/calendars/$calendarId/import': typeof CalendarsCalendarIdImportRoute
   '/calendars/groups/$groupId': typeof CalendarsGroupsGroupIdRoute
@@ -224,6 +233,7 @@ export interface FileRoutesByTo {
   '/calendars/import': typeof CalendarsImportRoute
   '/calendars/merge': typeof CalendarsMergeRoute
   '/calendars/new': typeof CalendarsNewRoute
+  '/calendars/subscribe': typeof CalendarsSubscribeRoute
   '/share/$token': typeof ShareTokenRoute
   '/calendars/$calendarId/import': typeof CalendarsCalendarIdImportRoute
   '/calendars/groups/$groupId': typeof CalendarsGroupsGroupIdRoute
@@ -251,6 +261,7 @@ export interface FileRoutesById {
   '/calendars/import': typeof CalendarsImportRoute
   '/calendars/merge': typeof CalendarsMergeRoute
   '/calendars/new': typeof CalendarsNewRoute
+  '/calendars/subscribe': typeof CalendarsSubscribeRoute
   '/share/$token': typeof ShareTokenRoute
   '/calendars/$calendarId/import': typeof CalendarsCalendarIdImportRoute
   '/calendars/groups/$groupId': typeof CalendarsGroupsGroupIdRoute
@@ -279,6 +290,7 @@ export interface FileRouteTypes {
     | '/calendars/import'
     | '/calendars/merge'
     | '/calendars/new'
+    | '/calendars/subscribe'
     | '/share/$token'
     | '/calendars/$calendarId/import'
     | '/calendars/groups/$groupId'
@@ -305,6 +317,7 @@ export interface FileRouteTypes {
     | '/calendars/import'
     | '/calendars/merge'
     | '/calendars/new'
+    | '/calendars/subscribe'
     | '/share/$token'
     | '/calendars/$calendarId/import'
     | '/calendars/groups/$groupId'
@@ -331,6 +344,7 @@ export interface FileRouteTypes {
     | '/calendars/import'
     | '/calendars/merge'
     | '/calendars/new'
+    | '/calendars/subscribe'
     | '/share/$token'
     | '/calendars/$calendarId/import'
     | '/calendars/groups/$groupId'
@@ -465,6 +479,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShareTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/calendars/subscribe': {
+      id: '/calendars/subscribe'
+      path: '/subscribe'
+      fullPath: '/calendars/subscribe'
+      preLoaderRoute: typeof CalendarsSubscribeRouteImport
+      parentRoute: typeof CalendarsRoute
+    }
     '/calendars/new': {
       id: '/calendars/new'
       path: '/new'
@@ -551,6 +572,7 @@ interface CalendarsRouteChildren {
   CalendarsImportRoute: typeof CalendarsImportRoute
   CalendarsMergeRoute: typeof CalendarsMergeRoute
   CalendarsNewRoute: typeof CalendarsNewRoute
+  CalendarsSubscribeRoute: typeof CalendarsSubscribeRoute
   CalendarsGroupsGroupIdRoute: typeof CalendarsGroupsGroupIdRoute
 }
 
@@ -559,6 +581,7 @@ const CalendarsRouteChildren: CalendarsRouteChildren = {
   CalendarsImportRoute: CalendarsImportRoute,
   CalendarsMergeRoute: CalendarsMergeRoute,
   CalendarsNewRoute: CalendarsNewRoute,
+  CalendarsSubscribeRoute: CalendarsSubscribeRoute,
   CalendarsGroupsGroupIdRoute: CalendarsGroupsGroupIdRoute,
 }
 

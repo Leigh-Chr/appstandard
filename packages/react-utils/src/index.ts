@@ -40,21 +40,50 @@ export {
 
 // Hooks
 export {
+	type Contact,
+	type ContactPickerOptions,
+	type ContentDescription,
+	// PWA hooks
+	clearAppBadge,
 	// Server status
 	createServerStatusHook,
+	type DisplayMode,
 	type FieldSectionMap,
+	type FileHandlerOptions,
+	indexCalendarEvent,
+	indexContact,
+	indexTask,
+	isAppInstalled,
+	isContactPickerSupported,
+	isFileHandlerSupported,
+	isWindowControlsOverlayActive,
+	readFileAsText,
+	readFilesAsText,
+	removeFromIndex,
 	type ServerStatus,
 	type ServerStatusOptions,
 	type ServerStatusState,
+	type ShareData,
+	setAppBadge,
+	shareContent,
+	shareFile,
 	type UseFormTrackingOptions,
 	type UseFormTrackingReturn,
 	type UseFormValidationOptions,
 	type UseFormValidationReturn,
+	type UseInstallPromptReturn,
+	type UseShareReturn,
+	useBadge,
+	useContactPicker,
+	useContentIndex,
 	useDebounce,
+	useDisplayMode,
+	useFileHandler,
 	// Form tracking
 	useFormTracking,
 	// Form validation
 	useFormValidation,
+	useInstallPrompt,
 	useIsDesktop,
 	useIsMobile,
 	useIsMounted,
@@ -66,6 +95,7 @@ export {
 	usePrefersReducedMotion,
 	usePrevious,
 	useServerStatus,
+	useShare,
 	type ValidationErrors,
 } from "./hooks";
 

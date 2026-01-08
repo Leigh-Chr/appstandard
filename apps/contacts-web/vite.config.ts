@@ -149,6 +149,53 @@ export default defineConfig(({ mode }) => {
 							icons: [{ src: "pwa-192x192.png", sizes: "192x192" }],
 						},
 					],
+					// Screenshots for app store listings and install prompts
+					screenshots: [
+						{
+							src: "screenshots/desktop-contacts.svg",
+							sizes: "1280x720",
+							type: "image/svg+xml",
+							form_factor: "wide",
+							label: "Contacts list on desktop",
+						},
+						{
+							src: "screenshots/mobile-contacts.svg",
+							sizes: "750x1334",
+							type: "image/svg+xml",
+							form_factor: "narrow",
+							label: "Contacts on mobile",
+						},
+					],
+					// Launch handler - focus existing window if app is already open
+					launch_handler: {
+						client_mode: ["focus-existing", "auto"],
+					},
+					// File handlers - open .vcf files directly with the app
+					file_handlers: [
+						{
+							action: "/contacts/import",
+							accept: {
+								"text/vcard": [".vcf", ".vcard"],
+							},
+						},
+					],
+					// Share target - receive shared files
+					share_target: {
+						action: "/contacts/import",
+						method: "POST",
+						enctype: "multipart/form-data",
+						params: {
+							title: "title",
+							text: "text",
+							url: "url",
+							files: [
+								{
+									name: "file",
+									accept: ["text/vcard", ".vcf"],
+								},
+							],
+						},
+					},
 				},
 				pwaAssets: { disabled: false, config: true },
 				devOptions: {
@@ -162,6 +209,8 @@ export default defineConfig(({ mode }) => {
 					cleanupOutdatedCaches: true,
 					clientsClaim: true,
 					skipWaiting: true,
+					// Enable navigation preload for faster page loads
+					navigationPreload: true,
 					// Increase limit to accommodate large JS bundle (current ~2.1MB)
 					maximumFileSizeToCacheInBytes: 3 * 1024 * 1024, // 3MB
 					// Force cache version update - increment when CSP or other server headers change

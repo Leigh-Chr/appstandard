@@ -1,3 +1,4 @@
+import { indexCalendarEvent } from "@appstandard/react-utils";
 import type { ValidationErrors } from "@appstandard/schemas";
 import {
 	AlertDialog,
@@ -369,13 +370,19 @@ function EditEventComponent() {
 
 	const updateMutation = useMutation(
 		trpc.event.update.mutationOptions({
-			onSuccess: () => {
+			onSuccess: (updatedEvent) => {
 				void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.event.all });
 				void queryClient.invalidateQueries({
 					queryKey: QUERY_KEYS.calendar.byId(calendarId),
 				});
 				void queryClient.invalidateQueries({
 					queryKey: QUERY_KEYS.dashboard.all,
+				});
+				// Update index for OS search (PWA Content Indexing API)
+				void indexCalendarEvent({
+					id: updatedEvent.id,
+					summary: updatedEvent.title,
+					description: updatedEvent.description ?? undefined,
 				});
 				toast.success("Event updated successfully");
 				navigate({ to: `/calendars/${calendarId}` });

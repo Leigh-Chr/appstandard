@@ -1,0 +1,114 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="750" height="1334" viewBox="0 0 750 1334">
+  <defs>
+    <linearGradient id="bg-tm" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#18181b"/>
+      <stop offset="100%" style="stop-color:#27272a"/>
+    </linearGradient>
+    <linearGradient id="card-tm" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#3f3f46"/>
+      <stop offset="100%" style="stop-color:#27272a"/>
+    </linearGradient>
+    <linearGradient id="accent-tm" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#22c55e"/>
+      <stop offset="100%" style="stop-color:#10b981"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="750" height="1334" fill="url(#bg-tm)"/>
+
+  <!-- Status bar -->
+  <rect x="0" y="0" width="750" height="44" fill="#09090b"/>
+  <text x="375" y="30" font-family="system-ui, sans-serif" font-size="14" fill="#fafafa" text-anchor="middle">9:41</text>
+
+  <!-- Header -->
+  <rect x="0" y="44" width="750" height="56" fill="#09090b"/>
+  <text x="32" y="80" font-family="system-ui, sans-serif" font-size="18" font-weight="600" fill="#fafafa">AppStandard Tasks</text>
+
+  <!-- Quick stats -->
+  <g transform="translate(24, 116)">
+    <rect x="0" y="0" width="225" height="80" rx="12" fill="url(#card-tm)"/>
+    <text x="20" y="35" font-family="system-ui, sans-serif" font-size="28" font-weight="600" fill="#22c55e">3</text>
+    <text x="20" y="58" font-family="system-ui, sans-serif" font-size="13" fill="#a1a1aa">Due today</text>
+
+    <rect x="238" y="0" width="225" height="80" rx="12" fill="url(#card-tm)"/>
+    <text x="258" y="35" font-family="system-ui, sans-serif" font-size="28" font-weight="600" fill="#f59e0b">5</text>
+    <text x="258" y="58" font-family="system-ui, sans-serif" font-size="13" fill="#a1a1aa">Upcoming</text>
+
+    <rect x="476" y="0" width="225" height="80" rx="12" fill="url(#card-tm)"/>
+    <text x="496" y="35" font-family="system-ui, sans-serif" font-size="28" font-weight="600" fill="#71717a">4</text>
+    <text x="496" y="58" font-family="system-ui, sans-serif" font-size="13" fill="#a1a1aa">Completed</text>
+  </g>
+
+  <!-- Section header -->
+  <text x="32" y="240" font-family="system-ui, sans-serif" font-size="16" font-weight="600" fill="#fafafa">Today's Tasks</text>
+
+  <!-- Task cards -->
+  <g transform="translate(24, 260)">
+    <!-- Task 1 - High priority -->
+    <rect x="0" y="0" width="702" height="88" rx="12" fill="url(#card-tm)"/>
+    <circle cx="32" cy="44" r="16" stroke="#ef4444" stroke-width="2" fill="none"/>
+    <text x="64" y="38" font-family="system-ui, sans-serif" font-size="16" font-weight="500" fill="#fafafa">Prepare presentation slides</text>
+    <text x="64" y="60" font-family="system-ui, sans-serif" font-size="13" fill="#ef4444">Due in 2 hours</text>
+    <rect x="600" y="34" width="80" height="22" rx="6" fill="#3b82f6" opacity="0.2"/>
+    <text x="620" y="50" font-family="system-ui, sans-serif" font-size="11" fill="#3b82f6">Work</text>
+  </g>
+
+  <g transform="translate(24, 360)">
+    <!-- Task 2 -->
+    <rect x="0" y="0" width="702" height="88" rx="12" fill="url(#card-tm)"/>
+    <circle cx="32" cy="44" r="16" stroke="#3f3f46" stroke-width="2" fill="none"/>
+    <text x="64" y="38" font-family="system-ui, sans-serif" font-size="16" font-weight="500" fill="#fafafa">Team standup meeting</text>
+    <text x="64" y="60" font-family="system-ui, sans-serif" font-size="13" fill="#f59e0b">At 10:00 AM</text>
+    <rect x="600" y="34" width="80" height="22" rx="6" fill="#3b82f6" opacity="0.2"/>
+    <text x="620" y="50" font-family="system-ui, sans-serif" font-size="11" fill="#3b82f6">Work</text>
+  </g>
+
+  <g transform="translate(24, 460)">
+    <!-- Task 3 -->
+    <rect x="0" y="0" width="702" height="88" rx="12" fill="url(#card-tm)"/>
+    <circle cx="32" cy="44" r="16" stroke="#3f3f46" stroke-width="2" fill="none"/>
+    <text x="64" y="38" font-family="system-ui, sans-serif" font-size="16" font-weight="500" fill="#fafafa">Call the dentist</text>
+    <text x="64" y="60" font-family="system-ui, sans-serif" font-size="13" fill="#71717a">Before 5 PM</text>
+    <rect x="580" y="34" width="100" height="22" rx="6" fill="#f59e0b" opacity="0.2"/>
+    <text x="595" y="50" font-family="system-ui, sans-serif" font-size="11" fill="#f59e0b">Personal</text>
+  </g>
+
+  <!-- Completed section -->
+  <text x="32" y="600" font-family="system-ui, sans-serif" font-size="16" font-weight="600" fill="#fafafa">Completed Today</text>
+
+  <g transform="translate(24, 620)">
+    <!-- Completed task -->
+    <rect x="0" y="0" width="702" height="72" rx="12" fill="url(#card-tm)" opacity="0.6"/>
+    <circle cx="32" cy="36" r="16" fill="#22c55e"/>
+    <path d="M24 36 L30 42 L40 32" stroke="#fff" stroke-width="2.5" fill="none"/>
+    <text x="64" y="32" font-family="system-ui, sans-serif" font-size="15" fill="#71717a" text-decoration="line-through">Review quarterly reports</text>
+    <text x="64" y="52" font-family="system-ui, sans-serif" font-size="12" fill="#52525b">Completed 2 hours ago</text>
+  </g>
+
+  <g transform="translate(24, 704)">
+    <!-- Completed task 2 -->
+    <rect x="0" y="0" width="702" height="72" rx="12" fill="url(#card-tm)" opacity="0.6"/>
+    <circle cx="32" cy="36" r="16" fill="#22c55e"/>
+    <path d="M24 36 L30 42 L40 32" stroke="#fff" stroke-width="2.5" fill="none"/>
+    <text x="64" y="32" font-family="system-ui, sans-serif" font-size="15" fill="#71717a" text-decoration="line-through">Reply to emails</text>
+    <text x="64" y="52" font-family="system-ui, sans-serif" font-size="12" fill="#52525b">Completed 4 hours ago</text>
+  </g>
+
+  <!-- FAB -->
+  <circle cx="670" cy="1150" r="32" fill="url(#accent-tm)"/>
+  <line x1="654" y1="1150" x2="686" y2="1150" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+  <line x1="670" y1="1134" x2="670" y2="1166" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+
+  <!-- Bottom navigation -->
+  <rect x="0" y="1250" width="750" height="84" fill="#09090b"/>
+  <g font-family="system-ui, sans-serif" font-size="11" text-anchor="middle">
+    <circle cx="150" cy="1280" r="24" fill="url(#accent-tm)" opacity="0.2"/>
+    <text x="150" y="1285" fill="#22c55e">Tasks</text>
+    <text x="375" y="1285" fill="#71717a">Lists</text>
+    <text x="600" y="1285" fill="#71717a">Settings</text>
+  </g>
+
+  <!-- Home indicator -->
+  <rect x="275" y="1310" width="200" height="5" rx="2.5" fill="#3f3f46"/>
+</svg>

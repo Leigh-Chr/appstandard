@@ -3,6 +3,7 @@
  * Follows AppStandard Calendar patterns for consistency
  */
 
+import { removeFromIndex } from "@appstandard/react-utils";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { handleTRPCError } from "@/lib/error-handler";
@@ -33,7 +34,7 @@ export function useDeleteTask() {
 
 	const mutation = useMutation(
 		trpc.task.delete.mutationOptions({
-			onSuccess: () => {
+			onSuccess: (_, variables) => {
 				void queryClient.invalidateQueries({
 					queryKey: QUERY_KEYS.task.all,
 				});
@@ -43,6 +44,8 @@ export function useDeleteTask() {
 				void queryClient.invalidateQueries({
 					queryKey: QUERY_KEYS.dashboard.all,
 				});
+				// Remove from OS content index
+				void removeFromIndex(`task-${variables.id}`);
 			},
 			onError: (error) => {
 				handleTRPCError(error, {

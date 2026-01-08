@@ -747,3 +747,144 @@ select:focus-visible {
 }
 
 /* Note: Les effets hover des boutons sont maintenant gérés directement dans button.tsx via les classes Tailwind */
+
+/* ============================================
+   PWA - DISPLAY MODE ADAPTATIONS
+   ============================================ */
+
+/* Hide install prompts when already installed as standalone PWA */
+@media (display-mode: standalone) {
+	.pwa-install-prompt,
+	.install-button {
+		display: none !important;
+	}
+}
+
+/* Fullscreen mode adjustments */
+@media (display-mode: fullscreen) {
+	.pwa-install-prompt,
+	.install-button {
+		display: none !important;
+	}
+}
+
+/* ============================================
+   PWA - WINDOW CONTROLS OVERLAY (WCO)
+   Desktop PWA with custom titlebar
+   ============================================ */
+
+/* WCO CSS environment variables for titlebar area */
+@supports (app-region: drag) {
+	@media (display-mode: window-controls-overlay) {
+		/* Root variables for WCO titlebar dimensions */
+		:root {
+			--wco-titlebar-height: env(titlebar-area-height, 33px);
+			--wco-titlebar-x: env(titlebar-area-x, 0px);
+			--wco-titlebar-width: env(titlebar-area-width, 100%);
+			--wco-inset-right: calc(100% - var(--wco-titlebar-width) - var(--wco-titlebar-x));
+		}
+
+		/* Body padding to account for titlebar */
+		body {
+			padding-top: var(--wco-titlebar-height);
+		}
+
+		/* App header becomes the draggable titlebar */
+		.wco-titlebar {
+			position: fixed;
+			top: 0;
+			left: 0;
+			right: 0;
+			height: var(--wco-titlebar-height);
+			/* Make the header draggable */
+			-webkit-app-region: drag;
+			app-region: drag;
+			/* Styling */
+			display: flex;
+			align-items: center;
+			padding-left: max(var(--wco-titlebar-x), 0.75rem);
+			padding-right: max(var(--wco-inset-right), 0.75rem);
+			background-color: var(--background);
+			border-bottom: 1px solid var(--border);
+			z-index: 9999;
+		}
+
+		/* Elements inside titlebar that should NOT be draggable (buttons, links) */
+		.wco-titlebar button,
+		.wco-titlebar a,
+		.wco-titlebar input,
+		.wco-titlebar select,
+		.wco-titlebar [role="button"],
+		.wco-no-drag {
+			-webkit-app-region: no-drag;
+			app-region: no-drag;
+		}
+
+		/* App title/logo in the titlebar */
+		.wco-title {
+			font-size: 0.875rem;
+			font-weight: 600;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			margin-right: auto;
+		}
+
+		/* Actions container in titlebar */
+		.wco-actions {
+			display: flex;
+			align-items: center;
+			gap: 0.25rem;
+			-webkit-app-region: no-drag;
+			app-region: no-drag;
+		}
+
+		/* Smaller buttons in WCO mode */
+		.wco-titlebar .wco-button {
+			height: calc(var(--wco-titlebar-height) - 8px);
+			min-height: unset;
+			padding: 0 0.5rem;
+			font-size: 0.75rem;
+		}
+
+		/* Main content area adjustment */
+		.wco-main {
+			margin-top: var(--wco-titlebar-height);
+		}
+	}
+}
+
+/* Fallback for browsers that don't support WCO */
+@media not all and (display-mode: window-controls-overlay) {
+	.wco-titlebar {
+		display: none;
+	}
+
+	.wco-only {
+		display: none;
+	}
+}
+
+/* ============================================
+   PWA - SAFE AREA INSETS (Notch support)
+   ============================================ */
+
+@supports (padding: env(safe-area-inset-top)) {
+	/* Account for notch/camera cutout on devices */
+	.safe-area-inset {
+		padding-top: env(safe-area-inset-top);
+		padding-right: env(safe-area-inset-right);
+		padding-bottom: env(safe-area-inset-bottom);
+		padding-left: env(safe-area-inset-left);
+	}
+
+	/* Only top safe area */
+	.safe-area-top {
+		padding-top: env(safe-area-inset-top);
+	}
+
+	/* Only bottom safe area (for bottom navigation) */
+	.safe-area-bottom {
+		padding-bottom: env(safe-area-inset-bottom);
+	}
+}

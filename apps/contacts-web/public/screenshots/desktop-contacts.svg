@@ -1,0 +1,126 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+  <defs>
+    <linearGradient id="bg-c" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#18181b"/>
+      <stop offset="100%" style="stop-color:#27272a"/>
+    </linearGradient>
+    <linearGradient id="card-c" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#3f3f46"/>
+      <stop offset="100%" style="stop-color:#27272a"/>
+    </linearGradient>
+    <linearGradient id="accent-c" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#8b5cf6"/>
+      <stop offset="100%" style="stop-color:#a855f7"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1280" height="720" fill="url(#bg-c)"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1280" height="64" fill="#09090b"/>
+  <text x="32" y="40" font-family="system-ui, sans-serif" font-size="20" font-weight="600" fill="#fafafa">AppStandard Contacts</text>
+
+  <!-- Sidebar with contact list -->
+  <rect x="0" y="64" width="360" height="656" fill="#09090b" opacity="0.5"/>
+
+  <!-- Search bar -->
+  <rect x="16" y="80" width="328" height="40" rx="8" fill="#27272a"/>
+  <text x="40" y="106" font-family="system-ui, sans-serif" font-size="14" fill="#71717a">Search contacts...</text>
+
+  <!-- Alphabet index -->
+  <text x="340" y="150" font-family="system-ui, sans-serif" font-size="11" fill="#8b5cf6">A</text>
+
+  <!-- Contact list items -->
+  <g transform="translate(16, 136)">
+    <rect x="0" y="0" width="308" height="56" rx="8" fill="url(#accent-c)" opacity="0.2"/>
+    <circle cx="28" cy="28" r="20" fill="#3b82f6"/>
+    <text x="28" y="34" font-family="system-ui, sans-serif" font-size="14" font-weight="500" fill="#fff" text-anchor="middle">AJ</text>
+    <text x="60" y="24" font-family="system-ui, sans-serif" font-size="14" font-weight="500" fill="#fafafa">Alice Johnson</text>
+    <text x="60" y="42" font-family="system-ui, sans-serif" font-size="12" fill="#a1a1aa">alice@example.com</text>
+  </g>
+
+  <g transform="translate(16, 200)">
+    <rect x="0" y="0" width="308" height="56" rx="8" fill="transparent"/>
+    <circle cx="28" cy="28" r="20" fill="#22c55e"/>
+    <text x="28" y="34" font-family="system-ui, sans-serif" font-size="14" font-weight="500" fill="#fff" text-anchor="middle">BS</text>
+    <text x="60" y="24" font-family="system-ui, sans-serif" font-size="14" font-weight="500" fill="#d4d4d8">Bob Smith</text>
+    <text x="60" y="42" font-family="system-ui, sans-serif" font-size="12" fill="#71717a">bob.smith@work.com</text>
+  </g>
+
+  <g transform="translate(16, 264)">
+    <rect x="0" y="0" width="308" height="56" rx="8" fill="transparent"/>
+    <circle cx="28" cy="28" r="20" fill="#f59e0b"/>
+    <text x="28" y="34" font-family="system-ui, sans-serif" font-size="14" font-weight="500" fill="#fff" text-anchor="middle">CD</text>
+    <text x="60" y="24" font-family="system-ui, sans-serif" font-size="14" font-weight="500" fill="#d4d4d8">Carol Davis</text>
+    <text x="60" y="42" font-family="system-ui, sans-serif" font-size="12" fill="#71717a">carol.d@company.org</text>
+  </g>
+
+  <g transform="translate(16, 328)">
+    <rect x="0" y="0" width="308" height="56" rx="8" fill="transparent"/>
+    <circle cx="28" cy="28" r="20" fill="#ec4899"/>
+    <text x="28" y="34" font-family="system-ui, sans-serif" font-size="14" font-weight="500" fill="#fff" text-anchor="middle">DW</text>
+    <text x="60" y="24" font-family="system-ui, sans-serif" font-size="14" font-weight="500" fill="#d4d4d8">David Wilson</text>
+    <text x="60" y="42" font-family="system-ui, sans-serif" font-size="12" fill="#71717a">david@personal.me</text>
+  </g>
+
+  <!-- Main content - Contact detail -->
+  <rect x="376" y="80" width="888" height="624" rx="12" fill="url(#card-c)" stroke="#3f3f46" stroke-width="1"/>
+
+  <!-- Contact header -->
+  <circle cx="480" cy="180" r="60" fill="#3b82f6"/>
+  <text x="480" y="195" font-family="system-ui, sans-serif" font-size="36" font-weight="500" fill="#fff" text-anchor="middle">AJ</text>
+
+  <text x="560" y="160" font-family="system-ui, sans-serif" font-size="28" font-weight="600" fill="#fafafa">Alice Johnson</text>
+  <text x="560" y="190" font-family="system-ui, sans-serif" font-size="16" fill="#a1a1aa">Product Manager at TechCorp</text>
+
+  <!-- Action buttons -->
+  <g transform="translate(560, 210)">
+    <rect x="0" y="0" width="100" height="36" rx="8" fill="url(#accent-c)"/>
+    <text x="50" y="23" font-family="system-ui, sans-serif" font-size="13" fill="#fff" text-anchor="middle">Call</text>
+
+    <rect x="112" y="0" width="100" height="36" rx="8" fill="#27272a"/>
+    <text x="162" y="23" font-family="system-ui, sans-serif" font-size="13" fill="#d4d4d8" text-anchor="middle">Email</text>
+
+    <rect x="224" y="0" width="100" height="36" rx="8" fill="#27272a"/>
+    <text x="274" y="23" font-family="system-ui, sans-serif" font-size="13" fill="#d4d4d8" text-anchor="middle">Message</text>
+  </g>
+
+  <!-- Contact info sections -->
+  <line x1="400" y1="280" x2="1240" y2="280" stroke="#3f3f46" stroke-width="1"/>
+
+  <g transform="translate(416, 310)">
+    <text x="0" y="0" font-family="system-ui, sans-serif" font-size="12" fill="#71717a">EMAIL</text>
+    <text x="0" y="28" font-family="system-ui, sans-serif" font-size="15" fill="#fafafa">alice@example.com</text>
+    <text x="0" y="50" font-family="system-ui, sans-serif" font-size="13" fill="#8b5cf6">Personal</text>
+
+    <text x="0" y="90" font-family="system-ui, sans-serif" font-size="15" fill="#fafafa">alice.johnson@techcorp.com</text>
+    <text x="0" y="112" font-family="system-ui, sans-serif" font-size="13" fill="#8b5cf6">Work</text>
+  </g>
+
+  <g transform="translate(416, 450)">
+    <text x="0" y="0" font-family="system-ui, sans-serif" font-size="12" fill="#71717a">PHONE</text>
+    <text x="0" y="28" font-family="system-ui, sans-serif" font-size="15" fill="#fafafa">+1 (555) 123-4567</text>
+    <text x="0" y="50" font-family="system-ui, sans-serif" font-size="13" fill="#8b5cf6">Mobile</text>
+
+    <text x="0" y="90" font-family="system-ui, sans-serif" font-size="15" fill="#fafafa">+1 (555) 987-6543</text>
+    <text x="0" y="112" font-family="system-ui, sans-serif" font-size="13" fill="#8b5cf6">Work</text>
+  </g>
+
+  <g transform="translate(416, 590)">
+    <text x="0" y="0" font-family="system-ui, sans-serif" font-size="12" fill="#71717a">ADDRESS</text>
+    <text x="0" y="28" font-family="system-ui, sans-serif" font-size="15" fill="#fafafa">123 Main Street, Suite 100</text>
+    <text x="0" y="50" font-family="system-ui, sans-serif" font-size="15" fill="#fafafa">San Francisco, CA 94102</text>
+  </g>
+
+  <!-- Groups tags -->
+  <g transform="translate(800, 310)">
+    <text x="0" y="0" font-family="system-ui, sans-serif" font-size="12" fill="#71717a">GROUPS</text>
+    <rect x="0" y="16" width="70" height="28" rx="6" fill="#3b82f6" opacity="0.2"/>
+    <text x="35" y="35" font-family="system-ui, sans-serif" font-size="12" fill="#3b82f6" text-anchor="middle">Work</text>
+    <rect x="80" y="16" width="70" height="28" rx="6" fill="#22c55e" opacity="0.2"/>
+    <text x="115" y="35" font-family="system-ui, sans-serif" font-size="12" fill="#22c55e" text-anchor="middle">Team</text>
+    <rect x="160" y="16" width="80" height="28" rx="6" fill="#f59e0b" opacity="0.2"/>
+    <text x="200" y="35" font-family="system-ui, sans-serif" font-size="12" fill="#f59e0b" text-anchor="middle">Favorites</text>
+  </g>
+</svg>

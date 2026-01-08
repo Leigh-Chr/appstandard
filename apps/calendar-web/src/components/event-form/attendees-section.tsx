@@ -1,3 +1,4 @@
+import { useContactPicker } from "@appstandard/react-utils";
 import {
 	Button,
 	Card,
@@ -16,6 +17,7 @@ import {
 } from "@appstandard/ui";
 import {
 	AlertCircle,
+	BookUser,
 	HelpCircle,
 	User,
 	UserPlus,
@@ -56,6 +58,35 @@ export function AttendeesSection({
 	onValidationErrorChange,
 	isSubmitting,
 }: AttendeesSectionProps) {
+	const { isSupported: isContactPickerSupported, pickContacts } =
+		useContactPicker();
+
+	const handlePickContacts = async () => {
+		const contacts = await pickContacts({
+			properties: ["name", "email"],
+			multiple: true,
+		});
+		if (contacts) {
+			for (const contact of contacts) {
+				const email = contact.email?.[0];
+				if (email) {
+					// Add a new attendee with the picked contact data
+					onAddAttendee();
+					// The new attendee is at the end of the list
+					const newIndex = formData.attendees?.length ?? 0;
+					// We need to wait for the next render to update the attendee
+					// Use setTimeout to ensure the state update from onAddAttendee has happened
+					setTimeout(() => {
+						onAttendeeChange(newIndex, {
+							name: contact.name?.[0] || undefined,
+							email: email,
+						});
+					}, 0);
+				}
+			}
+		}
+	};
+
 	const handleOrganizerEmailChange = (value: string) => {
 		onChange({ organizerEmail: value });
 		// Clear error on change
@@ -382,15 +413,28 @@ export function AttendeesSection({
 						</div>
 					</Card>
 				))}
-				<Button
-					type="button"
-					variant="outline"
-					onClick={onAddAttendee}
-					disabled={isSubmitting}
-				>
-					<UserPlus className="h-4 w-4" />
-					Add an attendee
-				</Button>
+				<div className="flex flex-wrap gap-2">
+					<Button
+						type="button"
+						variant="outline"
+						onClick={onAddAttendee}
+						disabled={isSubmitting}
+					>
+						<UserPlus className="h-4 w-4" />
+						Add an attendee
+					</Button>
+					{isContactPickerSupported && (
+						<Button
+							type="button"
+							variant="outline"
+							onClick={handlePickContacts}
+							disabled={isSubmitting}
+						>
+							<BookUser className="h-4 w-4" />
+							From contacts
+						</Button>
+					)}
+				</div>
 			</div>
 		</div>
 	);

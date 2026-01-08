@@ -292,6 +292,13 @@ export {
 export { HoverCard, HoverCardContent, HoverCardTrigger } from "./hover-card";
 // Input
 export { Input } from "./input";
+// PWA Install Prompt
+export {
+	InstallPrompt,
+	type InstallPromptProps,
+	resetInstallPrompt,
+	useCanInstall,
+} from "./install-prompt";
 // Keyboard Shortcuts Dialog
 export {
 	KeyboardShortcutsDialog,
@@ -303,6 +310,8 @@ export { Label } from "./label";
 export { Loader, type LoaderProps } from "./loader";
 // Mode Toggle
 export { ModeToggle } from "./mode-toggle";
+// Offline Banner
+export { OfflineBanner, type OfflineBannerProps } from "./offline-banner";
 // Popover
 export {
 	Popover,

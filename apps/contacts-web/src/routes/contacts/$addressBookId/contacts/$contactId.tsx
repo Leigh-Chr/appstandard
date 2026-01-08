@@ -1,3 +1,4 @@
+import { indexContact } from "@appstandard/react-utils";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -184,7 +185,7 @@ function EditContactComponent() {
 
 	const updateMutation = useMutation(
 		trpc.contact.update.mutationOptions({
-			onSuccess: () => {
+			onSuccess: (_, variables) => {
 				void queryClient.invalidateQueries({
 					queryKey: QUERY_KEYS.contact.all,
 				});
@@ -197,6 +198,13 @@ function EditContactComponent() {
 				void queryClient.invalidateQueries({
 					queryKey: QUERY_KEYS.dashboard.all,
 				});
+				// Update OS content index
+				if (variables.formattedName) {
+					void indexContact({
+						id: variables.id,
+						name: variables.formattedName,
+					});
+				}
 				toast.success("Contact updated successfully");
 				navigate({ to: `/contacts/${addressBookId}` });
 			},

@@ -4,6 +4,8 @@ import {
 	AppHeader,
 	AppProvider,
 	ErrorBoundary,
+	InstallPrompt,
+	OfflineBanner,
 	ThemeProvider,
 	Toaster,
 	TourProvider,
@@ -40,6 +42,7 @@ function AppLayout() {
 	const { startTour } = useContactsTour();
 	return (
 		<div className="flex min-h-svh flex-col">
+			<OfflineBanner />
 			<AppHeader
 				authClient={authClient}
 				userMenu={<UserMenu />}
@@ -203,6 +206,10 @@ function RootComponent() {
 					</TourProvider>
 					<Toaster richColors />
 					<PWAUpdatePrompt />
+					<InstallPrompt
+						description="Install AppStandard Contacts for offline access and a better experience"
+						className="fixed right-4 bottom-4 left-4 z-50 md:right-4 md:left-auto md:w-96"
+					/>
 				</ThemeProvider>
 			</AppProvider>
 			<TanStackRouterDevtools position="bottom-left" />

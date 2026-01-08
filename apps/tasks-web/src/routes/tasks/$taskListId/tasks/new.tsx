@@ -1,3 +1,4 @@
+import { indexTask } from "@appstandard/react-utils";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
@@ -35,7 +36,7 @@ function NewTaskComponent() {
 
 	const createMutation = useMutation(
 		trpc.task.create.mutationOptions({
-			onSuccess: () => {
+			onSuccess: (task) => {
 				void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.task.all });
 				void queryClient.invalidateQueries({
 					queryKey: QUERY_KEYS.taskList.byId(taskListId),
@@ -45,6 +46,12 @@ function NewTaskComponent() {
 				});
 				void queryClient.invalidateQueries({
 					queryKey: QUERY_KEYS.dashboard.all,
+				});
+				// Index task for OS search
+				void indexTask({
+					id: task.id,
+					summary: task.title,
+					description: task.description || undefined,
 				});
 				toast.success("Task created successfully");
 				navigate({ to: `/tasks/${taskListId}` });
