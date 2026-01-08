@@ -155,19 +155,7 @@ VITE_SERVER_URL=http://localhost:3000
 4. On success: redirect to `/calendars`
 5. On error: display a toast with error message
 
-## Diagnostics
-
-A diagnostic script is available to check the configuration:
-
-```bash
-./scripts/check-auth.sh
-```
-
-This script checks:
-- Presence and configuration of `.env` files
-- Backend server accessibility
-- Database connection
-- Better-Auth endpoints
+## Troubleshooting
 
 For common issues and solutions, see the "Troubleshooting" section of the [main README](README.md#troubleshooting).
 

@@ -1,7 +1,7 @@
 # VPS Deployment Guide - AppStandard
 
 > 📌 **First-time installation guide**: This document is for initial setup of a new VPS server.
-> For daily production management, see [`PRODUCTION_COMMANDS.md`](./PRODUCTION_COMMANDS.md) and scripts in [`scripts/production/`](./scripts/production/).
+> For daily production management, see [DEPLOYMENT.md](./DEPLOYMENT.md).
 
 Complete step-by-step guide to deploy AppStandard on a VPS with Docker Compose.
 
@@ -356,8 +356,7 @@ docker compose exec db psql -U appstandard -d appstandard -c "\dt"
 
 ---
 
-> 💡 **Next steps**: 
-> - **Backup and monitoring**: See [`PRODUCTION_COMMANDS.md`](./PRODUCTION_COMMANDS.md) for production scripts
+> 💡 **Next steps**:
 > - **Docker commands**: See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed Docker commands
 > - **Troubleshooting**: See [DEPLOYMENT.md](./DEPLOYMENT.md#troubleshooting) for troubleshooting
 
@@ -406,8 +405,7 @@ docker compose exec db psql -U appstandard -d appstandard -c "\dt"
 - [ ] Authentication tested (account creation)
 
 ### Next Steps
-- [ ] Production scripts installed: `./scripts/production/install.sh`
-- [ ] Production documentation reviewed: [`PRODUCTION_COMMANDS.md`](./PRODUCTION_COMMANDS.md)
+- [ ] Production documentation reviewed: [DEPLOYMENT.md](./DEPLOYMENT.md)
 
 ---
 
@@ -417,20 +415,12 @@ Your application is now deployed in production! 🎉
 
 ### Next steps
 
-1. **Daily management**: Use production scripts
-   ```bash
-   cd ~/appstandard
-   ./scripts/production/deploy.sh --backup
-   ```
-
-2. **Documentation**:
-   - [DEPLOYMENT.md](./DEPLOYMENT.md) - Complete deployment guide
-   - [PRODUCTION_COMMANDS.md](./PRODUCTION_COMMANDS.md) - Production scripts
-   - [scripts/production/README.md](./scripts/production/README.md) - Quick documentation
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for Docker commands and production management.
 
 ### Simple update
 
 ```bash
 cd ~/appstandard
-./scripts/production/deploy.sh --backup --migrate
+git pull origin master
+docker compose up -d --build
 ```

@@ -10,7 +10,6 @@ This is an AppStandard project - a multi-product monorepo for productivity tools
 - **`README.md`** - Project overview, features, getting started, stack, scripts
 - **`ARCHITECTURE.md`** - Package structure, dependency diagram, package contents
 - **`DEPLOYMENT.md`** - Production deployment guide, environment variables, monitoring
-- **`PRODUCTION_COMMANDS.md`** - Production management scripts guide
 - **`VPS_DEPLOYMENT.md`** - VPS initial setup and deployment guide
 - **`CONTRIBUTING.md`** - Contribution guidelines, code standards, PR process
 - **`SECURITY.md`** - Security policy, vulnerability reporting, security measures

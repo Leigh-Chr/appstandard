@@ -109,14 +109,6 @@ DATABASE_URL="postgresql://USER:PASSWORD@HOST:PORT/DATABASE"
 
 #### Initialize the database
 
-**Using scripts (recommended):**
-```bash
-./scripts/dev/dev-db.sh push    # Push schema changes
-./scripts/dev/dev-db.sh seed    # Seed with test data
-./scripts/dev/dev-db.sh studio  # Open Prisma Studio
-```
-
-**Or manually:**
 ```bash
 bun run db:push      # Generate Prisma client and push schema
 bun run db:seed      # (Optional) Seed with test data
@@ -157,27 +149,6 @@ Repeat for Tasks and Contacts with their respective ports:
 
 ### Starting
 
-#### Option 1: Using Development Scripts (Recommended)
-
-For first-time setup:
-```bash
-./scripts/dev/dev-setup.sh
-```
-
-For daily development:
-```bash
-./scripts/dev/dev.sh
-```
-
-This automatically:
-- Starts PostgreSQL and Redis in Docker
-- Checks database initialization
-- Launches all apps in development mode
-
-See [scripts/dev/README.md](scripts/dev/README.md) for all available development scripts.
-
-#### Option 2: Manual Commands
-
 ```bash
 # All apps
 bun run dev
@@ -196,8 +167,9 @@ The project is fully dockerized to facilitate deployment.
 **Quick start:**
 ```bash
 # Development (PostgreSQL Docker + Local Apps)
-./scripts/dev/dev-setup.sh  # First time
-./scripts/dev/dev.sh        # Daily development
+docker compose -f docker-compose.dev.yml up -d  # Start PostgreSQL and Redis
+bun install && bun run db:push                  # Install deps and init DB
+bun run dev                                     # Start all apps
 
 # Production (Everything in Docker)
 cp docker.env.example .env
@@ -250,10 +222,6 @@ See [SECURITY.md](./SECURITY.md) for full security documentation.
 
 To deploy in production, consult the complete guide: [DEPLOYMENT.md](./DEPLOYMENT.md)
 
-### Production Management
-
-See [`PRODUCTION_COMMANDS.md`](./PRODUCTION_COMMANDS.md) for production scripts documentation.
-
 ### Quick Production Checklist
 
 - [ ] Environment variables configured
@@ -292,7 +260,6 @@ See [`PRODUCTION_COMMANDS.md`](./PRODUCTION_COMMANDS.md) for production scripts 
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Package architecture and dependency diagram |
 | [DEPLOYMENT.md](DEPLOYMENT.md) | Complete production deployment guide (Docker, manual, monitoring) |
 | [VPS_DEPLOYMENT.md](VPS_DEPLOYMENT.md) | VPS initial setup and deployment guide |
-| [PRODUCTION_COMMANDS.md](PRODUCTION_COMMANDS.md) | Production management scripts guide |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Project contribution guide |
 | [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) | Community code of conduct |
 | [SECURITY.md](SECURITY.md) | Security policy and vulnerability reporting |
