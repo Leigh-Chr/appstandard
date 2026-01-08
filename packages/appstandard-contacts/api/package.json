@@ -1,5 +1,7 @@
 {
 	"name": "@appstandard-contacts/api",
+	"version": "0.1.0",
+	"description": "Contacts tRPC API routers and procedures",
 	"exports": {
 		".": {
 			"types": "./dist/index.d.ts",

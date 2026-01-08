@@ -1,6 +1,7 @@
 {
 	"name": "contacts-web",
-	"version": "0.0.0",
+	"version": "0.1.0",
+	"description": "AppStandard Contacts web application - React frontend with TanStack Router",
 	"private": true,
 	"type": "module",
 	"scripts": {

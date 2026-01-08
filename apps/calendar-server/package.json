@@ -1,5 +1,7 @@
 {
 	"name": "calendar-server",
+	"version": "0.1.0",
+	"description": "AppStandard Calendar API server - Hono with tRPC",
 	"main": "src/index.ts",
 	"type": "module",
 	"scripts": {

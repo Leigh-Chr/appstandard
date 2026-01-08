@@ -1,6 +1,7 @@
 {
 	"name": "@appstandard-tasks/schemas",
-	"version": "0.0.0",
+	"version": "0.1.0",
+	"description": "Zod validation schemas for tasks and todo items",
 	"private": true,
 	"type": "module",
 	"exports": {

@@ -1,6 +1,7 @@
 {
 	"name": "@appstandard-contacts/schemas",
-	"version": "0.0.0",
+	"version": "0.1.0",
+	"description": "Zod validation schemas for contacts and vCards",
 	"private": true,
 	"type": "module",
 	"exports": {

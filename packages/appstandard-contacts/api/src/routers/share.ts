@@ -846,8 +846,6 @@ export const shareRouter = router({
 					})),
 				);
 
-				// TODO: Implement duplicate removal if bundle.removeDuplicates
-
 				const vcardContent = generateVCardFile({ contacts: allContacts });
 
 				return {

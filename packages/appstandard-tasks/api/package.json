@@ -1,5 +1,7 @@
 {
 	"name": "@appstandard-tasks/api",
+	"version": "0.1.0",
+	"description": "Tasks tRPC API routers and procedures",
 	"exports": {
 		".": {
 			"types": "./dist/index.d.ts",

@@ -1,5 +1,7 @@
 {
 	"name": "@appstandard/db",
+	"version": "0.1.0",
+	"description": "Prisma database client and schema for PostgreSQL",
 	"type": "module",
 	"exports": {
 		".": {

@@ -851,8 +851,6 @@ export const shareRouter = router({
 					})),
 				);
 
-				// TODO: Implement duplicate removal if bundle.removeDuplicates
-
 				const icsContent = generateTodoFile(allTasks, {
 					calendarName: bundle.name || "Shared Tasks",
 				});

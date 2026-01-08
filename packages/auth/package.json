@@ -1,5 +1,7 @@
 {
 	"name": "@appstandard/auth",
+	"version": "0.1.0",
+	"description": "Unified authentication with Better-Auth for all AppStandard products",
 	"exports": {
 		".": {
 			"types": "./dist/index.d.ts",

@@ -1,5 +1,7 @@
 {
 	"name": "tasks-server",
+	"version": "0.1.0",
+	"description": "AppStandard Tasks API server - Hono with tRPC",
 	"main": "src/index.ts",
 	"type": "module",
 	"scripts": {

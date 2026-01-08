@@ -2,143 +2,172 @@
 
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)](https://react.dev/)
 [![Bun](https://img.shields.io/badge/Bun-1.3-black?logo=bun&logoColor=white)](https://bun.sh/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
-**AppStandard** is a suite of web applications for personal productivity, built with modern technologies and a focus on open standards.
+**A modern productivity suite built with open standards** - Calendar, Tasks, and Contacts management with ICS/vCard interoperability.
 
-## Products
+## Project Overview
 
-| Product | Description | Format |
-|---------|-------------|--------|
-| **AppStandard Calendar** | Calendar management and event organization | ICS (RFC 5545) |
-| **AppStandard Tasks** | Todo lists and task management | iCalendar VTODO |
-| **AppStandard Contacts** | Address book and contact management | vCard (RFC 6350) |
+| Metric | Count |
+|--------|-------|
+| Applications | 7 (3 frontends, 3 backends, 1 landing) |
+| Shared Packages | 13+ |
+| Lines of TypeScript | 50,000+ |
+| Test Files | 47 |
 
-Each product is designed to work with standard file formats, ensuring data portability and interoperability with other applications.
+### Products
 
-## Features
+| Product | Description | Standard |
+|---------|-------------|----------|
+| **Calendar** | Event management with recurring events, alarms, and attendees | ICS (RFC 5545) |
+| **Tasks** | Todo lists with priorities, due dates, and completion tracking | iCalendar VTODO |
+| **Contacts** | Address books with full vCard support | vCard (RFC 6350) |
 
-### AppStandard Calendar
+## Architecture
 
-- **Import .ics files** - Import calendars from any source
-- **Import from URL** - Sync with Google Calendar, iCloud, Outlook, etc.
-- **Manual refresh** - Refresh imported calendars on demand
-- **Create calendars** - Create new calendars to organize events
-- **Merge calendars** - Combine multiple calendars with duplicate detection
-- **Export .ics** - Export in standard format compatible with all calendar apps
-- **Clean duplicates** - Automatically remove duplicate events
-- **List & calendar views** - Display events in list or monthly calendar view
-- **Date filters** - Filter by Today, This week, This month, or All
-- **Search & sort** - Search by keyword, sort by date, name, or duration
-- **Event management** - Create, edit, and delete events
+```
+appstandard/
+├── apps/
+│   ├── calendar-web/        # React 19 + TanStack Router
+│   ├── calendar-server/     # Hono + tRPC
+│   ├── tasks-web/
+│   ├── tasks-server/
+│   ├── contacts-web/
+│   ├── contacts-server/
+│   └── landing/             # Marketing site
+│
+└── packages/
+    ├── Core Infrastructure
+    │   ├── db/              # Prisma + PostgreSQL
+    │   ├── auth/            # Better-Auth (unified)
+    │   ├── api-core/        # Shared tRPC procedures
+    │   └── server-core/     # Hono middleware, rate limiting
+    │
+    ├── Shared UI
+    │   ├── ui/              # 90+ Radix UI components
+    │   └── react-utils/     # Hooks, utilities
+    │
+    ├── Calendar
+    │   ├── api/             # tRPC routers
+    │   ├── core/            # Business logic
+    │   ├── schemas/         # Zod validation
+    │   └── ics-utils/       # ICS parser/generator
+    │
+    ├── Tasks (@appstandard-tasks/)
+    │   ├── api/, core/, schemas/
+    │   └── todo-utils/      # VTODO parser/generator
+    │
+    └── Contacts (@appstandard-contacts/)
+        ├── api/, core/, schemas/
+        └── vcard-utils/     # vCard parser/generator
+```
 
-### AppStandard Tasks
+### Dependency Graph
 
-- **Import todo files** - Import tasks from iCalendar VTODO format
-- **Create task lists** - Organize tasks into lists
-- **Task management** - Create, edit, complete, and delete tasks
-- **Export** - Export in standard VTODO format
-
-### AppStandard Contacts
-
-- **Import vCard files** - Import contacts from any source
-- **Create address books** - Organize contacts into address books
-- **Contact management** - Create, edit, and delete contacts
-- **Export vCard** - Export in standard vCard format
-
-### Common Features (All Products)
-
-- **Anonymous mode** - Use without creating an account
-- **Authentication** - Optional account for cloud synchronization
-- **Multi-device sync** - Access data from any device (authenticated users)
-- **Collaboration** - Shared groups with invitations and member management
-- **PWA support** - Install as a Progressive Web App
+```
+                    ┌─────────────┐
+                    │   Frontend  │
+                    │  (React 19) │
+                    └──────┬──────┘
+                           │
+              ┌────────────┼────────────┐
+              ▼            ▼            ▼
+         ┌────────┐  ┌─────────┐  ┌─────────┐
+         │ ui     │  │ react-  │  │ product │
+         │        │  │ utils   │  │ api     │
+         └────────┘  └─────────┘  └────┬────┘
+                                       │
+                           ┌───────────┼───────────┐
+                           ▼           ▼           ▼
+                      ┌────────┐  ┌────────┐  ┌────────┐
+                      │api-core│  │  auth  │  │schemas │
+                      └───┬────┘  └───┬────┘  └────────┘
+                          │           │
+                          └─────┬─────┘
+                                ▼
+                           ┌────────┐
+                           │   db   │
+                           │(Prisma)│
+                           └────────┘
+```
 
 ## Tech Stack
 
-- **TypeScript** - Type safety end-to-end
-- **TanStack Router** - Type-safe routing
-- **TailwindCSS** - Modern and responsive UI
-- **shadcn/ui** - Reusable UI components
-- **Hono** - Lightweight and performant server framework
-- **tRPC** - Type-safe APIs end-to-end
-- **Bun** - Runtime and package manager
-- **Prisma** - TypeScript-first ORM
-- **PostgreSQL** - Database
-- **Better-Auth** - Authentication
-- **Biome** - Linting and formatting
-- **PWA** - Progressive Web App support
-- **Turborepo** - Optimized monorepo
+### Frontend
+- **React 19** with React Compiler for automatic memoization
+- **TanStack Router** - Type-safe file-based routing
+- **TanStack Query** - Data fetching and caching
+- **Tailwind CSS 4** - Utility-first styling
+- **Radix UI** - Accessible component primitives
+- **Vite 7** - Build tooling with HMR
+
+### Backend
+- **Bun** - Fast JavaScript runtime
+- **Hono** - Lightweight web framework
+- **tRPC** - End-to-end type-safe APIs
+- **Prisma** - Type-safe ORM
+- **PostgreSQL** - Relational database
+- **Better-Auth** - Authentication with OAuth support
+
+### Infrastructure
+- **Turborepo** - Monorepo build orchestration with remote caching
+- **Biome** - Fast linting and formatting
+- **Docker** - Containerized deployment
 - **Sentry** - Error and performance monitoring
 
-## Getting Started
+## Features
+
+### All Products
+- **Anonymous mode** - Full functionality without account creation
+- **Authentication** - OAuth (GitHub, Google) and email/password
+- **Multi-device sync** - Real-time data synchronization
+- **Collaboration** - Shared groups with role-based permissions
+- **PWA support** - Installable Progressive Web Apps
+- **Import/Export** - Standard format compatibility (ICS, vCard)
+
+### Calendar-Specific
+- Recurring events with RRULE support
+- Multiple alarms per event
+- Attendee management
+- Calendar merging with duplicate detection
+- URL import (Google Calendar, iCloud, Outlook)
+
+### Security
+- Rate limiting (100 req/min general, 10 req/min auth)
+- SSRF protection for URL imports
+- Input validation with Zod schemas
+- HTTP security headers
+
+## Quick Start
 
 ### Prerequisites
 
-- [Bun](https://bun.sh) (version 1.3.1 or higher)
-- [Docker](https://www.docker.com/) (optional, for local PostgreSQL)
+- [Bun](https://bun.sh) 1.3+
+- [Docker](https://www.docker.com/) (for PostgreSQL)
 
-### Installation
-
-1. Clone the repository and install dependencies:
+### Setup
 
 ```bash
+# Clone and install
+git clone https://github.com/yourusername/appstandard.git
+cd appstandard
 bun install
-```
 
-### Database Configuration
-
-This project uses PostgreSQL with Prisma.
-
-#### Option 1: PostgreSQL with Docker (recommended)
-
-```bash
-# Start PostgreSQL locally
+# Start PostgreSQL
 docker compose -f docker-compose.dev.yml up -d
 
-# Configure the environment variable
-DATABASE_URL="postgresql://appstandard:appstandard_dev@localhost:5432/appstandard_dev"
+# Initialize database
+bun run db:push
+bun run db:seed  # Optional: seed test data
+
+# Start development servers
+bun run dev
 ```
 
-#### Option 2: Existing PostgreSQL
-
-```env
-DATABASE_URL="postgresql://USER:PASSWORD@HOST:PORT/DATABASE"
-```
-
-#### Initialize the database
-
-```bash
-bun run db:push      # Generate Prisma client and push schema
-bun run db:seed      # (Optional) Seed with test data
-bun run db:studio    # (Optional) Open Prisma Studio
-```
-
-### Environment Configuration
-
-Each server application requires its own `.env` file. Example for Calendar:
-
-**Backend** (`apps/calendar-server/.env`):
-```env
-DATABASE_URL="postgresql://USER:PASSWORD@HOST:PORT/DATABASE"
-PORT=3000
-CORS_ORIGIN=http://localhost:3001
-BETTER_AUTH_SECRET=your-secret-key
-BETTER_AUTH_URL=http://localhost:3000
-REDIS_URL=redis://localhost:6379  # Optional
-
-# Email (for verification)
-RESEND_API_KEY=re_xxxxxxxxxxxxx
-EMAIL_FROM=noreply@appstandard.io
-```
-
-**Frontend** (`apps/calendar-web/.env`):
-```env
-VITE_SERVER_URL=http://localhost:3000
-```
-
-Repeat for Tasks and Contacts with their respective ports:
+### Development Ports
 
 | Application | Frontend | Backend |
 |-------------|----------|---------|
@@ -147,60 +176,30 @@ Repeat for Tasks and Contacts with their respective ports:
 | Contacts | 3005 | 3003 |
 | Landing | 3010 | - |
 
-### Starting
+## Scripts
 
 ```bash
-# All apps
-bun run dev
+# Development
+bun run dev                # All applications
+bun run dev:calendar       # Calendar only
+bun run dev:tasks          # Tasks only
+bun run dev:contacts       # Contacts only
 
-# Specific products
-bun run dev:calendar    # Calendar web + server (3001, 3000)
-bun run dev:tasks       # Tasks web + server (3004, 3002)
-bun run dev:contacts    # Contacts web + server (3005, 3003)
-bun run dev:landing     # Landing page only (3010)
+# Quality
+bun run check              # Lint + format (auto-fix)
+bun run check-types        # TypeScript validation
+bun run test               # Run all tests
+
+# Database
+bun run db:push            # Push schema changes
+bun run db:studio          # Open Prisma Studio
+bun run db:migrate         # Create migration
+
+# Production
+bun run build              # Build all packages
 ```
 
-## Docker
-
-The project is fully dockerized to facilitate deployment.
-
-**Quick start:**
-```bash
-# Development (PostgreSQL Docker + Local Apps)
-docker compose -f docker-compose.dev.yml up -d  # Start PostgreSQL and Redis
-bun install && bun run db:push                  # Install deps and init DB
-bun run dev                                     # Start all apps
-
-# Production (Everything in Docker)
-cp docker.env.example .env
-# Edit .env with your values
-docker compose up -d --build
-```
-
-See [DEPLOYMENT.md](./DEPLOYMENT.md) for complete Docker deployment guide.
-
-## User Guide
-
-### Anonymous Mode (without account)
-
-1. Open the application in your browser
-2. An anonymous ID is automatically generated and stored in localStorage
-3. Your data is saved on the server but linked to your anonymous ID
-4. You can use all features without creating an account
-
-**Important - Anonymous Mode Limitations:**
-- Your data is linked to your browser via an anonymous ID stored in localStorage
-- If you clear browser data or use private browsing, you will lose access to your data
-- Anonymous data not accessed for 60 days is automatically deleted
-- For permanent backup and multi-device access, create an account
-
-### Authenticated Mode (with account)
-
-1. Create an account via the login page
-2. Your data is saved on the server
-3. You can access your data from any device
-
-### User Limits
+## User Limits
 
 | Feature | Anonymous | Authenticated |
 |---------|-----------|---------------|
@@ -209,100 +208,25 @@ See [DEPLOYMENT.md](./DEPLOYMENT.md) for complete Docker deployment guide.
 | Groups | 3 | 100 |
 | Collections per group | 10 | 30 |
 
-## Security
-
-- **Rate limiting**: 100 requests/minute (general), 10 requests/minute (auth)
-- **HTTP security headers** configured automatically
-- **Input validation** (max file size: 5MB)
-- **SSRF protection** for external URL imports
-
-See [SECURITY.md](./SECURITY.md) for full security documentation.
-
-## Production
-
-To deploy in production, consult the complete guide: [DEPLOYMENT.md](./DEPLOYMENT.md)
-
-### Quick Production Checklist
-
-- [ ] Environment variables configured
-- [ ] `CORS_ORIGIN` defined (required, do not use `*`)
-- [ ] `BETTER_AUTH_SECRET` generated (min 32 characters)
-- [ ] Database initialized
-- [ ] Build completed (`bun run build`)
-- [ ] SSL/TLS certificate configured
-- [ ] Health check accessible (`/health`)
-
-## Troubleshooting
-
-### Backend server won't start
-
-- Check that the port is not already in use
-- Make sure the database is properly configured: `bun run db:push`
-- Check the terminal logs for errors
-
-### Frontend cannot connect to backend
-
-- Check that `VITE_SERVER_URL` points to the correct backend URL
-- Make sure the backend server is started
-- Check the browser console for CORS errors
-
-### Data doesn't persist (anonymous mode)
-
-- Check that localStorage is enabled in your browser
-- Data is stored locally, it will not be available on another browser or device
-- For multi-device persistence, create an account
+Anonymous data is auto-deleted after 60 days of inactivity.
 
 ## Documentation
 
 | Document | Description |
 |----------|-------------|
-| [README.md](README.md) | This file - Overview and quick start |
-| [ARCHITECTURE.md](ARCHITECTURE.md) | Package architecture and dependency diagram |
-| [DEPLOYMENT.md](DEPLOYMENT.md) | Complete production deployment guide (Docker, manual, monitoring) |
-| [VPS_DEPLOYMENT.md](VPS_DEPLOYMENT.md) | VPS initial setup and deployment guide |
-| [CONTRIBUTING.md](CONTRIBUTING.md) | Project contribution guide |
-| [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) | Community code of conduct |
-| [SECURITY.md](SECURITY.md) | Security policy and vulnerability reporting |
-| [AUTHENTICATION.md](AUTHENTICATION.md) | Authentication flow and configuration |
-
-### Package Documentation
-
-| Package | Description |
-|---------|-------------|
-| [@appstandard/core](packages/core/README.md) | Calendar business logic and shared types |
-| [@appstandard/ics-utils](packages/ics-utils/README.md) | ICS file parsing and generation |
-| [@appstandard/react-utils](packages/react-utils/README.md) | React hooks and utilities |
-| [@appstandard/api](packages/api/README.md) | Calendar tRPC API and routers |
-| [@appstandard/auth](packages/auth/README.md) | Better-Auth configuration |
-| [@appstandard/db](packages/db/README.md) | Prisma client and DB schemas |
-| [@appstandard/schemas](packages/schemas/README.md) | Calendar Zod validation schemas |
-
-## Contributing
-
-Contributions are welcome! See the [contribution guide](CONTRIBUTING.md) to get started.
+| [ARCHITECTURE.md](ARCHITECTURE.md) | Package structure and dependencies |
+| [DEPLOYMENT.md](DEPLOYMENT.md) | Docker and manual deployment |
+| [VPS_DEPLOYMENT.md](VPS_DEPLOYMENT.md) | VPS setup guide |
+| [AUTHENTICATION.md](AUTHENTICATION.md) | Auth flow and configuration |
+| [SECURITY.md](SECURITY.md) | Security policy |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | Contribution guidelines |
 
 ## License
 
-This project is licensed under **AGPL v3** (GNU Affero General Public License v3) - see the [LICENSE](LICENSE) file for details.
+**AGPL v3** - See [LICENSE](LICENSE) for details.
 
-### What AGPL v3 Means
-
-AGPL v3 is a copyleft license that ensures cooperation with the community. Key points:
-
-- **Code is freely viewable and modifiable** - You can study, modify, and use the code
-- **Private instances are allowed** - You can run AppStandard locally or in a private environment
-- **Contributions are welcome** - Pull Requests are encouraged
-- **Modified versions must share their source code** - If you modify and deploy AppStandard publicly, you must share your modifications
-- **Commercial use requires source code sharing** - Commercial use is allowed, but modifications must be shared
-
-### Usage Policy
-
-While AppStandard is licensed under AGPL v3, the maintainer requests that:
-
-- **Public Instances**: Only the official instance operated by the maintainer should be publicly accessible. If you wish to operate a public instance, please contact the maintainer first to discuss.
-
-- **Commercial Use**: Commercial use of this software is discouraged without prior authorization. If you wish to use this software commercially, please contact the maintainer to discuss licensing options.
-
-- **Contributions**: All contributions are welcome via Pull Requests. The maintainer reserves the right to accept or reject any contribution to maintain project quality and direction.
-
-These requests are not legally binding but are community guidelines that we ask users to respect.
+This license ensures:
+- Code is freely viewable and modifiable
+- Private instances are allowed
+- Modified public deployments must share source code
+- Contributions are welcome via Pull Requests

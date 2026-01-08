@@ -2,9 +2,6 @@ import { type AlarmTrigger, parseAlarmTrigger } from "@appstandard/ics-utils";
 import { useEffect, useState } from "react";
 import type { AlarmFormData } from "@/lib/event-form-types";
 
-// Re-export AlarmTrigger type for consumers
-export type { AlarmTrigger } from "@appstandard/ics-utils";
-
 /**
  * Hook to manage alarm triggers UI state
  * Synchronizes trigger state with alarm data and provides update function
