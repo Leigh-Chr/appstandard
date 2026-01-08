@@ -87,14 +87,16 @@ export default defineConfig(({ mode }) => {
 					"og-image.png",
 					"robots.txt",
 					"sitemap.xml",
+					"offline.html",
 				],
 				manifest: {
+					id: "/",
 					name: "AppStandard Calendar",
 					short_name: "AppStandard Calendar",
 					description:
 						"Import, create, edit, and merge your ICS calendars. Compatible with Google Calendar, Apple Calendar, Outlook.",
-					theme_color: "#18181b",
-					background_color: "#18181b",
+					theme_color: "#2a2218",
+					background_color: "#2a2218",
 					display: "standalone",
 					display_override: ["window-controls-overlay", "standalone"],
 					orientation: "any",
@@ -156,15 +158,34 @@ export default defineConfig(({ mode }) => {
 				},
 				workbox: {
 					// Exclude HTML from precache to always get fresh CSP headers
-					globPatterns: ["**/*.{js,css,ico,png,svg,woff,woff2}"],
+					globPatterns: ["**/*.{js,css,ico,png,svg,woff,woff2,html}"],
 					cleanupOutdatedCaches: true,
 					clientsClaim: true,
 					skipWaiting: true,
 					// Increase limit to accommodate large JS bundle (current ~2.1MB)
 					maximumFileSizeToCacheInBytes: 3 * 1024 * 1024, // 3MB
 					// Force cache version update - increment when CSP or other server headers change
-					cacheId: "appstandard-calendar-v1",
+					cacheId: "appstandard-calendar-v2",
+					// Offline fallback page
+					navigateFallback: "/offline.html",
+					navigateFallbackDenylist: [/^\/api/, /^\/trpc/],
 					runtimeCaching: [
+						{
+							// Cache API calls with network-first strategy
+							urlPattern: /^.*\/trpc\/.*/,
+							handler: "NetworkFirst",
+							options: {
+								cacheName: "api-cache",
+								networkTimeoutSeconds: 5,
+								expiration: {
+									maxEntries: 100,
+									maxAgeSeconds: 60 * 60 * 24, // 24 hours
+								},
+								cacheableResponse: {
+									statuses: [0, 200],
+								},
+							},
+						},
 						{
 							// Always fetch HTML from network to get fresh CSP headers
 							urlPattern: /\.html$/,
