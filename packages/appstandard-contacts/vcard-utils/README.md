@@ -1,8 +1,8 @@
-# @appstandard-contacts/vcard-utils
+# @leigh-chr/vcard-utils
 
 TypeScript utilities for parsing and generating vCard files according to RFC 6350.
 
-[![npm version](https://img.shields.io/npm/v/@appstandard-contacts/vcard-utils.svg)](https://www.npmjs.com/package/@appstandard-contacts/vcard-utils)
+[![npm version](https://img.shields.io/npm/v/@leigh-chr/vcard-utils.svg)](https://www.npmjs.com/package/@leigh-chr/vcard-utils)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 
 ## Features
@@ -18,17 +18,17 @@ TypeScript utilities for parsing and generating vCard files according to RFC 635
 ## Installation
 
 ```bash
-npm install @appstandard-contacts/vcard-utils
+npm install @leigh-chr/vcard-utils
 # or
-bun add @appstandard-contacts/vcard-utils
+bun add @leigh-chr/vcard-utils
 # or
-pnpm add @appstandard-contacts/vcard-utils
+pnpm add @leigh-chr/vcard-utils
 ```
 
 ## Quick Start
 
 ```typescript
-import { parseVCardFile, generateVCardFile } from '@appstandard-contacts/vcard-utils';
+import { parseVCardFile, generateVCardFile } from '@leigh-chr/vcard-utils';
 
 // Parse a vCard file
 const { contacts, errors } = parseVCardFile(vcardContent);
@@ -50,7 +50,7 @@ const vcard = generateVCardFile({
 ### Parser
 
 ```typescript
-import { parseVCardFile } from '@appstandard-contacts/vcard-utils';
+import { parseVCardFile } from '@leigh-chr/vcard-utils';
 
 const result = parseVCardFile(vcardString);
 // Returns: { contacts: ParsedContact[], errors: string[] }
@@ -59,7 +59,7 @@ const result = parseVCardFile(vcardString);
 ### Generator
 
 ```typescript
-import { generateVCardFile } from '@appstandard-contacts/vcard-utils';
+import { generateVCardFile } from '@leigh-chr/vcard-utils';
 
 const vcard = generateVCardFile({
   contacts: [{
@@ -110,7 +110,7 @@ import type {
   AddressTypeValue,
   ContactKindValue,
   GenderValue,
-} from '@appstandard-contacts/vcard-utils';
+} from '@leigh-chr/vcard-utils';
 ```
 
 ### ParsedContact
@@ -183,8 +183,8 @@ interface ParsedAddress {
 For tree-shaking, you can import specific modules:
 
 ```typescript
-import { parseVCardFile } from '@appstandard-contacts/vcard-utils/parser';
-import { generateVCardFile } from '@appstandard-contacts/vcard-utils/generator';
+import { parseVCardFile } from '@leigh-chr/vcard-utils/parser';
+import { generateVCardFile } from '@leigh-chr/vcard-utils/generator';
 ```
 
 ## License

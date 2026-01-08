@@ -1,8 +1,8 @@
-# @appstandard/ics-utils
+# @leigh-chr/ics-utils
 
 TypeScript utilities for parsing and generating ICS (iCalendar) files according to RFC 5545.
 
-[![npm version](https://img.shields.io/npm/v/@appstandard/ics-utils.svg)](https://www.npmjs.com/package/@appstandard/ics-utils)
+[![npm version](https://img.shields.io/npm/v/@leigh-chr/ics-utils.svg)](https://www.npmjs.com/package/@leigh-chr/ics-utils)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 
 ## Features
@@ -19,17 +19,17 @@ TypeScript utilities for parsing and generating ICS (iCalendar) files according 
 ## Installation
 
 ```bash
-npm install @appstandard/ics-utils
+npm install @leigh-chr/ics-utils
 # or
-bun add @appstandard/ics-utils
+bun add @leigh-chr/ics-utils
 # or
-pnpm add @appstandard/ics-utils
+pnpm add @leigh-chr/ics-utils
 ```
 
 ## Quick Start
 
 ```typescript
-import { parseIcsFile, generateIcsFile } from '@appstandard/ics-utils';
+import { parseIcsFile, generateIcsFile } from '@leigh-chr/ics-utils';
 
 // Parse an ICS file
 const { events, errors } = parseIcsFile(icsContent);
@@ -54,7 +54,7 @@ const ics = generateIcsFile({
 ### Parser
 
 ```typescript
-import { parseIcsFile } from '@appstandard/ics-utils';
+import { parseIcsFile } from '@leigh-chr/ics-utils';
 
 const result = parseIcsFile(icsString);
 // Returns: { events: ParsedEvent[], errors: string[] }
@@ -63,7 +63,7 @@ const result = parseIcsFile(icsString);
 ### Generator
 
 ```typescript
-import { generateIcsFile } from '@appstandard/ics-utils';
+import { generateIcsFile } from '@leigh-chr/ics-utils';
 
 const ics = generateIcsFile({
   calendarName: 'My Calendar',
@@ -90,7 +90,7 @@ import {
   parseDateFromICS,
   formatDateOnlyToICS,
   isValidIcsDate
-} from '@appstandard/ics-utils';
+} from '@leigh-chr/ics-utils';
 
 // Format JavaScript Date to ICS format
 formatDateToICS(new Date());           // '20240115T100000Z'
@@ -113,7 +113,7 @@ import {
   parseDuration,
   durationToMinutes,
   isValidDuration
-} from '@appstandard/ics-utils';
+} from '@leigh-chr/ics-utils';
 
 // Format to ISO 8601 duration
 formatDuration(15, 'minutes');  // 'PT15M'
@@ -137,7 +137,7 @@ isValidDuration('PT15M');       // true
 import {
   parseAlarmTrigger,
   formatAlarmTrigger
-} from '@appstandard/ics-utils';
+} from '@leigh-chr/ics-utils';
 
 // Parse alarm trigger
 parseAlarmTrigger('-PT15M');
@@ -163,7 +163,7 @@ import type {
   ParseResult,
   AlarmTrigger,
   DurationUnit,
-} from '@appstandard/ics-utils';
+} from '@leigh-chr/ics-utils';
 ```
 
 ### ParsedEvent
@@ -195,11 +195,11 @@ interface ParsedEvent {
 For tree-shaking, you can import specific modules:
 
 ```typescript
-import { parseIcsFile } from '@appstandard/ics-utils/parser';
-import { generateIcsFile } from '@appstandard/ics-utils/generator';
-import { formatDateToICS } from '@appstandard/ics-utils/date';
-import { formatDuration } from '@appstandard/ics-utils/duration';
-import { parseAlarmTrigger } from '@appstandard/ics-utils/alarm';
+import { parseIcsFile } from '@leigh-chr/ics-utils/parser';
+import { generateIcsFile } from '@leigh-chr/ics-utils/generator';
+import { formatDateToICS } from '@leigh-chr/ics-utils/date';
+import { formatDuration } from '@leigh-chr/ics-utils/duration';
+import { parseAlarmTrigger } from '@leigh-chr/ics-utils/alarm';
 ```
 
 ## License

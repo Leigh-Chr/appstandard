@@ -1,8 +1,8 @@
-# @appstandard-tasks/todo-utils
+# @leigh-chr/vtodo-utils
 
 TypeScript utilities for parsing and generating VTODO (iCalendar) task files according to RFC 5545.
 
-[![npm version](https://img.shields.io/npm/v/@appstandard-tasks/todo-utils.svg)](https://www.npmjs.com/package/@appstandard-tasks/todo-utils)
+[![npm version](https://img.shields.io/npm/v/@leigh-chr/vtodo-utils.svg)](https://www.npmjs.com/package/@leigh-chr/vtodo-utils)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 
 ## Features
@@ -18,17 +18,17 @@ TypeScript utilities for parsing and generating VTODO (iCalendar) task files acc
 ## Installation
 
 ```bash
-npm install @appstandard-tasks/todo-utils
+npm install @leigh-chr/vtodo-utils
 # or
-bun add @appstandard-tasks/todo-utils
+bun add @leigh-chr/vtodo-utils
 # or
-pnpm add @appstandard-tasks/todo-utils
+pnpm add @leigh-chr/vtodo-utils
 ```
 
 ## Quick Start
 
 ```typescript
-import { parseTodoFile, generateTodoFile } from '@appstandard-tasks/todo-utils';
+import { parseTodoFile, generateTodoFile } from '@leigh-chr/vtodo-utils';
 
 // Parse a VTODO file
 const { tasks, errors } = parseTodoFile(icsContent);
@@ -51,7 +51,7 @@ const ics = generateTodoFile([{
 ### Parser
 
 ```typescript
-import { parseTodoFile } from '@appstandard-tasks/todo-utils';
+import { parseTodoFile } from '@leigh-chr/vtodo-utils';
 
 const result = parseTodoFile(icsString);
 // Returns: { tasks: ParsedTask[], errors: string[] }
@@ -60,7 +60,7 @@ const result = parseTodoFile(icsString);
 ### Generator
 
 ```typescript
-import { generateTodoFile } from '@appstandard-tasks/todo-utils';
+import { generateTodoFile } from '@leigh-chr/vtodo-utils';
 
 const ics = generateTodoFile(tasks, options);
 ```
@@ -99,7 +99,7 @@ import type {
   ParseResult,
   TaskStatus,
   TaskPriority,
-} from '@appstandard-tasks/todo-utils';
+} from '@leigh-chr/vtodo-utils';
 ```
 
 ### ParsedTask
@@ -145,8 +145,8 @@ type TaskPriority = 'high' | 'medium' | 'low' | 'none';
 For tree-shaking, you can import specific modules:
 
 ```typescript
-import { parseTodoFile } from '@appstandard-tasks/todo-utils/parser';
-import { generateTodoFile } from '@appstandard-tasks/todo-utils/generator';
+import { parseTodoFile } from '@leigh-chr/vtodo-utils/parser';
+import { generateTodoFile } from '@leigh-chr/vtodo-utils/generator';
 ```
 
 ## Compatibility

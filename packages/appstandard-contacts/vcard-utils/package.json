@@ -1,5 +1,5 @@
 {
-	"name": "@appstandard-contacts/vcard-utils",
+	"name": "@leigh-chr/vcard-utils",
 	"version": "0.1.0",
 	"description": "TypeScript utilities for parsing and generating vCard files (RFC 6350)",
 	"type": "module",
