@@ -56,8 +56,8 @@ ENV TURBO_TEAM=$TURBO_TEAM
 # Create empty .env for Prisma config
 RUN mkdir -p apps/contacts-server && touch apps/contacts-server/.env
 
-# Generate Prisma client
-RUN cd packages/db && bun x prisma generate
+# Generate Prisma client (use node_modules binary to avoid bun x crash in Alpine)
+RUN cd packages/db && ./node_modules/.bin/prisma generate
 
 # Build server and ALL its dependencies with Turbo
 # Remote cache will be used if TURBO_TOKEN is provided
