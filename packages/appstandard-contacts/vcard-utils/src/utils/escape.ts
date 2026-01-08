@@ -19,15 +19,28 @@ export function escapeVCardText(text: string): string {
 
 /**
  * Unescape special characters in vCard text values
+ * SECURITY: Fixed order to handle escaped backslashes correctly
+ * Example: "\\\\n" should become "\n" (backslash + n), not a newline
  */
 export function unescapeVCardText(text: string): string {
 	if (!text) return "";
 
-	return text
-		.replace(/\\n/gi, "\n") // Unescape newlines (case insensitive)
-		.replace(/\\,/g, ",") // Unescape commas
-		.replace(/\\;/g, ";") // Unescape semicolons
-		.replace(/\\\\/g, "\\"); // Unescape backslashes last
+	// Use a single-pass approach to correctly handle escaped backslashes
+	// This prevents issues where \\n could be incorrectly interpreted as newline
+	return text.replace(/\\(.)/gi, (match, char) => {
+		switch (char.toLowerCase()) {
+			case "n":
+				return "\n"; // Newline
+			case ",":
+				return ","; // Comma
+			case ";":
+				return ";"; // Semicolon
+			case "\\":
+				return "\\"; // Escaped backslash
+			default:
+				return match; // Keep other escapes as-is
+		}
+	});
 }
 
 /**

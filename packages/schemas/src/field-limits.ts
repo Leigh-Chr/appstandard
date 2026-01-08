@@ -36,4 +36,11 @@ export const FIELD_LIMITS = {
 	CONTACT: 500,
 	RECURRENCE_ID: 500,
 	RELATED_TO: 500,
+
+	// Array limits (prevent DoS)
+	MAX_ATTENDEES: 100, // Maximum attendees per event
+	MAX_ALARMS: 10, // Maximum alarms per event
+	MAX_CATEGORIES: 50, // Maximum categories per event
+	MAX_RDATE_ENTRIES: 100, // Maximum RDATE entries
+	MAX_EXDATE_ENTRIES: 100, // Maximum EXDATE entries
 } as const;

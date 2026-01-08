@@ -17,6 +17,7 @@ import {
 	getSecret,
 	isUsingDockerSecrets,
 } from "./lib/secrets";
+import { anonymousIdMiddleware } from "./middleware/anonymous-id";
 import {
 	authRateLimit,
 	changePasswordRateLimit,
@@ -353,6 +354,10 @@ export function createServerApp(config: ServerConfig) {
 			},
 		})(c, next);
 	});
+
+	// Anonymous ID management (server-generated signed cookies)
+	// SECURITY: Generates and validates cryptographically signed anonymous IDs
+	app.use(anonymousIdMiddleware());
 
 	// Rate limiting: 100 requests per minute for general routes
 	app.use(async (c, next) => {

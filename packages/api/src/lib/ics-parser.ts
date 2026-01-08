@@ -593,6 +593,12 @@ function parseVEvent(
 /**
  * Parse an ICS file content and extract events
  */
+/**
+ * Maximum number of events that can be parsed from a single ICS file
+ * SECURITY: Prevents DoS attacks via files with millions of tiny events
+ */
+const MAX_EVENTS_PER_FILE = 5000;
+
 export function parseIcsFile(fileContent: string): ParseResult {
 	const events: ParsedEvent[] = [];
 	const errors: string[] = [];
@@ -601,6 +607,14 @@ export function parseIcsFile(fileContent: string): ParseResult {
 		const jcalData = ical.parse(fileContent);
 		const comp = new ical.Component(jcalData);
 		const vevents = comp.getAllSubcomponents("vevent");
+
+		// SECURITY: Limit number of events to prevent DoS
+		if (vevents.length > MAX_EVENTS_PER_FILE) {
+			errors.push(
+				`File contains ${vevents.length} events, which exceeds the maximum of ${MAX_EVENTS_PER_FILE}. Please split into smaller files.`,
+			);
+			return { events: [], errors };
+		}
 
 		for (const vevent of vevents) {
 			try {

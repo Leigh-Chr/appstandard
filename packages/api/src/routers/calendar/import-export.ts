@@ -29,9 +29,10 @@ function validateAndParseIcs(fileContent: string) {
 }
 
 // Helper function to create calendar
+// SECURITY: userId must always be provided to prevent orphaned calendars
 async function createImportCalendar(
 	name: string | undefined,
-	userId: string | null,
+	userId: string,
 ): Promise<Awaited<ReturnType<typeof prisma.calendar.create>>> {
 	try {
 		return await prisma.calendar.create({
@@ -99,9 +100,16 @@ export const calendarImportExportRouter = router({
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
-			const parseResult = validateAndParseIcs(input.fileContent);
+			// SECURITY: Ensure userId is always set to prevent orphaned calendars
+			const userId = ctx.session?.user?.id || ctx.anonymousId;
+			if (!userId) {
+				throw new TRPCError({
+					code: "UNAUTHORIZED",
+					message: "Authentication required",
+				});
+			}
 
-			const userId = ctx.session?.user?.id || ctx.anonymousId || null;
+			const parseResult = validateAndParseIcs(input.fileContent);
 			const calendar = await createImportCalendar(input.name, userId);
 
 			const { importedEvents, failedEvents, importErrors } =

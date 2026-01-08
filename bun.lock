@@ -313,6 +313,7 @@
       "version": "0.1.0",
       "dependencies": {
         "@appstandard/db": "workspace:*",
+        "@appstandard/server-core": "workspace:*",
         "@trpc/server": "catalog:",
         "hono": "catalog:",
         "zod": "catalog:",

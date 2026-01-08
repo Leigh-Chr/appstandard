@@ -3,33 +3,13 @@
 	"version": "0.1.0",
 	"description": "Shared server infrastructure for AppStandard Calendar applications",
 	"type": "module",
-	"main": "./dist/index.js",
-	"module": "./dist/index.js",
-	"types": "./dist/index.d.ts",
+	"main": "./dist/index.mjs",
+	"module": "./dist/index.mjs",
+	"types": "./dist/index.d.mts",
 	"exports": {
 		".": {
-			"types": "./dist/index.d.ts",
+			"types": "./dist/index.d.mts",
 			"default": "./src/index.ts"
-		},
-		"./lib/logger": {
-			"types": "./dist/lib/logger.d.ts",
-			"default": "./src/lib/logger.ts"
-		},
-		"./lib/secrets": {
-			"types": "./dist/lib/secrets.d.ts",
-			"default": "./src/lib/secrets.ts"
-		},
-		"./middleware/rate-limit": {
-			"types": "./dist/middleware/rate-limit.d.ts",
-			"default": "./src/middleware/rate-limit.ts"
-		},
-		"./middleware/env": {
-			"types": "./dist/middleware/env.d.ts",
-			"default": "./src/middleware/env.ts"
-		},
-		"./app": {
-			"types": "./dist/app.d.ts",
-			"default": "./src/app.ts"
 		}
 	},
 	"files": [

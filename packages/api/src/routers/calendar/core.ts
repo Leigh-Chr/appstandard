@@ -139,15 +139,21 @@ export const calendarCoreRouter = router({
 				});
 			}
 
+			// SECURITY: Orphaned calendars (userId=null) should not be accessible
+			if (calendar.userId === null) {
+				throw new TRPCError({
+					code: "FORBIDDEN",
+					message: "Access denied to this calendar",
+				});
+			}
+
 			// Verify ownership in a single check
 			const ownershipFilter = buildOwnershipFilter(ctx);
 			const hasAccess =
-				(ownershipFilter.OR?.some(
+				ownershipFilter.OR?.some(
 					(condition) =>
 						"userId" in condition && condition.userId === calendar.userId,
-				) ??
-					false) ||
-				calendar.userId === null;
+				) ?? false;
 
 			if (!hasAccess) {
 				throw new TRPCError({
@@ -194,6 +200,15 @@ export const calendarCoreRouter = router({
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
+			// SECURITY: Ensure userId is always set to prevent orphaned calendars
+			const userId = ctx.session?.user?.id || ctx.anonymousId;
+			if (!userId) {
+				throw new TRPCError({
+					code: "UNAUTHORIZED",
+					message: "Authentication required",
+				});
+			}
+
 			await checkCalendarLimit(ctx);
 
 			let calendar: Awaited<ReturnType<typeof prisma.calendar.create>>;
@@ -202,7 +217,7 @@ export const calendarCoreRouter = router({
 					data: {
 						name: input.name, // Already trimmed by Zod transform
 						color: input.color || null,
-						userId: ctx.session?.user?.id || ctx.anonymousId || null,
+						userId,
 					},
 				});
 			} catch (error) {
@@ -245,15 +260,21 @@ export const calendarCoreRouter = router({
 				});
 			}
 
+			// SECURITY: Orphaned calendars (userId=null) should not be accessible
+			if (calendar.userId === null) {
+				throw new TRPCError({
+					code: "FORBIDDEN",
+					message: "Access denied to this calendar",
+				});
+			}
+
 			// Verify ownership
 			const ownershipFilter = buildOwnershipFilter(ctx);
 			const hasAccess =
-				(ownershipFilter.OR?.some(
+				ownershipFilter.OR?.some(
 					(condition) =>
 						"userId" in condition && condition.userId === calendar.userId,
-				) ??
-					false) ||
-				calendar.userId === null;
+				) ?? false;
 
 			if (!hasAccess) {
 				throw new TRPCError({

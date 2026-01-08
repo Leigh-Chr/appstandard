@@ -4,7 +4,6 @@ import type { TRPCClientError } from "@trpc/client";
 import { createTRPCClient, httpBatchLink } from "@trpc/client";
 import { createTRPCOptionsProxy } from "@trpc/tanstack-react-query";
 import { handleTRPCError } from "@/lib/error-handler";
-import { getAnonymousId } from "@/lib/storage";
 
 /**
  * Check if error is a network error
@@ -23,12 +22,13 @@ function isNetworkErrorType(error: unknown): boolean {
 }
 
 /**
- * Handle UNAUTHORIZED errors by ensuring anonymous ID exists
+ * Handle UNAUTHORIZED errors
+ * SECURITY: Anonymous IDs are now server-managed via secure cookies
  */
 function handleUnauthorizedError(): boolean {
-	if (typeof window === "undefined") return false;
-	const anonymousId = getAnonymousId();
-	return !!anonymousId;
+	// Anonymous IDs are now server-managed, no client-side action needed
+	// The cookie will be present if the user has visited any page
+	return true;
 }
 
 export const queryClient = new QueryClient({
@@ -104,10 +104,8 @@ export const queryClient = new QueryClient({
 
 				// Special handling for UNAUTHORIZED errors in anonymous mode
 				if (errorData?.code === "UNAUTHORIZED" && failureCount < 1) {
-					// Ensure anonymous ID exists before retry
-					if (typeof window !== "undefined") {
-						getAnonymousId();
-					}
+					// Anonymous IDs are now server-managed via cookies
+					// Retry once in case of timing issues with cookie setting
 					return true;
 				}
 
@@ -157,22 +155,14 @@ export const trpcClient = createTRPCClient<AppRouter>({
 		httpBatchLink({
 			url: `${serverUrl}/trpc`,
 			fetch(url, options) {
-				// Add anonymous ID header if user is not authenticated
-				const headers = new Headers(options?.headers);
-
-				// Get or create anonymous ID (creates it if it doesn't exist)
-				if (typeof window !== "undefined") {
-					const anonymousId = getAnonymousId();
-					if (anonymousId) {
-						headers.set("x-anonymous-id", anonymousId);
-					}
-				}
+				// SECURITY: Anonymous IDs are now managed via secure HttpOnly cookies
+				// set by the server. No need to send headers from client side.
+				// The cookie is automatically sent with credentials: "include"
 
 				// nosemgrep: codacy.tools-configs.rules_lgpl_javascript_ssrf_rule-node-ssrf
 				// URL is from environment config (VITE_SERVER_URL), not user input
 				return fetch(url, {
 					...options,
-					headers,
 					credentials: "include",
 				});
 			},

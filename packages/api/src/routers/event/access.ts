@@ -35,11 +35,18 @@ export async function verifyEventAccess(
 		});
 	}
 
+	// SECURITY: Orphaned calendars (userId=null) should not be accessible
+	if (event.calendar.userId === null) {
+		throw new TRPCError({
+			code: "FORBIDDEN",
+			message: "Access denied to this event",
+		});
+	}
+
 	// Verify ownership in memory
 	const hasAccess =
 		(sessionUserId && event.calendar.userId === sessionUserId) ||
-		(anonymousId && event.calendar.userId === anonymousId) ||
-		event.calendar.userId === null;
+		(anonymousId && event.calendar.userId === anonymousId);
 
 	if (!hasAccess) {
 		throw new TRPCError({
@@ -72,11 +79,18 @@ export async function verifyCalendarAccess(
 		});
 	}
 
+	// SECURITY: Orphaned calendars (userId=null) should not be accessible
+	if (calendar.userId === null) {
+		throw new TRPCError({
+			code: "FORBIDDEN",
+			message: "Access denied to this calendar",
+		});
+	}
+
 	// Verify ownership in memory
 	const hasAccess =
 		(sessionUserId && calendar.userId === sessionUserId) ||
-		(anonymousId && calendar.userId === anonymousId) ||
-		calendar.userId === null;
+		(anonymousId && calendar.userId === anonymousId);
 
 	if (!hasAccess) {
 		throw new TRPCError({
@@ -107,15 +121,21 @@ export async function verifyCalendarAccessForList(
 		});
 	}
 
+	// SECURITY: Orphaned calendars (userId=null) should not be accessible
+	if (calendar.userId === null) {
+		throw new TRPCError({
+			code: "FORBIDDEN",
+			message: "Access denied to this calendar",
+		});
+	}
+
 	// Verify ownership in a single check
 	const ownershipFilter = buildOwnershipFilter(ctx);
 	const hasAccess =
-		(ownershipFilter.OR?.some(
+		ownershipFilter.OR?.some(
 			(condition) =>
 				"userId" in condition && condition.userId === calendar.userId,
-		) ??
-			false) ||
-		calendar.userId === null;
+		) ?? false;
 
 	if (!hasAccess) {
 		throw new TRPCError({

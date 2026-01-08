@@ -10,6 +10,21 @@ import {
 import { FIELD_LIMITS } from "./field-limits";
 
 /**
+ * SECURITY: Safe JSON.parse wrapper that protects against prototype pollution
+ * Rejects objects with __proto__, constructor, or prototype properties
+ */
+function safeJsonParse(jsonString: string): unknown {
+	const parsed = JSON.parse(jsonString, (key, value) => {
+		// Reject dangerous keys that could pollute prototypes
+		if (key === "__proto__" || key === "constructor" || key === "prototype") {
+			throw new Error(`Dangerous property "${key}" detected in JSON`);
+		}
+		return value;
+	});
+	return parsed;
+}
+
+/**
  * Attendee schema with RFC 5545 validation
  */
 export const attendeeSchema = z.object({
@@ -84,7 +99,8 @@ export const jsonDateArraySchema = z
 		(val) => {
 			if (!val || val.trim() === "") return true;
 			try {
-				const parsed = JSON.parse(val);
+				// SECURITY: Use safe parser to prevent prototype pollution
+				const parsed = safeJsonParse(val);
 				return (
 					Array.isArray(parsed) &&
 					parsed.every(
@@ -320,8 +336,8 @@ const eventCreateSchemaBase = z.object({
 	color: colorSchema,
 
 	// Relations
-	attendees: z.array(attendeeSchema).optional(),
-	alarms: z.array(alarmSchema).optional(),
+	attendees: z.array(attendeeSchema).max(FIELD_LIMITS.MAX_ATTENDEES).optional(),
+	alarms: z.array(alarmSchema).max(FIELD_LIMITS.MAX_ALARMS).optional(),
 });
 
 /**

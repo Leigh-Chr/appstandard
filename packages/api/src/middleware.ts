@@ -44,6 +44,10 @@ function getEventLimitMessage(isAuth: boolean): string {
  * Check calendar limit for user
  * Both authenticated and anonymous users have limits
  * Throws error if limit exceeded
+ *
+ * WARNING: This function has a TOCTOU race condition.
+ * For atomic operations, use createCalendarAtomically instead.
+ * @deprecated Use createCalendarAtomically for new code
  */
 export async function checkCalendarLimit(ctx: Context): Promise<void> {
 	const isAuth = isAuthenticatedUser(ctx);
@@ -61,6 +65,109 @@ export async function checkCalendarLimit(ctx: Context): Promise<void> {
 			message: getCalendarLimitMessage(isAuth),
 		});
 	}
+}
+
+/**
+ * SECURITY: Atomically create a calendar with limit checking
+ * Uses Prisma transaction to prevent race condition bypasses
+ */
+export async function createCalendarAtomically(
+	ctx: Context,
+	data: { name: string; color?: string | null; sourceUrl?: string },
+): Promise<Awaited<ReturnType<typeof prisma.calendar.create>>> {
+	const isAuth = isAuthenticatedUser(ctx);
+	const userId = ctx.session?.user?.id || ctx.anonymousId;
+
+	if (!userId) {
+		throw new TRPCError({
+			code: "UNAUTHORIZED",
+			message: "Authentication required",
+		});
+	}
+
+	const maxCalendars = getMaxCalendars(isAuth);
+
+	// Use interactive transaction for atomicity
+	return prisma.$transaction(async (tx) => {
+		// Count within transaction
+		const calendarCount = await tx.calendar.count({
+			where: { userId },
+		});
+
+		if (calendarCount >= maxCalendars) {
+			throw new TRPCError({
+				code: "FORBIDDEN",
+				message: getCalendarLimitMessage(isAuth),
+			});
+		}
+
+		// Create within same transaction
+		return tx.calendar.create({
+			data: {
+				name: data.name,
+				color: data.color || null,
+				sourceUrl: data.sourceUrl,
+				userId,
+			},
+		});
+	});
+}
+
+/**
+ * SECURITY: Atomically create an event with limit checking
+ * Uses Prisma transaction to prevent race condition bypasses
+ */
+export async function createEventAtomically(
+	ctx: Context,
+	calendarId: string,
+	eventData: Parameters<typeof prisma.event.create>[0]["data"],
+): Promise<Awaited<ReturnType<typeof prisma.event.create>>> {
+	const isAuth = isAuthenticatedUser(ctx);
+	const userId = ctx.session?.user?.id || ctx.anonymousId;
+
+	if (!userId) {
+		throw new TRPCError({
+			code: "UNAUTHORIZED",
+			message: "Authentication required",
+		});
+	}
+
+	const maxEvents = getMaxEventsPerCalendar(isAuth);
+
+	// Use interactive transaction for atomicity
+	return prisma.$transaction(async (tx) => {
+		// Verify ownership and get event count
+		const calendar = await tx.calendar.findFirst({
+			where: {
+				id: calendarId,
+				userId,
+			},
+			include: {
+				_count: {
+					select: { events: true },
+				},
+			},
+		});
+
+		if (!calendar) {
+			throw new TRPCError({
+				code: "NOT_FOUND",
+				message: "Calendar not found",
+			});
+		}
+
+		if (calendar._count.events >= maxEvents) {
+			throw new TRPCError({
+				code: "FORBIDDEN",
+				message: getEventLimitMessage(isAuth),
+			});
+		}
+
+		// Create within same transaction
+		return tx.event.create({
+			data: eventData,
+		});
+	});
 }
 
 /**
@@ -169,15 +276,22 @@ export async function verifyCalendarAccess(
 		});
 	}
 
+	// SECURITY: Orphaned calendars (userId=null) should not be accessible to anyone
+	// This prevents unauthorized access to orphaned data
+	if (calendar.userId === null) {
+		throw new TRPCError({
+			code: "FORBIDDEN",
+			message: "Access denied to this calendar",
+		});
+	}
+
 	// 1. Verify ownership (original behavior)
 	const ownershipFilter = buildOwnershipFilter(ctx);
 	const isOwner =
-		(ownershipFilter.OR?.some(
+		ownershipFilter.OR?.some(
 			(condition) =>
 				"userId" in condition && condition.userId === calendar.userId,
-		) ??
-			false) ||
-		calendar.userId === null;
+		) ?? false;
 
 	if (isOwner) {
 		return calendar;

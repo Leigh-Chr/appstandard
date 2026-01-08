@@ -3,21 +3,13 @@
 	"version": "0.1.0",
 	"description": "Shared API infrastructure for AppStandard Calendar applications",
 	"type": "module",
-	"main": "./dist/index.js",
-	"module": "./dist/index.js",
-	"types": "./dist/index.d.ts",
+	"main": "./dist/index.mjs",
+	"module": "./dist/index.mjs",
+	"types": "./dist/index.d.mts",
 	"exports": {
 		".": {
-			"types": "./dist/index.d.ts",
+			"types": "./dist/index.d.mts",
 			"default": "./src/index.ts"
-		},
-		"./trpc": {
-			"types": "./dist/trpc.d.ts",
-			"default": "./src/trpc.ts"
-		},
-		"./context": {
-			"types": "./dist/context.d.ts",
-			"default": "./src/context.ts"
 		}
 	},
 	"files": [
@@ -42,6 +34,7 @@
 	"license": "AGPL-3.0",
 	"dependencies": {
 		"@appstandard/db": "workspace:*",
+		"@appstandard/server-core": "workspace:*",
 		"@trpc/server": "catalog:",
 		"hono": "catalog:",
 		"zod": "catalog:"

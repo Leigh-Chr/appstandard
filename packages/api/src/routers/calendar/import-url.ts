@@ -68,9 +68,16 @@ function getHttpError(
 }
 
 /**
+ * Maximum response size for URL imports (5MB)
+ * SECURITY: Prevents memory exhaustion from huge responses
+ */
+const MAX_RESPONSE_SIZE = 5 * 1024 * 1024;
+
+/**
  * Fetch ICS content from URL with error handling and circuit breaker
  * Best practice: Use circuit breaker to prevent cascading failures
  * Security: SSRF protection via assertValidExternalUrlWithDNS validation
+ * Security: Response size limit to prevent memory exhaustion
  */
 async function fetchIcsContent(url: string, timeout = 60000): Promise<string> {
 	// SECURITY: Validate URL against SSRF attacks before fetching
@@ -98,7 +105,63 @@ async function fetchIcsContent(url: string, timeout = 60000): Promise<string> {
 				});
 			}
 
-			return await response.text();
+			// SECURITY: Check Content-Length header if available
+			const contentLength = response.headers?.get?.("content-length");
+			if (contentLength) {
+				const size = Number.parseInt(contentLength, 10);
+				if (!Number.isNaN(size) && size > MAX_RESPONSE_SIZE) {
+					throw new TRPCError({
+						code: "BAD_REQUEST",
+						message: `File too large. Maximum allowed size: ${MAX_RESPONSE_SIZE / 1024 / 1024}MB`,
+					});
+				}
+			}
+
+			// SECURITY: Stream and limit response body size
+			// Content-Length can be spoofed, so we also check actual size
+			// Note: Some environments (tests, older browsers) may not support streaming
+			const reader = response.body?.getReader?.();
+			if (reader) {
+				const chunks: Uint8Array[] = [];
+				let totalSize = 0;
+
+				while (true) {
+					const { done, value } = await reader.read();
+					if (done) break;
+
+					totalSize += value.length;
+					if (totalSize > MAX_RESPONSE_SIZE) {
+						reader.cancel();
+						throw new TRPCError({
+							code: "BAD_REQUEST",
+							message: `File too large. Maximum allowed size: ${MAX_RESPONSE_SIZE / 1024 / 1024}MB`,
+						});
+					}
+
+					chunks.push(value);
+				}
+
+				// Combine chunks and decode as text
+				const combined = new Uint8Array(totalSize);
+				let offset = 0;
+				for (const chunk of chunks) {
+					combined.set(chunk, offset);
+					offset += chunk.length;
+				}
+
+				return new TextDecoder().decode(combined);
+			}
+
+			// Fallback for environments without streaming support
+			// Note: In this case we rely on Content-Length header validation above
+			const text = await response.text();
+			if (text.length > MAX_RESPONSE_SIZE) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: `File too large. Maximum allowed size: ${MAX_RESPONSE_SIZE / 1024 / 1024}MB`,
+				});
+			}
+			return text;
 		} catch (error) {
 			if (error instanceof TRPCError) throw error;
 
@@ -289,6 +352,15 @@ export const calendarImportUrlRouter = router({
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
+			// SECURITY: Ensure userId is always set to prevent orphaned calendars
+			const userId = ctx.session?.user?.id || ctx.anonymousId;
+			if (!userId) {
+				throw new TRPCError({
+					code: "UNAUTHORIZED",
+					message: "Authentication required",
+				});
+			}
+
 			await checkCalendarLimit(ctx);
 
 			// Validate URL against SSRF attacks (includes DNS rebinding protection)
@@ -316,7 +388,7 @@ export const calendarImportUrlRouter = router({
 						name:
 							input.name ||
 							`Imported Calendar - ${new Date().toLocaleDateString("en-US")}`,
-						userId: ctx.session?.user?.id || ctx.anonymousId || null,
+						userId,
 						sourceUrl: input.url,
 						lastSyncedAt: new Date(),
 					},

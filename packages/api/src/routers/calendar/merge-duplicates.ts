@@ -24,6 +24,15 @@ export const calendarMergeDuplicatesRouter = router({
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
+			// SECURITY: Ensure userId is always set to prevent orphaned calendars
+			const userId = ctx.session?.user?.id || ctx.anonymousId;
+			if (!userId) {
+				throw new TRPCError({
+					code: "UNAUTHORIZED",
+					message: "Authentication required",
+				});
+			}
+
 			// Fetch all calendars
 			const calendars = await prisma.calendar.findMany({
 				where: {
@@ -62,7 +71,7 @@ export const calendarMergeDuplicatesRouter = router({
 				mergedCalendar = await prisma.calendar.create({
 					data: {
 						name: input.name,
-						userId: ctx.session?.user?.id || ctx.anonymousId || null,
+						userId,
 					},
 				});
 			} catch (error) {

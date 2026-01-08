@@ -22,7 +22,14 @@ export {
 	type CleanupFunctions,
 	createCleanupJob,
 } from "./cleanup-job";
-
+// Anonymous ID (HMAC-signed cookies)
+export {
+	ANON_COOKIE_NAME,
+	ANON_COOKIE_OPTIONS,
+	generateSignedAnonymousId,
+	isValidAnonymousIdFormat,
+	validateSignedAnonymousId,
+} from "./lib/anonymous-id";
 // Logger
 export {
 	clearLogContext,
@@ -34,14 +41,16 @@ export {
 	type SecurityEventType,
 	setLogContext,
 } from "./lib/logger";
-
 // Secrets
 export {
 	getRequiredSecret,
 	getSecret,
 	isUsingDockerSecrets,
 } from "./lib/secrets";
-
+export {
+	anonymousIdMiddleware,
+	getAnonymousIdFromRequest,
+} from "./middleware/anonymous-id";
 // Middleware
 export { env as rateLimitEnv } from "./middleware/env";
 export {

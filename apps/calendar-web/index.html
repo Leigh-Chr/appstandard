@@ -5,9 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     
     <!-- Content Security Policy -->
+    <!-- SECURITY: CSP configured for production. For maximum security, serve CSP via HTTP headers with nonces. -->
     <!-- Note: frame-ancestors is not supported in meta tags, it must be set via HTTP headers -->
     <!-- Note: This CSP includes both development (localhost) and production (appstandard.io) domains -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' http://localhost:3000 ws://localhost:3000 https://api.appstandard.io wss://api.appstandard.io https://*.sentry.io https://*.ingest.sentry.io https://*.ingest.de.sentry.io wss://*.sentry.io; worker-src 'self' blob:; base-uri 'self'; form-action 'self';" />
+    <!-- Note: 'unsafe-inline' for styles is required by many CSS-in-JS libraries. Consider stricter policy with nonces in production. -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' http://localhost:3000 ws://localhost:3000 https://api.appstandard.io wss://api.appstandard.io https://*.sentry.io https://*.ingest.sentry.io https://*.ingest.de.sentry.io wss://*.sentry.io; worker-src 'self' blob:; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests;" />
     
     <!-- Theme & Colors -->
     <meta name="theme-color" content="#2a2218" media="(prefers-color-scheme: dark)" />

@@ -125,10 +125,13 @@ export const logger = {
  */
 export type SecurityEventType =
 	| "rate_limit_exceeded"
+	| "rate_limit_error_blocked"
 	| "auth_failure"
 	| "forbidden_access"
 	| "invalid_input"
-	| "ssrf_blocked";
+	| "ssrf_blocked"
+	| "invalid_anonymous_id_cookie"
+	| "invalid_anonymous_id_attempt";
 
 /**
  * Log a security event with structured data

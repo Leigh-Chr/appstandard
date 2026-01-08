@@ -55,14 +55,20 @@ export const calendarGroupCalendarsRouter = router({
 
 			// For anonymous users, verify ownership
 			if (!ctx.session?.user?.id) {
+				// SECURITY: Orphaned groups (userId=null) should not be accessible
+				if (group.userId === null) {
+					throw new TRPCError({
+						code: "FORBIDDEN",
+						message: "Access denied to this group",
+					});
+				}
+
 				const ownershipFilter = buildOwnershipFilter(ctx);
 				const hasAccess =
-					(ownershipFilter.OR?.some(
+					ownershipFilter.OR?.some(
 						(condition) =>
 							"userId" in condition && condition.userId === group.userId,
-					) ??
-						false) ||
-					group.userId === null;
+					) ?? false;
 
 				if (!hasAccess) {
 					throw new TRPCError({
@@ -178,14 +184,20 @@ export const calendarGroupCalendarsRouter = router({
 
 			// For anonymous users, verify ownership
 			if (!ctx.session?.user?.id) {
+				// SECURITY: Orphaned groups (userId=null) should not be accessible
+				if (group.userId === null) {
+					throw new TRPCError({
+						code: "FORBIDDEN",
+						message: "Access denied to this group",
+					});
+				}
+
 				const ownershipFilter = buildOwnershipFilter(ctx);
 				const hasAccess =
-					(ownershipFilter.OR?.some(
+					ownershipFilter.OR?.some(
 						(condition) =>
 							"userId" in condition && condition.userId === group.userId,
-					) ??
-						false) ||
-					group.userId === null;
+					) ?? false;
 
 				if (!hasAccess) {
 					throw new TRPCError({

@@ -72,24 +72,46 @@ setInterval(
 
 /**
  * Get client IP from request
+ * SECURITY: Takes the LAST IP from X-Forwarded-For to prevent IP spoofing.
+ * In a properly configured proxy chain, the last IP is the one added by
+ * the trusted reverse proxy closest to our server.
+ *
+ * Example: Client spoofs "1.1.1.1" → Real IP: 2.2.2.2
+ * X-Forwarded-For: "1.1.1.1, 2.2.2.2" → We take 2.2.2.2
  */
 function getClientIP(request: Request): string {
-	// Try to get IP from various headers (for proxies/load balancers)
+	// Try X-Forwarded-For first (standard header for proxies)
 	const forwarded = request.headers.get("x-forwarded-for");
 	if (forwarded) {
-		const firstIP = forwarded.split(",")[0];
-		if (firstIP) {
-			return firstIP.trim();
+		// Split and get the LAST IP (rightmost = closest to our server = most trusted)
+		const ips = forwarded.split(",").map((ip) => ip.trim());
+		const lastIP = ips[ips.length - 1];
+		if (lastIP && isValidIP(lastIP)) {
+			return lastIP;
 		}
 	}
 
+	// Try X-Real-IP (nginx-style header, typically set by the last proxy)
 	const realIP = request.headers.get("x-real-ip");
-	if (realIP) {
-		return realIP;
+	if (realIP && isValidIP(realIP.trim())) {
+		return realIP.trim();
 	}
 
 	// Fallback (won't work in all environments, but better than nothing)
 	return "unknown";
+}
+
+/**
+ * Basic IP validation to prevent header injection
+ */
+function isValidIP(ip: string): boolean {
+	// IPv4 pattern
+	const ipv4Pattern =
+		/^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+	// IPv6 pattern (simplified, accepts common formats)
+	const ipv6Pattern = /^[a-fA-F0-9:]+$/;
+
+	return ipv4Pattern.test(ip) || (ipv6Pattern.test(ip) && ip.includes(":"));
 }
 
 /**
@@ -179,7 +201,9 @@ function checkRateLimitFallback(
 }
 
 /**
- * Check rate limit (Redis with fallback to in-memory)
+ * Check rate limit (Redis required in production, fallback in development)
+ * SECURITY: In production, Redis is required for distributed rate limiting.
+ * In-memory fallback is only allowed in development for convenience.
  */
 async function checkRateLimit(
 	key: string,
@@ -187,6 +211,7 @@ async function checkRateLimit(
 	windowMs: number,
 	redisKeyPrefix: string,
 ): Promise<{ allowed: boolean; remaining: number; resetAt: number }> {
+	const isProduction = process.env["NODE_ENV"] === "production";
 	const client = getRedisClient();
 
 	if (client) {
@@ -202,13 +227,27 @@ async function checkRateLimit(
 				redisKeyPrefix,
 			);
 		} catch (error) {
-			// Fallback to in-memory if Redis fails
+			// SECURITY: In production, fail if Redis is unavailable
+			// This prevents bypass by overwhelming the in-memory fallback
+			if (isProduction) {
+				logger.error("[Rate Limit] Redis unavailable in production", error);
+				throw error;
+			}
+			// In development, allow fallback for convenience
 			logger.warn("[Rate Limit] Redis unavailable, using fallback", error);
 			return checkRateLimitFallback(key, maxRequests, windowMs);
 		}
 	}
 
-	// No Redis configured, use fallback
+	// SECURITY: In production, require Redis to be configured
+	if (isProduction) {
+		logger.error(
+			"[Rate Limit] REDIS_URL not configured in production. Distributed rate limiting is required.",
+		);
+		throw new Error("REDIS_URL required in production for rate limiting");
+	}
+
+	// In development, allow in-memory fallback
 	return checkRateLimitFallback(key, maxRequests, windowMs);
 }
 
@@ -308,9 +347,27 @@ export function rateLimit(
 
 			return next();
 		} catch (error) {
-			// If rate limiting fails, allow the request but log the error
+			// SECURITY: Fail-closed - block request if rate limiting fails
+			// This prevents attackers from bypassing rate limits by causing errors
 			handleRateLimitError(c, error);
-			return next();
+
+			logSecurityEvent("rate_limit_error_blocked", {
+				ip,
+				path: c.req.path,
+				reason: "Rate limiting service unavailable - request blocked",
+			});
+
+			return c.json(
+				{
+					error: "Service Unavailable",
+					message:
+						"Rate limiting service temporarily unavailable. Please try again later.",
+				},
+				503,
+				{
+					"Retry-After": "60",
+				},
+			);
 		}
 	};
 }
