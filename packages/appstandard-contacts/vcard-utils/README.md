@@ -3,7 +3,9 @@
 TypeScript utilities for parsing and generating vCard files according to RFC 6350.
 
 [![npm version](https://img.shields.io/npm/v/@leigh-chr/vcard-utils.svg)](https://www.npmjs.com/package/@leigh-chr/vcard-utils)
+[![npm downloads](https://img.shields.io/npm/dm/@leigh-chr/vcard-utils.svg)](https://www.npmjs.com/package/@leigh-chr/vcard-utils)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 
 ## Features
 

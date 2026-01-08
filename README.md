@@ -26,6 +26,16 @@
 | **Tasks** | Todo lists with priorities, due dates, and completion tracking | iCalendar VTODO |
 | **Contacts** | Address books with full vCard support | vCard (RFC 6350) |
 
+### Published NPM Packages
+
+Standalone utilities extracted from this project, available on NPM:
+
+| Package | Description | Install |
+|---------|-------------|---------|
+| [@leigh-chr/ics-utils](https://www.npmjs.com/package/@leigh-chr/ics-utils) | ICS/iCalendar parser & generator | `npm i @leigh-chr/ics-utils` |
+| [@leigh-chr/vcard-utils](https://www.npmjs.com/package/@leigh-chr/vcard-utils) | vCard parser & generator | `npm i @leigh-chr/vcard-utils` |
+| [@leigh-chr/vtodo-utils](https://www.npmjs.com/package/@leigh-chr/vtodo-utils) | VTODO task parser & generator | `npm i @leigh-chr/vtodo-utils` |
+
 ## Architecture
 
 ```
@@ -152,7 +162,7 @@ appstandard/
 
 ```bash
 # Clone and install
-git clone https://github.com/yourusername/appstandard.git
+git clone https://github.com/Leigh-Chr/appstandard.git
 cd appstandard
 bun install
 

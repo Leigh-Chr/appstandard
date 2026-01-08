@@ -9,7 +9,7 @@ import {
 	parseTags,
 	removeTag,
 	stringifyTags,
-} from "../tags";
+} from "../comma-separated";
 
 describe("parseTags", () => {
 	describe("string input", () => {

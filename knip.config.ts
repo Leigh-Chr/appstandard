@@ -213,7 +213,10 @@ const config: KnipConfig = {
 
 		// ===== Packages re-exported =====
 		"@appstandard/core", // Core types re-exported
+		"@appstandard/ics-utils", // ICS utilities used in calendar-web
 		"@appstandard/react-utils", // React utilities
+		"@appstandard-contacts/vcard-utils", // vCard utilities used in contacts-api
+		"@appstandard-tasks/todo-utils", // Todo utilities used in tasks-api
 		"@tanstack/react-query", // Used as peer dep
 		"@trpc/client", // Used via tRPC setup
 

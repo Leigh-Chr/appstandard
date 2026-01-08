@@ -3,7 +3,9 @@
 TypeScript utilities for parsing and generating VTODO (iCalendar) task files according to RFC 5545.
 
 [![npm version](https://img.shields.io/npm/v/@leigh-chr/vtodo-utils.svg)](https://www.npmjs.com/package/@leigh-chr/vtodo-utils)
+[![npm downloads](https://img.shields.io/npm/dm/@leigh-chr/vtodo-utils.svg)](https://www.npmjs.com/package/@leigh-chr/vtodo-utils)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 
 ## Features
 
