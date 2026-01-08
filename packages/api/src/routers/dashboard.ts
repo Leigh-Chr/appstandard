@@ -505,32 +505,6 @@ export const dashboardRouter = router({
 				}))
 				.sort((a, b) => b.hours - a.hours);
 
-			// By calendar
-			const calendarHours = new Map<string, number>();
-			const calendarEventCounts = new Map<string, number>();
-
-			for (const event of eventsForDuration) {
-				// Find the calendar for this event
-				const eventWithCal = await prisma.event.findUnique({
-					where: { id: (event as { id?: string }).id || "" },
-					select: { calendarId: true },
-				});
-				if (eventWithCal) {
-					const duration = getEventDurationHours(
-						event.startDate,
-						event.endDate,
-					);
-					calendarHours.set(
-						eventWithCal.calendarId,
-						(calendarHours.get(eventWithCal.calendarId) || 0) + duration,
-					);
-					calendarEventCounts.set(
-						eventWithCal.calendarId,
-						(calendarEventCounts.get(eventWithCal.calendarId) || 0) + 1,
-					);
-				}
-			}
-
 			// Get all events in period with calendar info for breakdown
 			const eventsInPeriodWithCal = await prisma.event.findMany({
 				where: {
