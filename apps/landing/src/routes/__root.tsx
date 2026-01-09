@@ -29,11 +29,17 @@ import "../index.css";
 const BASE_URL = "https://www.appstandard.io";
 const GITHUB_URL = "https://github.com/Leigh-Chr/appstandard";
 
-// Environment-aware URLs
+// Environment-aware URLs - use subdomains in production
 const isDev = import.meta.env["DEV"];
-const CALENDAR_URL = isDev ? "http://localhost:3001" : "/calendar";
-const TASKS_URL = isDev ? "http://localhost:3004" : "/tasks";
-const CONTACTS_URL = isDev ? "http://localhost:3005" : "/contacts";
+const CALENDAR_URL = isDev
+	? "http://localhost:3001"
+	: "https://calendar.appstandard.io";
+const TASKS_URL = isDev
+	? "http://localhost:3004"
+	: "https://tasks.appstandard.io";
+const CONTACTS_URL = isDev
+	? "http://localhost:3005"
+	: "https://contacts.appstandard.io";
 
 export const Route = createRootRoute({
 	component: RootComponent,
