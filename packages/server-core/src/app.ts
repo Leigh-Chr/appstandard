@@ -18,6 +18,7 @@ import {
 	isUsingDockerSecrets,
 } from "./lib/secrets";
 import { anonymousIdMiddleware } from "./middleware/anonymous-id";
+import { privacyMiddleware } from "./middleware/privacy";
 import {
 	authRateLimit,
 	changePasswordRateLimit,
@@ -358,6 +359,10 @@ export function createServerApp(config: ServerConfig) {
 	// Anonymous ID management (server-generated signed cookies)
 	// SECURITY: Generates and validates cryptographically signed anonymous IDs
 	app.use(anonymousIdMiddleware());
+
+	// Privacy middleware: Detect GPC (Global Privacy Control) and DNT signals
+	// GDPR/CCPA: Honors user privacy preferences from browser signals
+	app.use(privacyMiddleware());
 
 	// Rate limiting: 100 requests per minute for general routes
 	app.use(async (c, next) => {

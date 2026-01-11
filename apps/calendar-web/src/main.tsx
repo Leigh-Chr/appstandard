@@ -45,20 +45,10 @@ Sentry.init({
 	// Use tunnel to bypass CSP restrictions
 	...(tunnelUrl && { tunnel: tunnelUrl }),
 
-	integrations: [
-		Sentry.tanstackRouterBrowserTracingIntegration(router),
-		Sentry.replayIntegration({
-			maskAllText: false,
-			blockAllMedia: false,
-		}),
-	],
+	integrations: [Sentry.tanstackRouterBrowserTracingIntegration(router)],
 
 	// Performance monitoring
 	tracesSampleRate: import.meta.env.MODE === "production" ? 0.1 : 1.0,
-
-	// Session Replay sampling
-	replaysSessionSampleRate: 0.1,
-	replaysOnErrorSampleRate: 1.0,
 
 	// Trace propagation for distributed tracing with backend
 	tracePropagationTargets: [

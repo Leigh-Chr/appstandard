@@ -23,6 +23,7 @@ import {
 	Layers,
 	ListChecks,
 	Menu,
+	Shield,
 } from "lucide-react";
 import "../index.css";
 
@@ -358,6 +359,15 @@ function Footer() {
 									License
 									<span className="sr-only"> (opens in new tab)</span>
 								</a>
+							</li>
+							<li>
+								<Link
+									to="/privacy"
+									className="flex items-center gap-2 text-muted-foreground text-sm transition-colors hover:text-foreground"
+								>
+									<Shield className="h-4 w-4" aria-hidden="true" />
+									Privacy Policy
+								</Link>
 							</li>
 						</ul>
 					</div>

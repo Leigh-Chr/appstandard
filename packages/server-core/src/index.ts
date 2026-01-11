@@ -53,6 +53,7 @@ export {
 } from "./middleware/anonymous-id";
 // Middleware
 export { env as rateLimitEnv } from "./middleware/env";
+export { type PrivacyState, privacyMiddleware } from "./middleware/privacy";
 export {
 	authRateLimit,
 	changePasswordRateLimit,

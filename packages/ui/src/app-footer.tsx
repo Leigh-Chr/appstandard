@@ -4,8 +4,15 @@
  */
 
 import { Link } from "@tanstack/react-router";
-import { Github, Heart } from "lucide-react";
+import { Github, Heart, Shield } from "lucide-react";
 import { useAppConfig } from "./app-context";
+
+// Environment-aware privacy URL - landing app hosts the privacy policy
+const isDev =
+	typeof window !== "undefined" && window.location.hostname === "localhost";
+const PRIVACY_URL = isDev
+	? "http://localhost:3010/privacy"
+	: "https://www.appstandard.io/privacy";
 
 export function AppFooter() {
 	const config = useAppConfig();
@@ -103,6 +110,15 @@ export function AppFooter() {
 								>
 									License
 									<span className="sr-only"> (opens in new tab)</span>
+								</a>
+							</li>
+							<li>
+								<a
+									href={PRIVACY_URL}
+									className="flex items-center gap-2 text-muted-foreground text-sm transition-colors hover:text-foreground"
+								>
+									<Shield className="h-4 w-4" />
+									Privacy Policy
 								</a>
 							</li>
 						</ul>
