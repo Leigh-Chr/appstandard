@@ -17,6 +17,7 @@ import { Copy, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Breadcrumb } from "@/components/breadcrumb";
+import { QRCodeTaskButton } from "@/components/qr-code-task-button";
 import {
 	type TaskFormData,
 	TaskFormExtended,
@@ -283,14 +284,20 @@ function EditTaskComponent() {
 							{ label: task?.title || "Task" },
 						]}
 					/>
-					<Button
-						variant="outline"
-						size="sm"
-						onClick={() => setDuplicateDialogOpen(true)}
-					>
-						<Copy className="mr-2 h-4 w-4" />
-						Duplicate
-					</Button>
+					<div className="flex items-center gap-2">
+						<QRCodeTaskButton
+							task={task}
+							taskListName={taskList?.name || "Tasks"}
+						/>
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={() => setDuplicateDialogOpen(true)}
+						>
+							<Copy className="mr-2 h-4 w-4" />
+							Duplicate
+						</Button>
+					</div>
 				</div>
 
 				<TaskFormExtended

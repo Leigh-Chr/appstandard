@@ -22,6 +22,7 @@ import {
 	DialogTitle,
 	Input,
 	Label,
+	QRCodeButton,
 	Switch,
 } from "@appstandard/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -250,6 +251,14 @@ export function ShareAddressBookDialog({
 														<Copy className="h-4 w-4 sm:h-3 sm:w-3" />
 													)}
 												</Button>
+												<QRCodeButton
+													value={getShareUrl(link.token)}
+													title="Share Address Book"
+													description="Scan this QR code to access and download the contacts"
+													contentLabel={link.name || addressBookName}
+													downloadFilename={`${addressBookName.replace(/\s+/g, "-").toLowerCase()}-qr`}
+													aria-label="Show QR code"
+												/>
 												<Button
 													variant="ghost"
 													size="icon"

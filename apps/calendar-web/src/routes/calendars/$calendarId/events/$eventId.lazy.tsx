@@ -24,6 +24,7 @@ import {
 	type EventFormData,
 	EventFormExtended,
 } from "@/components/event-form-extended";
+import { QRCodeEventButton } from "@/components/qr-code-event-button";
 import { transformEventFormDataForUpdate } from "@/lib/event-form-transform";
 import {
 	getFirstValidationError,
@@ -438,14 +439,20 @@ function EditEventComponent() {
 							{ label: event?.title || "Event" },
 						]}
 					/>
-					<Button
-						variant="outline"
-						size="sm"
-						onClick={() => setDuplicateDialogOpen(true)}
-					>
-						<Copy className="mr-2 h-4 w-4" />
-						Duplicate
-					</Button>
+					<div className="flex items-center gap-2">
+						<QRCodeEventButton
+							event={event}
+							calendarName={calendar?.name || "Calendar"}
+						/>
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={() => setDuplicateDialogOpen(true)}
+						>
+							<Copy className="mr-2 h-4 w-4" />
+							Duplicate
+						</Button>
+					</div>
 				</div>
 				<EventFormExtended
 					mode="edit"

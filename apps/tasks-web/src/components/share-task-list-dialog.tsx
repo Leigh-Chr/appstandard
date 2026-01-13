@@ -23,6 +23,7 @@ import {
 	Input,
 	Label,
 	Loader,
+	QRCodeButton,
 	Switch,
 } from "@appstandard/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -251,6 +252,14 @@ export function ShareTaskListDialog({
 														<Copy className="h-4 w-4 sm:h-3 sm:w-3" />
 													)}
 												</Button>
+												<QRCodeButton
+													value={getShareUrl(link.token)}
+													title="Share Task List"
+													description="Scan this QR code to access and download the tasks"
+													contentLabel={link.name || taskListName}
+													downloadFilename={`${taskListName.replace(/\s+/g, "-").toLowerCase()}-qr`}
+													aria-label="Show QR code"
+												/>
 												<Button
 													variant="ghost"
 													size="icon"

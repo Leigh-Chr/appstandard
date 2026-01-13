@@ -22,6 +22,7 @@
 		"@appstandard-contacts/api": "workspace:*",
 		"@appstandard-contacts/core": "workspace:*",
 		"@appstandard-contacts/schemas": "workspace:*",
+		"@appstandard-contacts/vcard-utils": "workspace:*",
 		"@fontsource-variable/jetbrains-mono": "^5.2.8",
 		"@fontsource-variable/sora": "^5.2.8",
 		"@sentry/react": "^10.32.1",

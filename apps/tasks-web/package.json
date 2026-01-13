@@ -19,6 +19,7 @@
 	"dependencies": {
 		"@appstandard/react-utils": "workspace:*",
 		"@appstandard/ui": "workspace:*",
+		"@appstandard-tasks/todo-utils": "workspace:*",
 		"@fontsource-variable/jetbrains-mono": "^5.2.8",
 		"@fontsource-variable/sora": "^5.2.8",
 		"@sentry/react": "^10.32.1",

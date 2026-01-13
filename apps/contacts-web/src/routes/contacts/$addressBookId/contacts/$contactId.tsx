@@ -21,6 +21,7 @@ import {
 	type ContactFormData,
 	ContactFormExtended,
 } from "@/components/contact-form-extended";
+import { QRCodeContactButton } from "@/components/qr-code-contact-button";
 import { QUERY_KEYS } from "@/lib/query-keys";
 import { trpc } from "@/utils/trpc";
 
@@ -270,14 +271,17 @@ function EditContactComponent() {
 							{ label: contact?.formattedName || "Contact" },
 						]}
 					/>
-					<Button
-						variant="outline"
-						size="sm"
-						onClick={() => setDuplicateDialogOpen(true)}
-					>
-						<Copy className="mr-2 h-4 w-4" />
-						Duplicate
-					</Button>
+					<div className="flex items-center gap-2">
+						<QRCodeContactButton contact={contact} />
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={() => setDuplicateDialogOpen(true)}
+						>
+							<Copy className="mr-2 h-4 w-4" />
+							Duplicate
+						</Button>
+					</div>
 				</div>
 
 				<ContactFormExtended

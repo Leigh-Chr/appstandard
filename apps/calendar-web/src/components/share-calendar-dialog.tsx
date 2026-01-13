@@ -17,6 +17,7 @@ import {
 	DialogTitle,
 	Input,
 	Label,
+	QRCodeButton,
 	Switch,
 } from "@appstandard/ui";
 import { useForm } from "@tanstack/react-form";
@@ -298,6 +299,14 @@ export function ShareCalendarDialog({
 														<Copy className="h-4 w-4 sm:h-3 sm:w-3" />
 													)}
 												</Button>
+												<QRCodeButton
+													value={getShareUrl(link.token)}
+													title="Share Calendar"
+													description="Scan this QR code to access and download the calendar"
+													contentLabel={link.name || calendarName}
+													downloadFilename={`${calendarName.replace(/\s+/g, "-").toLowerCase()}-qr`}
+													aria-label="Show QR code"
+												/>
 												{canShare && (
 													<Button
 														variant="ghost"

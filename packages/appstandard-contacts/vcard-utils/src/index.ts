@@ -4,7 +4,7 @@
  */
 
 // Generator
-export { generateVCardFile } from "./generator";
+export { generateSingleVCard, generateVCardFile } from "./generator";
 
 // Parser
 export { parseVCardFile } from "./parser";

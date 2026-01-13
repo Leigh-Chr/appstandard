@@ -329,6 +329,15 @@ export {
 	type RegisterSWFunction,
 	type RegisterSWOptions,
 } from "./pwa-update-prompt";
+// QR Code
+export {
+	QRCodeButton,
+	type QRCodeButtonProps,
+	QRCodeDialog,
+	type QRCodeDialogProps,
+	QRCodeDisplay,
+	type QRCodeDisplayProps,
+} from "./qr-code";
 // Radio Group
 export { RadioGroup, RadioGroupItem } from "./radio-group";
 // Scroll Area
