@@ -15,9 +15,15 @@ import prisma from "@appstandard/db";
 import { TRPCError } from "@trpc/server";
 import type { Context } from "./context";
 
-// Re-export from api-core for backwards compatibility
+/**
+ * CODE-006: Re-exports from api-core for backwards compatibility
+ * @deprecated Import directly from '@appstandard/api-core' instead
+ * These re-exports will be removed in a future major version
+ */
 export const buildOwnershipFilter = buildOwnershipFilterFromContext;
+/** @deprecated Import from '@appstandard/api-core' instead */
 export const isAnonymousUser = isAnonymousUserFromContext;
+/** @deprecated Import from '@appstandard/api-core' instead */
 export const isAuthenticatedUser = isAuthenticatedUserFromContext;
 
 /**

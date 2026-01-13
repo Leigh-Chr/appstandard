@@ -130,7 +130,6 @@ export const calendarGroupMembersRouter = router({
 				});
 			} catch (error) {
 				handlePrismaError(error);
-				throw error; // Never reached, but TypeScript needs it
 			}
 
 			// Send invitation email
@@ -225,7 +224,6 @@ export const calendarGroupMembersRouter = router({
 				};
 			} catch (error) {
 				handlePrismaError(error);
-				throw error; // Never reached, but TypeScript needs it
 			}
 		}),
 
@@ -387,7 +385,6 @@ export const calendarGroupMembersRouter = router({
 				return { success: true };
 			} catch (error) {
 				handlePrismaError(error);
-				throw error; // Never reached, but TypeScript needs it
 			}
 		}),
 
@@ -454,7 +451,6 @@ export const calendarGroupMembersRouter = router({
 				return { success: true };
 			} catch (error) {
 				handlePrismaError(error);
-				throw error; // Never reached, but TypeScript needs it
 			}
 		}),
 
@@ -540,7 +536,6 @@ export const calendarGroupMembersRouter = router({
 				};
 			} catch (error) {
 				handlePrismaError(error);
-				throw error; // Never reached, but TypeScript needs it
 			}
 		}),
 });

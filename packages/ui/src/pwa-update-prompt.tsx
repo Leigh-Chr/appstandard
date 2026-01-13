@@ -47,6 +47,9 @@ export function PWAUpdatePrompt({
 	const [waitingWorker, setWaitingWorker] = useState<ServiceWorker | null>(
 		null,
 	);
+	// UX-013: Track update progress state
+	const [isUpdating, setIsUpdating] = useState(false);
+	const updateToastIdRef = useRef<string | number | null>(null);
 	const updateIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
 	useEffect(() => {
@@ -133,17 +136,30 @@ export function PWAUpdatePrompt({
 	}, [waitingWorker, updateInterval, logger, registerSWProp]);
 
 	// Listen for waiting service worker
+	// UX-013: Show progress indicator during update download
 	useEffect(() => {
 		if (registration) {
 			const handleStateChange = (): void => {
-				if (registration.waiting) {
+				const installingWorker = registration.installing;
+				if (installingWorker?.state === "installed" && registration.waiting) {
 					setWaitingWorker(registration.waiting);
+					setIsUpdating(false);
+					// Dismiss the updating toast if present
+					if (updateToastIdRef.current) {
+						toast.dismiss(updateToastIdRef.current);
+						updateToastIdRef.current = null;
+					}
 				}
 			};
 
 			registration.addEventListener("updatefound", () => {
 				const newWorker = registration.installing;
 				if (newWorker) {
+					// UX-013: Show updating progress indicator
+					setIsUpdating(true);
+					updateToastIdRef.current = toast.loading("Updating application...", {
+						description: "Downloading the latest version",
+					});
 					newWorker.addEventListener("statechange", handleStateChange);
 				}
 			});
@@ -153,6 +169,13 @@ export function PWAUpdatePrompt({
 				setWaitingWorker(registration.waiting);
 			}
 		}
+
+		return () => {
+			// Cleanup toast on unmount
+			if (updateToastIdRef.current) {
+				toast.dismiss(updateToastIdRef.current);
+			}
+		};
 	}, [registration]);
 
 	return null; // This component renders nothing, uses toast for UI

@@ -90,6 +90,11 @@ export const queryClient = new QueryClient({
 	}),
 	defaultOptions: {
 		queries: {
+			// PERF-003: Default staleTime prevents unnecessary refetches
+			// Data is considered fresh for 5 minutes
+			staleTime: 5 * 60 * 1000, // 5 minutes
+			// Garbage collection time - keep unused data in cache for 30 minutes
+			gcTime: 30 * 60 * 1000, // 30 minutes
 			retry: (failureCount, error: unknown) => {
 				// Extract error code if available
 				const errorData =
@@ -107,6 +112,11 @@ export const queryClient = new QueryClient({
 					// Anonymous IDs are now server-managed via cookies
 					// Retry once in case of timing issues with cookie setting
 					return true;
+				}
+
+				// PERF-011: Don't retry rate limit errors - respect server's backoff
+				if (errorData?.code === "TOO_MANY_REQUESTS") {
+					return false;
 				}
 
 				// Don't retry client errors (4xx) - these are user errors, not transient

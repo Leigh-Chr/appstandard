@@ -109,6 +109,7 @@ model ContactEmail {
 
   @@index([contactId])
   @@index([email])
+  @@index([contactId, isPrimary]) // Fast lookup for primary email
   @@map("contact_email")
 }
 
@@ -122,6 +123,7 @@ model ContactPhone {
 
   @@index([contactId])
   @@index([number])
+  @@index([contactId, isPrimary]) // Fast lookup for primary phone
   @@map("contact_phone")
 }
 
@@ -142,6 +144,7 @@ model ContactAddress {
   @@index([contactId])
   @@index([locality])
   @@index([country])
+  @@index([contactId, isPrimary]) // Fast lookup for primary address
   @@map("contact_address")
 }
 

@@ -115,11 +115,7 @@ export default defineConfig(({ mode }) => {
 							sizes: "192x192",
 							type: "image/png",
 						},
-						{
-							src: "pwa-512x512.png",
-							sizes: "512x512",
-							type: "image/png",
-						},
+						// PERF-013: Single 512x512 icon (removed duplicate)
 						{
 							src: "pwa-512x512.png",
 							sizes: "512x512",
@@ -216,7 +212,8 @@ export default defineConfig(({ mode }) => {
 				},
 				workbox: {
 					// Exclude HTML from precache to always get fresh CSP headers
-					globPatterns: ["**/*.{js,css,ico,png,svg,woff,woff2,html}"],
+					// PERF-008: Exclude fonts from precache - loaded on-demand via @fontsource-variable
+					globPatterns: ["**/*.{js,css,ico,png,svg,html}"],
 					cleanupOutdatedCaches: true,
 					clientsClaim: true,
 					skipWaiting: true,
@@ -231,15 +228,33 @@ export default defineConfig(({ mode }) => {
 					navigateFallbackDenylist: [/^\/api/, /^\/trpc/],
 					runtimeCaching: [
 						{
-							// Cache API calls with network-first strategy
-							urlPattern: /^.*\/trpc\/.*/,
+							// PERF-007: StaleWhileRevalidate for read-only tRPC queries (GET)
+							// Returns cached data immediately while updating in background
+							urlPattern: ({ request, url }) =>
+								url.pathname.includes("/trpc/") && request.method === "GET",
+							handler: "StaleWhileRevalidate",
+							options: {
+								cacheName: "api-queries-cache",
+								expiration: {
+									maxEntries: 150,
+									maxAgeSeconds: 60 * 60 * 24, // 24 hours
+								},
+								cacheableResponse: {
+									statuses: [0, 200],
+								},
+							},
+						},
+						{
+							// NetworkFirst for tRPC mutations (POST) - need fresh data
+							urlPattern: ({ request, url }) =>
+								url.pathname.includes("/trpc/") && request.method === "POST",
 							handler: "NetworkFirst",
 							options: {
-								cacheName: "api-cache",
-								networkTimeoutSeconds: 5,
+								cacheName: "api-mutations-cache",
+								networkTimeoutSeconds: 10,
 								expiration: {
-									maxEntries: 100,
-									maxAgeSeconds: 60 * 60 * 24, // 24 hours
+									maxEntries: 50,
+									maxAgeSeconds: 60 * 60, // 1 hour
 								},
 								cacheableResponse: {
 									statuses: [0, 200],
@@ -254,7 +269,8 @@ export default defineConfig(({ mode }) => {
 								cacheName: "html-cache",
 								expiration: {
 									maxEntries: 10,
-									maxAgeSeconds: 60 * 60, // 1 hour
+									// PERF-009: 30min cache for fresh CSP headers
+									maxAgeSeconds: 30 * 60,
 								},
 								networkTimeoutSeconds: 10,
 							},
@@ -319,6 +335,10 @@ export default defineConfig(({ mode }) => {
 						motion: ["motion"],
 						// Date utilities
 						"date-fns": ["date-fns"],
+						// PERF-005: Calendar component - lazy loaded
+						"react-big-calendar": ["react-big-calendar"],
+						// Icons - commonly used across app
+						"lucide-react": ["lucide-react"],
 					},
 				},
 			},

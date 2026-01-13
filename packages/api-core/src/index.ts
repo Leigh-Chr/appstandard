@@ -20,11 +20,14 @@ export {
 export {
 	type AppCleanupFunctions,
 	type CleanupJobConfig,
+	type CleanupResult,
 	cleanupExpiredSessions,
 	cleanupExpiredVerifications,
 	createCleanupRunner,
 	DEFAULT_CLEANUP_CONFIG,
 } from "./lib/cleanup";
+// Error message constants
+export * as ErrorMessages from "./lib/error-messages";
 // Logger
 export { createLogger, type Logger, logger } from "./lib/logger";
 // Prisma error handling

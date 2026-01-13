@@ -44,6 +44,8 @@ export function CalendarBulkActionsBar({
 				void queryClient.invalidateQueries({
 					queryKey: QUERY_KEYS.calendar.all,
 				});
+				// Note: event.all is appropriate for bulk calendar deletion
+				// since we're removing multiple calendars and their events
 				void queryClient.invalidateQueries({
 					queryKey: QUERY_KEYS.event.all,
 				});

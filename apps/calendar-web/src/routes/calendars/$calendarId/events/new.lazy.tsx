@@ -47,10 +47,14 @@ function NewEventComponent() {
 	const createMutation = useMutation(
 		trpc.event.create.mutationOptions({
 			onSuccess: (createdEvent) => {
-				void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.event.all });
+				// PERF-004: Granular invalidation - only this calendar's events
+				void queryClient.invalidateQueries({
+					queryKey: QUERY_KEYS.event.list(calendarId),
+				});
 				void queryClient.invalidateQueries({
 					queryKey: QUERY_KEYS.calendar.byId(calendarId),
 				});
+				// Dashboard aggregates across all calendars, so full invalidation needed
 				void queryClient.invalidateQueries({
 					queryKey: QUERY_KEYS.dashboard.all,
 				});

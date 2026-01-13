@@ -8,6 +8,7 @@ import prisma from "@appstandard/db";
 import { TRPCError } from "@trpc/server";
 import z from "zod";
 import { authOrAnonProcedure, router } from "../../index";
+import { DUPLICATE_DATE_TOLERANCE_MS } from "../../lib/constants";
 import {
 	deduplicateEvents,
 	getDuplicateIds,
@@ -60,7 +61,7 @@ export const calendarMergeDuplicatesRouter = router({
 				const { unique } = deduplicateEvents(allEvents, {
 					useUid: true,
 					useTitle: true,
-					dateTolerance: 60000, // 1 minute tolerance
+					dateTolerance: DUPLICATE_DATE_TOLERANCE_MS,
 				});
 				eventsToMerge = unique;
 			}
@@ -76,7 +77,6 @@ export const calendarMergeDuplicatesRouter = router({
 				});
 			} catch (error) {
 				handlePrismaError(error);
-				throw error; // Never reached, but TypeScript needs it
 			}
 
 			// Create all events
@@ -94,7 +94,6 @@ export const calendarMergeDuplicatesRouter = router({
 					});
 				} catch (error) {
 					handlePrismaError(error);
-					throw error; // Never reached, but TypeScript needs it
 				}
 			}
 
@@ -131,7 +130,7 @@ export const calendarMergeDuplicatesRouter = router({
 			const duplicateIds = getDuplicateIds(calendar.events, {
 				useUid: true,
 				useTitle: true,
-				dateTolerance: 60000, // 1 minute tolerance
+				dateTolerance: DUPLICATE_DATE_TOLERANCE_MS,
 			});
 
 			// Delete duplicates
@@ -144,7 +143,6 @@ export const calendarMergeDuplicatesRouter = router({
 					});
 				} catch (error) {
 					handlePrismaError(error);
-					throw error; // Never reached, but TypeScript needs it
 				}
 			}
 

@@ -4,7 +4,7 @@
  * Supports auto-recovery with exponential backoff and Sentry integration
  */
 
-import { AlertCircle, RefreshCw } from "lucide-react";
+import { AlertCircle, Bug, ClipboardCopy, RefreshCw } from "lucide-react";
 import { Component, type ReactNode } from "react";
 import { Button } from "./button";
 import {
@@ -37,6 +37,8 @@ interface ErrorBoundaryProps {
 	maxRecoveryAttempts?: number | undefined;
 	/** Component name for better error tracking */
 	componentName?: string | undefined;
+	/** URL for reporting errors (e.g., GitHub issues URL) */
+	reportErrorUrl?: string | undefined;
 }
 
 interface ErrorBoundaryState {
@@ -44,6 +46,7 @@ interface ErrorBoundaryState {
 	error: Error | null;
 	errorCount: number;
 	isRecovering: boolean;
+	copied: boolean;
 }
 
 export class ErrorBoundary extends Component<
@@ -59,6 +62,7 @@ export class ErrorBoundary extends Component<
 			error: null,
 			errorCount: 0,
 			isRecovering: false,
+			copied: false,
 		};
 	}
 
@@ -120,11 +124,100 @@ export class ErrorBoundary extends Component<
 			error: null,
 			errorCount: 0,
 			isRecovering: false,
+			copied: false,
 		});
 	};
 
 	handleForceReload = () => {
 		window.location.reload();
+	};
+
+	/**
+	 * P3: Get formatted error details for copying/reporting
+	 */
+	getErrorDetails = (): string => {
+		const error = this.state.error;
+		if (!error) return "Unknown error";
+
+		const lines = [
+			`Error: ${error.message}`,
+			"",
+			`URL: ${window.location.href}`,
+			`Time: ${new Date().toISOString()}`,
+			`User Agent: ${navigator.userAgent}`,
+		];
+
+		if (this.props.componentName) {
+			lines.push(`Component: ${this.props.componentName}`);
+		}
+
+		if (error.stack) {
+			lines.push("", "Stack trace:", error.stack);
+		}
+
+		return lines.join("\n");
+	};
+
+	/**
+	 * P3: Copy error details to clipboard
+	 */
+	handleCopyError = async () => {
+		try {
+			const details = this.getErrorDetails();
+			await navigator.clipboard.writeText(details);
+			this.setState({ copied: true });
+			// Reset copied state after 2 seconds
+			setTimeout(() => {
+				this.setState({ copied: false });
+			}, 2000);
+		} catch {
+			// Fallback for older browsers
+			const textArea = document.createElement("textarea");
+			textArea.value = this.getErrorDetails();
+			document.body.appendChild(textArea);
+			textArea.select();
+			document.execCommand("copy");
+			document.body.removeChild(textArea);
+			this.setState({ copied: true });
+			setTimeout(() => {
+				this.setState({ copied: false });
+			}, 2000);
+		}
+	};
+
+	/**
+	 * P3: Open error report URL with pre-filled details
+	 */
+	handleReportError = () => {
+		const baseUrl =
+			this.props.reportErrorUrl ||
+			"https://github.com/appstandard/appstandard/issues/new";
+
+		const error = this.state.error;
+		const title = encodeURIComponent(
+			`Bug: ${error?.message || "Unknown error"}`,
+		);
+		const body = encodeURIComponent(
+			[
+				"## Description",
+				"A brief description of what you were doing when the error occurred.",
+				"",
+				"## Error Details",
+				"```",
+				this.getErrorDetails(),
+				"```",
+				"",
+				"## Steps to Reproduce",
+				"1. ",
+				"2. ",
+				"3. ",
+				"",
+				"## Expected Behavior",
+				"What you expected to happen.",
+			].join("\n"),
+		);
+
+		window.open(`${baseUrl}?title=${title}&body=${body}`, "_blank");
 	};
 
 	override render() {
@@ -134,21 +227,29 @@ export class ErrorBoundary extends Component<
 
 			// Too many errors - force reload
 			if (autoRecover && this.state.errorCount > maxAttempts) {
+				// UX-011: Mobile-optimized fallback UI with responsive padding
 				return (
-					<div className="container mx-auto max-w-2xl px-4 py-10">
+					<div className="container mx-auto max-w-2xl px-4 py-6 sm:px-6 sm:py-10">
 						<Card className="border-destructive/50 bg-destructive/5">
-							<CardHeader>
-								<CardTitle className="flex items-center gap-2 text-destructive">
-									<AlertCircle className="h-5 w-5" aria-hidden="true" />
+							<CardHeader className="space-y-2 sm:space-y-1.5">
+								<CardTitle className="flex items-center gap-2 text-destructive text-lg sm:text-xl">
+									<AlertCircle
+										className="h-5 w-5 shrink-0"
+										aria-hidden="true"
+									/>
 									Multiple errors occurred
 								</CardTitle>
-								<CardDescription>
+								<CardDescription className="text-sm sm:text-base">
 									The application encountered multiple errors. Please reload the
 									page.
 								</CardDescription>
 							</CardHeader>
 							<CardContent>
-								<Button onClick={this.handleForceReload} variant="default">
+								<Button
+									onClick={this.handleForceReload}
+									variant="default"
+									className="w-full sm:w-auto"
+								>
 									Reload page
 								</Button>
 							</CardContent>
@@ -162,16 +263,16 @@ export class ErrorBoundary extends Component<
 				return this.props.fallback;
 			}
 
-			// Default error UI with recovery status
+			// UX-011: Default error UI with recovery status and mobile-optimized layout
 			return (
-				<div className="container mx-auto max-w-2xl px-4 py-10">
+				<div className="container mx-auto max-w-2xl px-4 py-6 sm:px-6 sm:py-10">
 					<Card className="border-destructive/50 bg-destructive/5">
-						<CardHeader>
-							<CardTitle className="flex items-center gap-2 text-destructive">
-								<AlertCircle className="h-5 w-5" aria-hidden="true" />
+						<CardHeader className="space-y-2 sm:space-y-1.5">
+							<CardTitle className="flex items-center gap-2 text-destructive text-lg sm:text-xl">
+								<AlertCircle className="h-5 w-5 shrink-0" aria-hidden="true" />
 								An error occurred
 							</CardTitle>
-							<CardDescription>
+							<CardDescription className="text-sm sm:text-base">
 								{this.state.isRecovering
 									? "Attempting to recover automatically..."
 									: "An unexpected error occurred. Please try again."}
@@ -179,7 +280,7 @@ export class ErrorBoundary extends Component<
 						</CardHeader>
 						<CardContent className="space-y-4">
 							{this.state.error && !this.state.isRecovering && (
-								<div className="rounded-lg border border-destructive/20 bg-card p-3 text-sm">
+								<div className="break-words rounded-lg border border-destructive/20 bg-card p-3 text-sm">
 									<p className="font-medium text-destructive">
 										{this.state.error.message || "Unknown error"}
 									</p>
@@ -187,20 +288,64 @@ export class ErrorBoundary extends Component<
 							)}
 
 							{this.state.isRecovering && (
-								<div className="flex items-center gap-2 text-muted-foreground text-sm">
-									<RefreshCw className="h-4 w-4 animate-spin" />
-									Recovering...
+								// biome-ignore lint/a11y/useSemanticElements: role="status" is intentional for live announcements
+								<div
+									className="flex items-center gap-2 text-muted-foreground text-sm"
+									role="status"
+									aria-live="polite"
+								>
+									<RefreshCw
+										className="h-4 w-4 shrink-0 animate-spin"
+										aria-hidden="true"
+									/>
+									{/* UX-002: Show recovery attempt count for transparency */}
+									<span>
+										Recovering... (attempt {this.state.errorCount + 1} of{" "}
+										{maxAttempts})
+									</span>
 								</div>
 							)}
 
 							{!this.state.isRecovering && (
-								<div className="flex gap-2">
-									<Button onClick={this.handleReset} variant="default">
-										Try again
-									</Button>
-									<Button onClick={this.handleForceReload} variant="outline">
-										Reload page
-									</Button>
+								<div className="space-y-3">
+									<div className="flex flex-col gap-2 sm:flex-row">
+										<Button
+											onClick={this.handleReset}
+											variant="default"
+											className="w-full sm:w-auto"
+										>
+											Try again
+										</Button>
+										<Button
+											onClick={this.handleForceReload}
+											variant="outline"
+											className="w-full sm:w-auto"
+										>
+											Reload page
+										</Button>
+									</div>
+
+									{/* P3: Copy and Report buttons */}
+									<div className="flex flex-col gap-2 border-destructive/20 border-t pt-3 sm:flex-row">
+										<Button
+											onClick={this.handleCopyError}
+											variant="ghost"
+											size="sm"
+											className="w-full justify-start gap-2 text-muted-foreground sm:w-auto"
+										>
+											<ClipboardCopy className="h-4 w-4" aria-hidden="true" />
+											{this.state.copied ? "Copied!" : "Copy error details"}
+										</Button>
+										<Button
+											onClick={this.handleReportError}
+											variant="ghost"
+											size="sm"
+											className="w-full justify-start gap-2 text-muted-foreground sm:w-auto"
+										>
+											<Bug className="h-4 w-4" aria-hidden="true" />
+											Report this error
+										</Button>
+									</div>
 								</div>
 							)}
 						</CardContent>

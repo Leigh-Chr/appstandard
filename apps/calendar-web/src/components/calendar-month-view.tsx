@@ -261,10 +261,14 @@ export function CalendarView({
 	const updateEventMutation = useMutation(
 		trpc.event.update.mutationOptions({
 			onSuccess: () => {
-				void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.event.all });
+				// PERF-004: Granular invalidation - only this calendar's events
+				void queryClient.invalidateQueries({
+					queryKey: QUERY_KEYS.event.list(calendarId),
+				});
 				void queryClient.invalidateQueries({
 					queryKey: QUERY_KEYS.calendar.byId(calendarId),
 				});
+				// Dashboard aggregates across all calendars
 				void queryClient.invalidateQueries({
 					queryKey: QUERY_KEYS.dashboard.all,
 				});
@@ -274,8 +278,10 @@ export function CalendarView({
 				const message =
 					error instanceof Error ? error.message : "Error during update";
 				toast.error(message);
-				// Refetch to revert optimistic update
-				void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.event.all });
+				// Refetch to revert optimistic update - this calendar only
+				void queryClient.invalidateQueries({
+					queryKey: QUERY_KEYS.event.list(calendarId),
+				});
 			},
 		}),
 	);

@@ -41,6 +41,13 @@ export {
 	type SecurityEventType,
 	setLogContext,
 } from "./lib/logger";
+// Metrics (DEVOPS-004)
+export {
+	metrics,
+	recordDbQuery,
+	recordHttpRequest,
+	startTimer,
+} from "./lib/metrics";
 // Secrets
 export {
 	getRequiredSecret,

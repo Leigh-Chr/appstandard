@@ -12,6 +12,10 @@ export interface OfflineBannerProps {
 	message?: string;
 	/** Additional class names */
 	className?: string;
+	/** UX-004: Number of pending operations in sync queue */
+	pendingCount?: number;
+	/** Custom message template for pending operations (use {count} placeholder) */
+	pendingMessage?: string;
 }
 
 /**
@@ -41,10 +45,13 @@ function useOnlineStatus() {
 /**
  * Banner that appears when the user is offline
  * Automatically hides when back online
+ * UX-004: Shows pending sync queue count when operations are waiting
  */
 export function OfflineBanner({
 	message = "You're offline - showing cached data",
 	className,
+	pendingCount,
+	pendingMessage = "{count} pending change(s) will sync when online",
 }: OfflineBannerProps) {
 	const isOnline = useOnlineStatus();
 
@@ -52,17 +59,31 @@ export function OfflineBanner({
 		return null;
 	}
 
+	// UX-004: Format pending message with count
+	const hasPendingOperations = pendingCount !== undefined && pendingCount > 0;
+	const formattedPendingMessage = hasPendingOperations
+		? pendingMessage.replace("{count}", String(pendingCount))
+		: null;
+
 	return (
 		<div
 			role="alert"
 			aria-live="polite"
 			className={cn(
-				"flex items-center justify-center gap-2 bg-amber-500/90 px-4 py-2 text-center text-sm text-white",
+				"flex flex-col items-center justify-center gap-1 bg-amber-500/90 px-4 py-2 text-center text-sm text-white sm:flex-row sm:gap-2",
 				className,
 			)}
 		>
-			<WifiOff className="h-4 w-4" aria-hidden="true" />
-			<span>{message}</span>
+			<div className="flex items-center gap-2">
+				<WifiOff className="h-4 w-4 shrink-0" aria-hidden="true" />
+				<span>{message}</span>
+			</div>
+			{/* UX-004: Show pending operations count */}
+			{formattedPendingMessage && (
+				<span className="text-white/90 text-xs sm:ml-2 sm:border-white/30 sm:border-l sm:pl-2 sm:text-sm">
+					{formattedPendingMessage}
+				</span>
+			)}
 		</div>
 	);
 }

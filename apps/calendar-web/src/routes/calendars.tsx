@@ -13,6 +13,19 @@ export const Route = createFileRoute("/calendars")({
 	search: {
 		middlewares: [stripSearchParams(calendarsListDefaults)],
 	},
+	/**
+	 * PERF-010: Prefetch calendars and groups on navigation
+	 * This ensures data is already loading when the user lands on the page
+	 */
+	loader: async ({ context }) => {
+		// Prefetch calendars list and groups in parallel
+		void context.queryClient.prefetchQuery(
+			context.trpc.calendar.list.queryOptions(),
+		);
+		void context.queryClient.prefetchQuery(
+			context.trpc.calendar.group.list.queryOptions(),
+		);
+	},
 	errorComponent: ({ error }) => {
 		if (import.meta.env.DEV) {
 			console.error("Route error:", error);

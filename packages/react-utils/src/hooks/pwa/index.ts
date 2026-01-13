@@ -2,6 +2,7 @@
  * PWA hooks exports
  * Provides React hooks for Progressive Web App features
  */
+// biome-ignore lint/performance/noBarrelFile: intentional module organization for PWA hooks
 
 // App Badge API
 export { clearAppBadge, setAppBadge, useBadge } from "./use-badge";

@@ -22,6 +22,21 @@ export interface ErrorHandlerOptions {
 
 export type ErrorSeverity = "info" | "warning" | "error" | "critical";
 
+/**
+ * UX-010: Error categories for UI treatment
+ * - network: Connection issues, server unreachable
+ * - auth: Authentication/authorization failures
+ * - server: Server-side errors (5xx)
+ * - client: Client-side errors (4xx validation, bad requests)
+ * - unknown: Unclassified errors
+ */
+export type ErrorCategory =
+	| "network"
+	| "auth"
+	| "server"
+	| "client"
+	| "unknown";
+
 export interface ErrorContext {
 	/** Component or function where error occurred */
 	source?: string;
@@ -40,10 +55,13 @@ export interface ErrorInfo {
 }
 
 /**
- * Error result with code for handling
+ * Error result with code and category for handling
+ * UX-010: Added category for error type differentiation
  */
 export interface ErrorResult {
 	title: string;
 	description: string;
 	code: string;
+	/** UX-010: Error category for UI treatment (network/auth/server/client/unknown) */
+	category: ErrorCategory;
 }

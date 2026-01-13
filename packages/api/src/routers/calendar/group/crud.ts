@@ -75,11 +75,13 @@ export const calendarGroupCrudRouter = router({
 			}
 
 			// Verify the user owns all calendars
+			// DB-008: Select only id - we just need to verify count
 			const calendars = await prisma.calendar.findMany({
 				where: {
 					id: { in: input.calendarIds },
 					...buildOwnershipFilter(ctx),
 				},
+				select: { id: true },
 			});
 
 			if (calendars.length !== input.calendarIds.length) {
@@ -115,7 +117,6 @@ export const calendarGroupCrudRouter = router({
 				});
 			} catch (error) {
 				handlePrismaError(error);
-				throw error; // Never reached, but TypeScript needs it
 			}
 
 			return group;
@@ -128,11 +129,13 @@ export const calendarGroupCrudRouter = router({
 		.input(z.object({ calendarId: z.string() }))
 		.query(async ({ ctx, input }) => {
 			// First verify the calendar exists and belongs to the user
+			// DB-008: Select only id - just checking existence
 			const calendar = await prisma.calendar.findFirst({
 				where: {
 					id: input.calendarId,
 					...buildOwnershipFilter(ctx),
 				},
+				select: { id: true },
 			});
 
 			if (!calendar) {
@@ -143,12 +146,15 @@ export const calendarGroupCrudRouter = router({
 			}
 
 			// Get groups containing this calendar
+			// DB-008: Select only needed fields instead of full group
 			const groupMembers = await prisma.calendarGroupMember.findMany({
 				where: {
 					calendarId: input.calendarId,
 				},
 				include: {
-					group: true,
+					group: {
+						select: { id: true, name: true, color: true, userId: true },
+					},
 				},
 			});
 
@@ -408,51 +414,53 @@ export const calendarGroupCrudRouter = router({
 				})
 				.filter((c): c is NonNullable<typeof c> => c !== null);
 
-			// Fetch user information for members
-			const membersWithUserInfo = await Promise.all(
-				group.members.map(async (member) => {
-					const user = await prisma.user.findUnique({
-						where: { id: member.userId },
-						select: {
-							id: true,
-							email: true,
-							name: true,
-						},
-					});
+			// DB-002: Optimized N+1 - fetch all users in a single query
+			const allUserIds = new Set<string>();
+			for (const member of group.members) {
+				allUserIds.add(member.userId);
+				allUserIds.add(member.invitedBy);
+			}
 
-					const inviter = await prisma.user.findUnique({
-						where: { id: member.invitedBy },
-						select: {
-							id: true,
-							name: true,
-							email: true,
-						},
-					});
+			const users = await prisma.user.findMany({
+				where: { id: { in: Array.from(allUserIds) } },
+				select: {
+					id: true,
+					email: true,
+					name: true,
+				},
+			});
 
-					return {
-						id: member.id,
-						userId: member.userId,
-						role: member.role,
-						invitedBy: member.invitedBy,
-						invitedAt: member.invitedAt,
-						acceptedAt: member.acceptedAt,
-						user: user
-							? {
-									id: user.id,
-									email: user.email,
-									name: user.name,
-								}
-							: null,
-						inviter: inviter
-							? {
-									id: inviter.id,
-									name: inviter.name,
-									email: inviter.email,
-								}
-							: null,
-					};
-				}),
-			);
+			// Create lookup map for O(1) access
+			const userMap = new Map(users.map((u) => [u.id, u]));
+
+			// Map members with user info from the lookup
+			const membersWithUserInfo = group.members.map((member) => {
+				const user = userMap.get(member.userId);
+				const inviter = userMap.get(member.invitedBy);
+
+				return {
+					id: member.id,
+					userId: member.userId,
+					role: member.role,
+					invitedBy: member.invitedBy,
+					invitedAt: member.invitedAt,
+					acceptedAt: member.acceptedAt,
+					user: user
+						? {
+								id: user.id,
+								email: user.email,
+								name: user.name,
+							}
+						: null,
+					inviter: inviter
+						? {
+								id: inviter.id,
+								name: inviter.name,
+								email: inviter.email,
+							}
+						: null,
+				};
+			});
 
 			return {
 				...group,
@@ -535,7 +543,6 @@ export const calendarGroupCrudRouter = router({
 				});
 			} catch (error) {
 				handlePrismaError(error);
-				throw error; // Never reached, but TypeScript needs it
 			}
 		}),
 
@@ -581,7 +588,6 @@ export const calendarGroupCrudRouter = router({
 				});
 			} catch (error) {
 				handlePrismaError(error);
-				throw error; // Never reached, but TypeScript needs it
 			}
 
 			return { success: true };

@@ -98,10 +98,14 @@ export function QuickCreateEvent({
 	const createMutation = useMutation(
 		trpc.event.create.mutationOptions({
 			onSuccess: () => {
-				void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.event.all });
+				// PERF-004: Granular invalidation - only this calendar's events
+				void queryClient.invalidateQueries({
+					queryKey: QUERY_KEYS.event.list(calendarId),
+				});
 				void queryClient.invalidateQueries({
 					queryKey: QUERY_KEYS.calendar.byId(calendarId),
 				});
+				// Dashboard aggregates across all calendars
 				void queryClient.invalidateQueries({
 					queryKey: QUERY_KEYS.dashboard.all,
 				});

@@ -231,7 +231,9 @@ function useGroupActions(
 	return { deleteMutation, handleMerge, handleExport };
 }
 
-// Loading state component
+/**
+ * UX-007: Skeleton that matches the real group detail layout
+ */
 function GroupDetailLoading() {
 	return (
 		<div className="relative min-h-[calc(100vh-4rem)]">
@@ -239,11 +241,38 @@ function GroupDetailLoading() {
 				<div className="gradient-mesh absolute inset-0 opacity-30" />
 			</div>
 			<div className="container mx-auto max-w-6xl px-4 py-6 sm:py-10">
-				<Skeleton className="mb-4 h-8 w-64" />
-				<Skeleton className="mb-8 h-32 w-full" />
+				{/* Header with back button, color dot, name, stats, and actions */}
+				<div className="mb-6 flex flex-wrap items-center gap-4">
+					{/* Back button */}
+					<Skeleton className="h-9 w-9 rounded-md" />
+					{/* Group info */}
+					<div className="min-w-0 flex-1">
+						<div className="flex items-center gap-3">
+							{/* Color dot */}
+							<Skeleton className="h-4 w-4 rounded-full" />
+							{/* Title */}
+							<Skeleton className="h-8 w-48" />
+						</div>
+						{/* Description placeholder */}
+						<Skeleton className="mt-2 h-4 w-64" />
+						{/* Stats */}
+						<Skeleton className="mt-1 h-4 w-32" />
+					</div>
+					{/* Action buttons */}
+					<div className="flex items-center gap-2">
+						<Skeleton className="h-8 w-20 rounded-md" />
+						<Skeleton className="h-8 w-20 rounded-md" />
+						<Skeleton className="h-8 w-20 rounded-md" />
+					</div>
+				</div>
+
+				{/* Search/sort bar */}
+				<Skeleton className="mb-6 h-10 w-full max-w-sm rounded-md" />
+
+				{/* Calendars grid */}
 				<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-					{[1, 2, 3].map((i) => (
-						<Skeleton key={i} className="h-32" />
+					{[1, 2, 3, 4, 5, 6].map((i) => (
+						<Skeleton key={i} className="h-32 rounded-xl" />
 					))}
 				</div>
 			</div>

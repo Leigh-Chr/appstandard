@@ -19,6 +19,8 @@ export {
 	buildNetworkError,
 	createAppError,
 	formatErrorForLog,
+	getErrorCategory,
+	getErrorCategoryFromCode,
 	getErrorCode,
 	getErrorMessage,
 	getErrorSeverity,
@@ -31,6 +33,7 @@ export {
 // Types
 export type {
 	AppError,
+	ErrorCategory,
 	ErrorContext,
 	ErrorHandlerOptions,
 	ErrorInfo,

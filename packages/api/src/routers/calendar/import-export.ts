@@ -43,14 +43,16 @@ async function createImportCalendar(
 		});
 	} catch (error) {
 		handlePrismaError(error);
-		throw error; // Never reached, but TypeScript needs it
 	}
 }
 
 // Helper function to process event imports
+// DB-006: Added calendarColor and calendarName for denormalization
 async function processEventImports(
 	calendarId: string,
 	events: ReturnType<typeof parseIcsFile>["events"],
+	calendarColor?: string | null,
+	calendarName?: string | null,
 ): Promise<{
 	importedEvents: number;
 	failedEvents: number;
@@ -61,7 +63,14 @@ async function processEventImports(
 	}
 
 	const results = await Promise.allSettled(
-		events.map((parsedEvent) => createEventFromParsed(calendarId, parsedEvent)),
+		events.map((parsedEvent) =>
+			createEventFromParsed(
+				calendarId,
+				parsedEvent,
+				calendarColor,
+				calendarName,
+			),
+		),
 	);
 
 	let importedEvents = 0;
@@ -112,8 +121,14 @@ export const calendarImportExportRouter = router({
 			const parseResult = validateAndParseIcs(input.fileContent);
 			const calendar = await createImportCalendar(input.name, userId);
 
+			// DB-006: Pass calendar color and name for denormalization
 			const { importedEvents, failedEvents, importErrors } =
-				await processEventImports(calendar.id, parseResult.events);
+				await processEventImports(
+					calendar.id,
+					parseResult.events,
+					calendar.color,
+					calendar.name,
+				);
 
 			return {
 				calendar,
@@ -136,6 +151,10 @@ export const calendarImportExportRouter = router({
 				categories: z.array(z.string()).optional(),
 				/** Optional include only future events */
 				futureOnly: z.boolean().optional(),
+				/** API-007: Pagination support - limit (default 1000, max 10000) */
+				limit: z.number().int().min(1).max(10000).optional().default(1000),
+				/** API-007: Pagination support - offset for large exports */
+				offset: z.number().int().min(0).optional().default(0),
 			}),
 		)
 		.query(async ({ ctx, input }) => {
@@ -170,7 +189,16 @@ export const calendarImportExportRouter = router({
 			// Verify calendar access (optimized single query)
 			await verifyCalendarAccess(input.id, ctx);
 
+			// API-007: First get total count for pagination metadata
+			const totalEvents = await prisma.event.count({
+				where: {
+					calendarId: input.id,
+					...eventWhere,
+				},
+			});
+
 			// Fetch calendar with events (access already verified)
+			// API-007: Apply pagination with limit/offset
 			const calendar = await prisma.calendar.findUnique({
 				where: { id: input.id },
 				include: {
@@ -178,6 +206,9 @@ export const calendarImportExportRouter = router({
 						Object.keys(eventWhere).length > 0
 							? {
 									where: eventWhere,
+									take: input.limit,
+									skip: input.offset,
+									orderBy: { startDate: "asc" },
 									include: {
 										attendees: true,
 										alarms: true,
@@ -187,6 +218,9 @@ export const calendarImportExportRouter = router({
 									},
 								}
 							: {
+									take: input.limit,
+									skip: input.offset,
+									orderBy: { startDate: "asc" },
 									include: {
 										attendees: true,
 										alarms: true,
@@ -316,6 +350,20 @@ export const calendarImportExportRouter = router({
 				events: calendar.events.map(convertEventToIcsFormat),
 			});
 
-			return { icsContent, calendarName: calendar.name };
+			// API-007: Return pagination metadata
+			const hasMore = input.offset + calendar.events.length < totalEvents;
+
+			return {
+				icsContent,
+				calendarName: calendar.name,
+				// API-007: Pagination metadata
+				pagination: {
+					total: totalEvents,
+					limit: input.limit,
+					offset: input.offset,
+					returned: calendar.events.length,
+					hasMore,
+				},
+			};
 		}),
 });

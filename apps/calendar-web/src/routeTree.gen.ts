@@ -125,7 +125,7 @@ const CalendarsNewRoute = CalendarsNewRouteImport.update({
   id: '/new',
   path: '/new',
   getParentRoute: () => CalendarsRoute,
-} as any)
+} as any).lazy(() => import('./routes/calendars/new.lazy').then((d) => d.Route))
 const CalendarsMergeRoute = CalendarsMergeRouteImport.update({
   id: '/merge',
   path: '/merge',

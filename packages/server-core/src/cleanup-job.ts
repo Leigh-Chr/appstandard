@@ -46,32 +46,55 @@ export interface CleanupConfig {
 }
 
 /**
+ * CODE-003: Cleanup result type for consistent error handling
+ * Cleanup functions can return either a count or a CleanupResult object
+ */
+export interface CleanupResult {
+	count: number;
+	error?: Error;
+}
+
+/** Extract count from a cleanup result (supports both number and CleanupResult) */
+function extractCount(result: number | CleanupResult): number {
+	return typeof result === "number" ? result : result.count;
+}
+
+/**
  * Common cleanup functions interface
  * Each product (calendar, contacts, tasks) provides its own implementation
+ * Supports both number and CleanupResult return types for backwards compatibility
  */
 export interface CleanupFunctions {
 	/** Clean up expired sessions */
-	cleanupExpiredSessions: () => Promise<number>;
+	cleanupExpiredSessions: () => Promise<number | CleanupResult>;
 	/** Clean up expired email verifications */
-	cleanupExpiredVerifications: () => Promise<number>;
+	cleanupExpiredVerifications: () => Promise<number | CleanupResult>;
 	/** Clean up expired share links */
-	cleanupExpiredShareLinks: (gracePeriodDays: number) => Promise<number>;
+	cleanupExpiredShareLinks: (
+		gracePeriodDays?: number,
+	) => Promise<number | CleanupResult>;
 	/** Clean up expired share bundles */
-	cleanupExpiredShareBundles: (gracePeriodDays: number) => Promise<number>;
+	cleanupExpiredShareBundles: (
+		gracePeriodDays?: number,
+	) => Promise<number | CleanupResult>;
 	/** Clean up pending group invitations */
-	cleanupPendingGroupInvitations: (maxAgeDays: number) => Promise<number>;
+	cleanupPendingGroupInvitations: (
+		maxAgeDays?: number,
+	) => Promise<number | CleanupResult>;
 	/** Clean up inactive share links */
 	cleanupInactiveShareLinks: (
-		daysInactive: number,
-		daysInactiveActive: number,
-	) => Promise<number>;
+		daysInactive?: number,
+		daysInactiveActive?: number,
+	) => Promise<number | CleanupResult>;
 	/** Clean up inactive share bundles */
 	cleanupInactiveShareBundles: (
-		daysInactive: number,
-		daysInactiveActive: number,
-	) => Promise<number>;
+		daysInactive?: number,
+		daysInactiveActive?: number,
+	) => Promise<number | CleanupResult>;
 	/** Clean up orphaned anonymous data (calendars, address books, task lists) */
-	cleanupOrphanedAnonymousData: (daysInactive: number) => Promise<number>;
+	cleanupOrphanedAnonymousData: (
+		daysInactive?: number,
+	) => Promise<number | CleanupResult>;
 }
 
 /**
@@ -116,38 +139,46 @@ export function createCleanupJob(
 		try {
 			// High priority: Security-related cleanup
 			logger.info("Running high-priority cleanup (security)...");
-			results.expiredSessions = await functions.cleanupExpiredSessions();
-			results.expiredVerifications =
-				await functions.cleanupExpiredVerifications();
+			results.expiredSessions = extractCount(
+				await functions.cleanupExpiredSessions(),
+			);
+			results.expiredVerifications = extractCount(
+				await functions.cleanupExpiredVerifications(),
+			);
 
 			// Medium priority: Regular cleanup
 			logger.info(
 				"Running medium-priority cleanup (expired shares, invitations)...",
 			);
-			results.expiredShareLinks = await functions.cleanupExpiredShareLinks(
-				gracePeriodExpiredShares,
+			results.expiredShareLinks = extractCount(
+				await functions.cleanupExpiredShareLinks(gracePeriodExpiredShares),
 			);
-			results.expiredShareBundles = await functions.cleanupExpiredShareBundles(
-				gracePeriodExpiredShares,
+			results.expiredShareBundles = extractCount(
+				await functions.cleanupExpiredShareBundles(gracePeriodExpiredShares),
 			);
-			results.pendingInvitations =
-				await functions.cleanupPendingGroupInvitations(daysPendingInvitations);
+			results.pendingInvitations = extractCount(
+				await functions.cleanupPendingGroupInvitations(daysPendingInvitations),
+			);
 
 			// Low priority: Optimization cleanup
 			logger.info(
 				"Running low-priority cleanup (inactive shares, orphaned data)...",
 			);
-			results.inactiveShareLinks = await functions.cleanupInactiveShareLinks(
-				daysInactiveShares,
-				daysInactiveActiveShares,
+			results.inactiveShareLinks = extractCount(
+				await functions.cleanupInactiveShareLinks(
+					daysInactiveShares,
+					daysInactiveActiveShares,
+				),
 			);
-			results.inactiveShareBundles =
+			results.inactiveShareBundles = extractCount(
 				await functions.cleanupInactiveShareBundles(
 					daysInactiveShares,
 					daysInactiveActiveShares,
-				);
-			results.orphanedData =
-				await functions.cleanupOrphanedAnonymousData(daysInactiveData);
+				),
+			);
+			results.orphanedData = extractCount(
+				await functions.cleanupOrphanedAnonymousData(daysInactiveData),
+			);
 
 			const totalDeleted =
 				results.expiredSessions +

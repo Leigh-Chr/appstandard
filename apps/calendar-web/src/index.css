@@ -3,6 +3,21 @@
 @import "@fontsource-variable/sora";
 @import "@fontsource-variable/jetbrains-mono";
 
+/* PERF-006: Ensure font-display: swap for all font faces
+ * This prevents FOIT (Flash of Invisible Text) by showing fallback fonts
+ * while custom fonts load. @fontsource-variable uses swap by default,
+ * but we explicitly override to guarantee correct behavior.
+ */
+@font-face {
+	font-family: "Sora Variable";
+	font-display: swap;
+}
+
+@font-face {
+	font-family: "JetBrains Mono Variable";
+	font-display: swap;
+}
+
 /* Scan packages/ui for additional Tailwind classes */
 @source "../../../packages/ui/src";
 
@@ -886,5 +901,89 @@ select:focus-visible {
 	/* Only bottom safe area (for bottom navigation) */
 	.safe-area-bottom {
 		padding-bottom: env(safe-area-inset-bottom);
+	}
+}
+
+/* ============================================
+   UX-012: LANDSCAPE ORIENTATION SUPPORT
+   Optimized layouts for landscape mode on mobile/tablet
+   ============================================ */
+
+/* Mobile landscape - more horizontal space, less vertical */
+@media (orientation: landscape) and (max-height: 500px) {
+	/* Reduce vertical padding in landscape on mobile */
+	.landscape-compact {
+		padding-top: 0.5rem;
+		padding-bottom: 0.5rem;
+	}
+
+	/* Stack forms horizontally in landscape */
+	.landscape-horizontal {
+		display: flex;
+		flex-direction: row;
+		flex-wrap: wrap;
+		gap: 1rem;
+	}
+
+	.landscape-horizontal > * {
+		flex: 1;
+		min-width: 200px;
+	}
+
+	/* More compact headers in landscape mobile */
+	.landscape-header-compact {
+		padding-block: 0.5rem;
+	}
+
+	/* Two-column layout for dialogs in landscape */
+	.landscape-dialog-grid {
+		display: grid;
+		grid-template-columns: repeat(2, 1fr);
+		gap: 1rem;
+	}
+
+	/* Hide less important elements in tight landscape views */
+	.landscape-hide {
+		display: none;
+	}
+
+	/* Reduce large gaps */
+	.gap-6 {
+		gap: 1rem;
+	}
+
+	.py-6 {
+		padding-block: 1rem;
+	}
+}
+
+/* Tablet landscape - utilize wider screens */
+@media (orientation: landscape) and (min-width: 768px) and (max-width: 1024px) {
+	/* Three-column dashboard layout */
+	.landscape-tablet-3col {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 1rem;
+	}
+
+	/* Side-by-side panels */
+	.landscape-split {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 1.5rem;
+	}
+}
+
+/* General landscape utilities */
+@media (orientation: landscape) {
+	/* More horizontal padding, less vertical */
+	.landscape-spacing {
+		padding: 0.75rem 1.5rem;
+	}
+
+	/* Full width utilization */
+	.landscape-wide {
+		max-width: 100%;
+		width: 100%;
 	}
 }

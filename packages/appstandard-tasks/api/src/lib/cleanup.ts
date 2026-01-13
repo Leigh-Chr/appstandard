@@ -5,6 +5,7 @@
 
 import {
 	type AppCleanupFunctions,
+	type CleanupResult,
 	cleanupExpiredSessions as coreCleanupExpiredSessions,
 	cleanupExpiredVerifications as coreCleanupExpiredVerifications,
 	createCleanupRunner,
@@ -15,9 +16,13 @@ import { cleanupTaskListRelations } from "./cleanup-task-list-relations";
 
 const logger = createLogger("Tasks Cleanup");
 
+// Re-export CleanupResult for consumers of this module
+export type { CleanupResult } from "@appstandard/api-core";
+
 // Re-export common cleanup functions for backwards compatibility
-export const cleanupExpiredSessions = () => coreCleanupExpiredSessions(logger);
-export const cleanupExpiredVerifications = () =>
+export const cleanupExpiredSessions = (): Promise<CleanupResult> =>
+	coreCleanupExpiredSessions(logger);
+export const cleanupExpiredVerifications = (): Promise<CleanupResult> =>
 	coreCleanupExpiredVerifications(logger);
 
 /**
@@ -25,7 +30,7 @@ export const cleanupExpiredVerifications = () =>
  */
 export async function cleanupOrphanedAnonymousTaskLists(
 	daysInactive = 60,
-): Promise<number> {
+): Promise<CleanupResult> {
 	const cutoffDate = new Date();
 	cutoffDate.setDate(cutoffDate.getDate() - daysInactive);
 
@@ -38,7 +43,7 @@ export async function cleanupOrphanedAnonymousTaskLists(
 	});
 
 	if (orphanedTaskLists.length === 0) {
-		return 0;
+		return { count: 0 };
 	}
 
 	const taskListIds = orphanedTaskLists.map((tl) => tl.id);
@@ -56,13 +61,16 @@ export async function cleanupOrphanedAnonymousTaskLists(
 			taskListIds: taskListIds.length,
 		});
 
-		return result.count;
+		return { count: result.count };
 	} catch (error) {
 		logger.error("Failed to delete orphaned task lists", {
 			error,
 			taskListIdsCount: taskListIds.length,
 		});
-		return 0;
+		return {
+			count: 0,
+			error: error instanceof Error ? error : new Error(String(error)),
+		};
 	}
 }
 
@@ -71,7 +79,7 @@ export async function cleanupOrphanedAnonymousTaskLists(
  */
 export async function cleanupExpiredShareLinks(
 	gracePeriodDays = 7,
-): Promise<number> {
+): Promise<CleanupResult> {
 	const cutoffDate = new Date();
 	cutoffDate.setDate(cutoffDate.getDate() - gracePeriodDays);
 
@@ -87,10 +95,13 @@ export async function cleanupExpiredShareLinks(
 			});
 		}
 
-		return result.count;
+		return { count: result.count };
 	} catch (error) {
 		logger.error("Failed to delete expired share links", { error });
-		return 0;
+		return {
+			count: 0,
+			error: error instanceof Error ? error : new Error(String(error)),
+		};
 	}
 }
 
@@ -99,7 +110,7 @@ export async function cleanupExpiredShareLinks(
  */
 export async function cleanupExpiredShareBundles(
 	gracePeriodDays = 7,
-): Promise<number> {
+): Promise<CleanupResult> {
 	const cutoffDate = new Date();
 	cutoffDate.setDate(cutoffDate.getDate() - gracePeriodDays);
 
@@ -115,10 +126,13 @@ export async function cleanupExpiredShareBundles(
 			});
 		}
 
-		return result.count;
+		return { count: result.count };
 	} catch (error) {
 		logger.error("Failed to delete expired share bundles", { error });
-		return 0;
+		return {
+			count: 0,
+			error: error instanceof Error ? error : new Error(String(error)),
+		};
 	}
 }
 
@@ -128,7 +142,7 @@ export async function cleanupExpiredShareBundles(
 export async function cleanupInactiveShareLinks(
 	inactiveDays = 90,
 	activeDays = 365,
-): Promise<number> {
+): Promise<CleanupResult> {
 	const inactiveCutoff = new Date();
 	inactiveCutoff.setDate(inactiveCutoff.getDate() - inactiveDays);
 
@@ -167,10 +181,13 @@ export async function cleanupInactiveShareLinks(
 			});
 		}
 
-		return totalCount;
+		return { count: totalCount };
 	} catch (error) {
 		logger.error("Failed to delete inactive share links", { error });
-		return 0;
+		return {
+			count: 0,
+			error: error instanceof Error ? error : new Error(String(error)),
+		};
 	}
 }
 
@@ -180,7 +197,7 @@ export async function cleanupInactiveShareLinks(
 export async function cleanupInactiveShareBundles(
 	inactiveDays = 90,
 	activeDays = 365,
-): Promise<number> {
+): Promise<CleanupResult> {
 	const inactiveCutoff = new Date();
 	inactiveCutoff.setDate(inactiveCutoff.getDate() - inactiveDays);
 
@@ -219,10 +236,13 @@ export async function cleanupInactiveShareBundles(
 			});
 		}
 
-		return totalCount;
+		return { count: totalCount };
 	} catch (error) {
 		logger.error("Failed to delete inactive share bundles", { error });
-		return 0;
+		return {
+			count: 0,
+			error: error instanceof Error ? error : new Error(String(error)),
+		};
 	}
 }
 
@@ -231,7 +251,7 @@ export async function cleanupInactiveShareBundles(
  */
 export async function cleanupPendingGroupInvitations(
 	daysPending = 30,
-): Promise<number> {
+): Promise<CleanupResult> {
 	const cutoffDate = new Date();
 	cutoffDate.setDate(cutoffDate.getDate() - daysPending);
 
@@ -247,10 +267,13 @@ export async function cleanupPendingGroupInvitations(
 			});
 		}
 
-		return result.count;
+		return { count: result.count };
 	} catch (error) {
 		logger.error("Failed to delete pending group invitations", { error });
-		return 0;
+		return {
+			count: 0,
+			error: error instanceof Error ? error : new Error(String(error)),
+		};
 	}
 }
 

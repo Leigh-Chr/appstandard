@@ -60,12 +60,15 @@ function MergeCalendarsComponent() {
 	const mergeMutation = useMutation(
 		trpc.calendar.merge.mutationOptions({
 			onSuccess: (data) => {
+				// Merge creates a new calendar, invalidate calendar list
 				void queryClient.invalidateQueries({
 					queryKey: QUERY_KEYS.calendar.list,
 				});
+				// PERF-004: Invalidate events for the new merged calendar
 				void queryClient.invalidateQueries({
-					queryKey: QUERY_KEYS.event.all,
+					queryKey: QUERY_KEYS.event.list(data.calendar.id),
 				});
+				// Dashboard aggregates across all calendars
 				void queryClient.invalidateQueries({
 					queryKey: QUERY_KEYS.dashboard.all,
 				});

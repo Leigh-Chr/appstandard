@@ -8,10 +8,19 @@ import prisma from "@appstandard/db";
 import { TRPCError } from "@trpc/server";
 import z from "zod";
 import { authOrAnonProcedure, router } from "../../index";
+import {
+	DUPLICATE_DATE_TOLERANCE_MS,
+	MAX_FILE_SIZE_BYTES,
+	URL_FETCH_TIMEOUT_MS,
+	URL_IMPORT_TIMEOUT_MS,
+} from "../../lib/constants";
 import { findDuplicatesAgainstExisting } from "../../lib/duplicate-detection";
 import { type ParsedEvent, parseIcsFile } from "../../lib/ics-parser";
-import { assertValidExternalUrlWithDNS } from "../../lib/url-validator";
-import { checkCalendarLimit, verifyCalendarAccess } from "../../middleware";
+import { safeFetch } from "../../lib/url-validator";
+import {
+	createCalendarAtomically,
+	verifyCalendarAccess,
+} from "../../middleware";
 import { createEventFromParsed, validateFileSize } from "./helpers";
 
 /**
@@ -67,29 +76,28 @@ function getHttpError(
 	};
 }
 
-/**
- * Maximum response size for URL imports (5MB)
- * SECURITY: Prevents memory exhaustion from huge responses
- */
-const MAX_RESPONSE_SIZE = 5 * 1024 * 1024;
+// Use centralized constant for max file size
+const MAX_RESPONSE_SIZE = MAX_FILE_SIZE_BYTES;
 
 /**
  * Fetch ICS content from URL with error handling and circuit breaker
  * Best practice: Use circuit breaker to prevent cascading failures
- * Security: SSRF protection via assertValidExternalUrlWithDNS validation
+ * Security: SSRF protection via safeFetch with DNS rebinding protection
  * Security: Response size limit to prevent memory exhaustion
  */
-async function fetchIcsContent(url: string, timeout = 60000): Promise<string> {
-	// SECURITY: Validate URL against SSRF attacks before fetching
-	// This is defense-in-depth - callers should also validate, but this ensures safety
-	await assertValidExternalUrlWithDNS(url);
-
+async function fetchIcsContent(
+	url: string,
+	timeout = URL_FETCH_TIMEOUT_MS,
+): Promise<string> {
 	const { urlImportCircuitBreaker } = await import("../../lib/circuit-breaker");
 
 	return urlImportCircuitBreaker.execute(async () => {
 		try {
-			// nosemgrep: codacy.tools-configs.rules_lgpl_javascript_ssrf_rule-node-ssrf
-			const response = await fetch(url, {
+			// SECURITY: Use safeFetch which:
+			// 1. Validates URL format and hostname
+			// 2. Resolves DNS and validates all IPs against private ranges
+			// 3. Makes request directly to validated IP (prevents DNS rebinding)
+			const response = await safeFetch(url, {
 				headers: {
 					Accept: "text/calendar, application/calendar+xml, */*",
 					"User-Agent": "AppStandard Calendar/1.0",
@@ -153,7 +161,22 @@ async function fetchIcsContent(url: string, timeout = 60000): Promise<string> {
 			}
 
 			// Fallback for environments without streaming support
-			// Note: In this case we rely on Content-Length header validation above
+			// SECURITY WARNING: This path is less secure as it reads the full response
+			// before checking size. Only used in test environments or when streaming unavailable.
+			const isProduction = process.env["NODE_ENV"] === "production";
+			if (isProduction) {
+				// In production, streaming should always be available
+				// If we reach here, log a warning for investigation
+				// biome-ignore lint/suspicious/noConsole: intentional security warning for monitoring
+				console.warn(
+					"[SECURITY] ICS import fallback path used in production. " +
+						"Streaming should be available. URL:",
+					url,
+				);
+			}
+
+			// Content-Length check above provides some protection, but can be spoofed
+			// This secondary check catches cases where Content-Length was missing or wrong
 			const text = await response.text();
 			if (text.length > MAX_RESPONSE_SIZE) {
 				throw new TRPCError({
@@ -219,7 +242,7 @@ function filterDuplicateEvents(
 		{
 			useUid: true,
 			useTitle: true,
-			dateTolerance: 60000, // 1 minute tolerance
+			dateTolerance: DUPLICATE_DATE_TOLERANCE_MS,
 		},
 	);
 
@@ -312,7 +335,7 @@ export const calendarImportUrlRouter = router({
 					{
 						useUid: true,
 						useTitle: true,
-						dateTolerance: 60000, // 1 minute tolerance
+						dateTolerance: DUPLICATE_DATE_TOLERANCE_MS,
 					},
 				);
 
@@ -327,9 +350,15 @@ export const calendarImportUrlRouter = router({
 			}
 
 			// Create events
+			// DB-006: Pass calendar color and name for denormalization
 			if (eventsToImport.length > 0) {
 				for (const parsedEvent of eventsToImport) {
-					await createEventFromParsed(input.calendarId, parsedEvent);
+					await createEventFromParsed(
+						input.calendarId,
+						parsedEvent,
+						calendar.color,
+						calendar.name,
+					);
 				}
 			}
 
@@ -353,22 +382,12 @@ export const calendarImportUrlRouter = router({
 		)
 		.mutation(async ({ ctx, input }) => {
 			// SECURITY: Ensure userId is always set to prevent orphaned calendars
-			const userId = ctx.session?.user?.id || ctx.anonymousId;
-			if (!userId) {
-				throw new TRPCError({
-					code: "UNAUTHORIZED",
-					message: "Authentication required",
-				});
-			}
-
-			await checkCalendarLimit(ctx);
-
-			// Validate URL against SSRF attacks (includes DNS rebinding protection)
-			await assertValidExternalUrlWithDNS(input.url);
-
 			// Fetch the ICS content from the URL with circuit breaker
-			// Best practice: Reuse fetchIcsContent function for consistency
-			const icsContent = await fetchIcsContent(input.url, 30000); // 30 second timeout for initial import
+			// SECURITY: safeFetch inside fetchIcsContent validates URL and prevents DNS rebinding
+			const icsContent = await fetchIcsContent(
+				input.url,
+				URL_IMPORT_TIMEOUT_MS,
+			);
 
 			validateFileSize(icsContent);
 			const parseResult = parseIcsFile(icsContent);
@@ -380,28 +399,35 @@ export const calendarImportUrlRouter = router({
 				});
 			}
 
-			// Create calendar with sourceUrl
+			// API-003: Use atomic creation to prevent race condition on limit check
 			let calendar: Awaited<ReturnType<typeof prisma.calendar.create>>;
 			try {
-				calendar = await prisma.calendar.create({
-					data: {
-						name:
-							input.name ||
-							`Imported Calendar - ${new Date().toLocaleDateString("en-US")}`,
-						userId,
-						sourceUrl: input.url,
-						lastSyncedAt: new Date(),
-					},
+				calendar = await createCalendarAtomically(ctx, {
+					name:
+						input.name ||
+						`Imported Calendar - ${new Date().toLocaleDateString("en-US")}`,
+					sourceUrl: input.url,
+				});
+
+				// Update lastSyncedAt after creation
+				calendar = await prisma.calendar.update({
+					where: { id: calendar.id },
+					data: { lastSyncedAt: new Date() },
 				});
 			} catch (error) {
 				handlePrismaError(error);
-				throw error; // Never reached, but TypeScript needs it
 			}
 
 			// Create events
+			// DB-006: Pass calendar color and name for denormalization
 			if (parseResult.events.length > 0) {
 				for (const parsedEvent of parseResult.events) {
-					await createEventFromParsed(calendar.id, parsedEvent);
+					await createEventFromParsed(
+						calendar.id,
+						parsedEvent,
+						calendar.color,
+						calendar.name,
+					);
 				}
 			}
 
@@ -441,9 +467,6 @@ export const calendarImportUrlRouter = router({
 				});
 			}
 
-			// Validate URL against SSRF attacks (includes DNS rebinding protection)
-			await assertValidExternalUrlWithDNS(calendar.sourceUrl);
-
 			// If replaceAll, delete all events first
 			let deletedCount = 0;
 			if (input.replaceAll) {
@@ -454,7 +477,6 @@ export const calendarImportUrlRouter = router({
 					deletedCount = deleteResult.count;
 				} catch (error) {
 					handlePrismaError(error);
-					throw error; // Never reached, but TypeScript needs it
 				}
 			}
 
@@ -484,9 +506,15 @@ export const calendarImportUrlRouter = router({
 			}
 
 			// Create events
+			// DB-006: Pass calendar color and name for denormalization
 			if (eventsToImport.length > 0) {
 				for (const parsedEvent of eventsToImport) {
-					await createEventFromParsed(input.calendarId, parsedEvent);
+					await createEventFromParsed(
+						input.calendarId,
+						parsedEvent,
+						calendar.color,
+						calendar.name,
+					);
 				}
 			}
 
@@ -500,7 +528,6 @@ export const calendarImportUrlRouter = router({
 				});
 			} catch (error) {
 				handlePrismaError(error);
-				throw error; // Never reached, but TypeScript needs it
 			}
 
 			return {

@@ -68,11 +68,21 @@ export function MoveEventDialog({
 	// Bulk move mutation
 	const bulkMoveMutation = useMutation(
 		trpc.event.bulkMove.mutationOptions({
-			onSuccess: (data) => {
-				void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.event.all });
+			onSuccess: (data, variables) => {
+				// PERF-004: Granular invalidation - source and target calendars
 				void queryClient.invalidateQueries({
-					queryKey: QUERY_KEYS.calendar.all,
+					queryKey: QUERY_KEYS.event.list(currentCalendarId),
 				});
+				void queryClient.invalidateQueries({
+					queryKey: QUERY_KEYS.event.list(variables.targetCalendarId),
+				});
+				void queryClient.invalidateQueries({
+					queryKey: QUERY_KEYS.calendar.byId(currentCalendarId),
+				});
+				void queryClient.invalidateQueries({
+					queryKey: QUERY_KEYS.calendar.byId(variables.targetCalendarId),
+				});
+				// Dashboard aggregates across all calendars
 				void queryClient.invalidateQueries({
 					queryKey: QUERY_KEYS.dashboard.all,
 				});

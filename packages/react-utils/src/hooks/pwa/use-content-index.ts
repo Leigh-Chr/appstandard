@@ -120,6 +120,7 @@ export function useContentIndex(): UseContentIndexReturn {
 				await registration.index.add(content);
 				return true;
 			} catch (error) {
+				// biome-ignore lint/suspicious/noConsole: intentional warning for API errors
 				console.warn("Failed to add content to index:", error);
 				return false;
 			}
@@ -137,6 +138,7 @@ export function useContentIndex(): UseContentIndexReturn {
 			await registration.index.delete(id);
 			return true;
 		} catch (error) {
+			// biome-ignore lint/suspicious/noConsole: intentional warning for API errors
 			console.warn("Failed to remove content from index:", error);
 			return false;
 		}

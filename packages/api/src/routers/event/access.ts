@@ -2,6 +2,7 @@
  * Event access verification utilities
  */
 
+import { ErrorMessages } from "@appstandard/api-core";
 import prisma from "@appstandard/db";
 import { TRPCError } from "@trpc/server";
 import type { Context } from "../../context";
@@ -31,7 +32,7 @@ export async function verifyEventAccess(
 	if (!event) {
 		throw new TRPCError({
 			code: "NOT_FOUND",
-			message: "Event not found",
+			message: ErrorMessages.EVENT_NOT_FOUND,
 		});
 	}
 
@@ -39,7 +40,7 @@ export async function verifyEventAccess(
 	if (event.calendar.userId === null) {
 		throw new TRPCError({
 			code: "FORBIDDEN",
-			message: "Access denied to this event",
+			message: ErrorMessages.EVENT_ACCESS_DENIED,
 		});
 	}
 
@@ -51,7 +52,7 @@ export async function verifyEventAccess(
 	if (!hasAccess) {
 		throw new TRPCError({
 			code: "FORBIDDEN",
-			message: "Access denied to this event",
+			message: ErrorMessages.EVENT_ACCESS_DENIED,
 		});
 	}
 
@@ -75,7 +76,7 @@ export async function verifyCalendarAccess(
 	if (!calendar) {
 		throw new TRPCError({
 			code: "NOT_FOUND",
-			message: "Calendar not found",
+			message: ErrorMessages.CALENDAR_NOT_FOUND,
 		});
 	}
 
@@ -83,7 +84,7 @@ export async function verifyCalendarAccess(
 	if (calendar.userId === null) {
 		throw new TRPCError({
 			code: "FORBIDDEN",
-			message: "Access denied to this calendar",
+			message: ErrorMessages.CALENDAR_ACCESS_DENIED,
 		});
 	}
 
@@ -95,7 +96,7 @@ export async function verifyCalendarAccess(
 	if (!hasAccess) {
 		throw new TRPCError({
 			code: "FORBIDDEN",
-			message: "Access denied to this calendar",
+			message: ErrorMessages.CALENDAR_ACCESS_DENIED,
 		});
 	}
 
@@ -117,7 +118,7 @@ export async function verifyCalendarAccessForList(
 	if (!calendar) {
 		throw new TRPCError({
 			code: "NOT_FOUND",
-			message: "Calendar not found",
+			message: ErrorMessages.CALENDAR_NOT_FOUND,
 		});
 	}
 
@@ -125,7 +126,7 @@ export async function verifyCalendarAccessForList(
 	if (calendar.userId === null) {
 		throw new TRPCError({
 			code: "FORBIDDEN",
-			message: "Access denied to this calendar",
+			message: ErrorMessages.CALENDAR_ACCESS_DENIED,
 		});
 	}
 
@@ -140,7 +141,7 @@ export async function verifyCalendarAccessForList(
 	if (!hasAccess) {
 		throw new TRPCError({
 			code: "FORBIDDEN",
-			message: "Access denied to this calendar",
+			message: ErrorMessages.CALENDAR_ACCESS_DENIED,
 		});
 	}
 

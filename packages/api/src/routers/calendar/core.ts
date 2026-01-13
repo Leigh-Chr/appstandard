@@ -3,7 +3,7 @@
  * Extracted from calendar.ts for better maintainability
  */
 
-import { handlePrismaError } from "@appstandard/api-core";
+import { ErrorMessages, handlePrismaError } from "@appstandard/api-core";
 import prisma from "@appstandard/db";
 import { TRPCError } from "@trpc/server";
 import z from "zod";
@@ -11,7 +11,7 @@ import { authOrAnonProcedure, router } from "../../index";
 import { cleanupCalendarRelations } from "../../lib/cleanup-calendar-relations";
 import {
 	buildOwnershipFilter,
-	checkCalendarLimit,
+	createCalendarAtomically,
 	getUserUsage,
 } from "../../middleware";
 
@@ -97,7 +97,6 @@ export const calendarCoreRouter = router({
 					});
 				} catch (error) {
 					handlePrismaError(error);
-					throw error; // Never reached, but TypeScript needs it
 				}
 			}
 
@@ -135,7 +134,7 @@ export const calendarCoreRouter = router({
 			if (!calendar) {
 				throw new TRPCError({
 					code: "NOT_FOUND",
-					message: "Calendar not found",
+					message: ErrorMessages.CALENDAR_NOT_FOUND,
 				});
 			}
 
@@ -143,7 +142,7 @@ export const calendarCoreRouter = router({
 			if (calendar.userId === null) {
 				throw new TRPCError({
 					code: "FORBIDDEN",
-					message: "Access denied to this calendar",
+					message: ErrorMessages.CALENDAR_ACCESS_DENIED,
 				});
 			}
 
@@ -158,7 +157,7 @@ export const calendarCoreRouter = router({
 			if (!hasAccess) {
 				throw new TRPCError({
 					code: "FORBIDDEN",
-					message: "Access denied to this calendar",
+					message: ErrorMessages.CALENDAR_ACCESS_DENIED,
 				});
 			}
 
@@ -176,7 +175,6 @@ export const calendarCoreRouter = router({
 					});
 				} catch (error) {
 					handlePrismaError(error);
-					throw error; // Never reached, but TypeScript needs it
 				}
 			}
 
@@ -200,32 +198,15 @@ export const calendarCoreRouter = router({
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
-			// SECURITY: Ensure userId is always set to prevent orphaned calendars
-			const userId = ctx.session?.user?.id || ctx.anonymousId;
-			if (!userId) {
-				throw new TRPCError({
-					code: "UNAUTHORIZED",
-					message: "Authentication required",
-				});
-			}
-
-			await checkCalendarLimit(ctx);
-
-			let calendar: Awaited<ReturnType<typeof prisma.calendar.create>>;
+			// API-003: Use atomic creation to prevent race condition on limit check
 			try {
-				calendar = await prisma.calendar.create({
-					data: {
-						name: input.name, // Already trimmed by Zod transform
-						color: input.color || null,
-						userId,
-					},
+				return await createCalendarAtomically(ctx, {
+					name: input.name, // Already trimmed by Zod transform
+					color: input.color,
 				});
 			} catch (error) {
 				handlePrismaError(error);
-				throw error; // Never reached, but TypeScript needs it
 			}
-
-			return calendar;
 		}),
 
 	update: authOrAnonProcedure
@@ -256,7 +237,7 @@ export const calendarCoreRouter = router({
 			if (!calendar) {
 				throw new TRPCError({
 					code: "NOT_FOUND",
-					message: "Calendar not found",
+					message: ErrorMessages.CALENDAR_NOT_FOUND,
 				});
 			}
 
@@ -264,7 +245,7 @@ export const calendarCoreRouter = router({
 			if (calendar.userId === null) {
 				throw new TRPCError({
 					code: "FORBIDDEN",
-					message: "Access denied to this calendar",
+					message: ErrorMessages.CALENDAR_ACCESS_DENIED,
 				});
 			}
 
@@ -279,7 +260,7 @@ export const calendarCoreRouter = router({
 			if (!hasAccess) {
 				throw new TRPCError({
 					code: "FORBIDDEN",
-					message: "Access denied to this calendar",
+					message: ErrorMessages.CALENDAR_ACCESS_DENIED,
 				});
 			}
 
@@ -297,9 +278,26 @@ export const calendarCoreRouter = router({
 					where: { id: input.id },
 					data: updateData,
 				});
+
+				// DB-006: Propagate name/color changes to all events
+				const eventUpdateData: {
+					calendarName?: string;
+					calendarColor?: string | null;
+				} = {};
+				if (input.name !== undefined) {
+					eventUpdateData.calendarName = input.name;
+				}
+				if (input.color !== undefined) {
+					eventUpdateData.calendarColor = input.color;
+				}
+				if (Object.keys(eventUpdateData).length > 0) {
+					await prisma.event.updateMany({
+						where: { calendarId: input.id },
+						data: eventUpdateData,
+					});
+				}
 			} catch (error) {
 				handlePrismaError(error);
-				throw error; // Never reached, but TypeScript needs it
 			}
 
 			return updated;
@@ -317,24 +315,30 @@ export const calendarCoreRouter = router({
 			if (!calendar) {
 				throw new TRPCError({
 					code: "NOT_FOUND",
-					message: "Calendar not found",
+					message: ErrorMessages.CALENDAR_NOT_FOUND,
+				});
+			}
+
+			// SECURITY: Orphaned calendars (userId=null) should not be accessible
+			if (calendar.userId === null) {
+				throw new TRPCError({
+					code: "FORBIDDEN",
+					message: ErrorMessages.CALENDAR_ACCESS_DENIED,
 				});
 			}
 
 			// Verify ownership
 			const ownershipFilter = buildOwnershipFilter(ctx);
 			const hasAccess =
-				(ownershipFilter.OR?.some(
+				ownershipFilter.OR?.some(
 					(condition) =>
 						"userId" in condition && condition.userId === calendar.userId,
-				) ??
-					false) ||
-				calendar.userId === null;
+				) ?? false;
 
 			if (!hasAccess) {
 				throw new TRPCError({
 					code: "FORBIDDEN",
-					message: "Access denied to this calendar",
+					message: ErrorMessages.CALENDAR_ACCESS_DENIED,
 				});
 			}
 
@@ -350,7 +354,6 @@ export const calendarCoreRouter = router({
 				});
 			} catch (error) {
 				handlePrismaError(error);
-				throw error; // Never reached, but TypeScript needs it
 			}
 
 			return { success: true };
@@ -377,7 +380,7 @@ export const calendarCoreRouter = router({
 			if (calendars.length === 0) {
 				throw new TRPCError({
 					code: "NOT_FOUND",
-					message: "No calendars found",
+					message: ErrorMessages.notFound("Calendars"),
 				});
 			}
 
@@ -397,7 +400,6 @@ export const calendarCoreRouter = router({
 				});
 			} catch (error) {
 				handlePrismaError(error);
-				throw error; // Never reached, but TypeScript needs it
 			}
 
 			return {

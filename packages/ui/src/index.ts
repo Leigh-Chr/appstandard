@@ -270,6 +270,9 @@ export {
 export {
 	CollapsibleSection,
 	type CollapsibleSectionProps,
+	// UX-006: Inline help toggle
+	InlineHelp,
+	type InlineHelpProps,
 	MobileFormProgress,
 	type MobileFormProgressProps,
 } from "./form";
@@ -320,6 +323,8 @@ export {
 } from "./popover";
 // Progress
 export { Progress } from "./progress";
+// UX-014: PWA Install Prompt
+export { usePWAInstall } from "./pwa-install-prompt";
 // PWA Update Prompt
 export {
 	checkForPWAUpdates,

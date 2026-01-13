@@ -6,6 +6,7 @@
 import { handlePrismaError } from "@appstandard/api-core";
 import prisma from "@appstandard/db";
 import { TRPCError } from "@trpc/server";
+import { MAX_FILE_SIZE_BYTES } from "../../lib/constants";
 import {
 	parseAlarmAction,
 	parseAttendeeRole,
@@ -24,14 +25,13 @@ import type { ParsedEvent } from "../../lib/ics-parser";
  * Uses Buffer.byteLength for accurate byte counting (more reliable than Blob in server environments)
  */
 export function validateFileSize(fileContent: string) {
-	const maxSizeBytes = 5 * 1024 * 1024; // 5MB
 	// Use Buffer.byteLength for accurate UTF-8 byte counting
 	// This is more reliable than Blob.size in server environments
 	const fileSizeBytes = Buffer.byteLength(fileContent, "utf8");
-	if (fileSizeBytes > maxSizeBytes) {
+	if (fileSizeBytes > MAX_FILE_SIZE_BYTES) {
 		throw new TRPCError({
 			code: "BAD_REQUEST",
-			message: `File too large. Maximum allowed size: 5MB. Current size: ${(fileSizeBytes / 1024 / 1024).toFixed(2)}MB`,
+			message: `File too large. Maximum allowed size: ${MAX_FILE_SIZE_BYTES / 1024 / 1024}MB. Current size: ${(fileSizeBytes / 1024 / 1024).toFixed(2)}MB`,
 		});
 	}
 }
@@ -138,13 +138,19 @@ function extractOrganizerFields(parsedEvent: ParsedEvent) {
 
 /**
  * Prepare event data from parsed ICS event
+ * DB-006: Added calendarColor and calendarName for denormalization
  */
 function prepareEventDataFromParsed(
 	calendarId: string,
 	parsedEvent: ParsedEvent,
+	calendarColor?: string | null,
+	calendarName?: string | null,
 ) {
 	return {
 		calendarId,
+		// DB-006: Denormalized calendar fields
+		calendarColor: calendarColor ?? null,
+		calendarName: calendarName ?? null,
 		title: parsedEvent.title,
 		startDate: parsedEvent.startDate,
 		endDate: parsedEvent.endDate,
@@ -176,16 +182,23 @@ function prepareEventDataFromParsed(
 
 /**
  * Create event from parsed ICS data
+ * DB-006: Added calendarColor and calendarName for denormalization
  */
 export async function createEventFromParsed(
 	calendarId: string,
 	parsedEvent: ParsedEvent,
+	calendarColor?: string | null,
+	calendarName?: string | null,
 ) {
-	const eventData = prepareEventDataFromParsed(calendarId, parsedEvent);
+	const eventData = prepareEventDataFromParsed(
+		calendarId,
+		parsedEvent,
+		calendarColor,
+		calendarName,
+	);
 	try {
 		return await prisma.event.create({ data: eventData });
 	} catch (error) {
 		handlePrismaError(error);
-		throw error; // Never reached, but TypeScript needs it
 	}
 }

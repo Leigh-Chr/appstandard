@@ -178,9 +178,10 @@ Better-Auth automatically creates the following tables (see `packages/db/prisma/
 - **Email verification**: Required to activate account (prevents fake accounts)
 - **Temporary email blocking**: 55,000+ domains blocked via `better-auth-harmony`
 - **CORS**: Strict configuration with `trustedOrigins`
-- **Cookies**: 
-  - Development: `SameSite=lax`, `Secure=false`
-  - Production: `SameSite=none`, `Secure=true`
+- **Cookies**:
+  - `SameSite=lax` (both environments): Allows cookies on same-site navigation while blocking cross-site POST attacks. This is the correct choice because frontend and backend are same-origin (same port in dev, same domain in prod).
+  - `Secure=true` (production only): Cookies transmitted only over HTTPS
+  - `HttpOnly=true`: Prevents XSS from accessing session cookies
 
 ## Available Endpoints
 

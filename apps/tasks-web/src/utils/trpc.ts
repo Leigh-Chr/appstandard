@@ -109,6 +109,11 @@ export const queryClient = new QueryClient({
 					return true;
 				}
 
+				// PERF-011: Don't retry rate limit errors - respect server's backoff
+				if (errorData?.code === "TOO_MANY_REQUESTS") {
+					return false;
+				}
+
 				// Don't retry client errors (4xx) - these are user errors, not transient
 				if (errorData?.code) {
 					const clientErrorCodes = [

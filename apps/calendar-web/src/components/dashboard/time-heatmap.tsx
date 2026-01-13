@@ -1,6 +1,7 @@
 import { cn } from "@appstandard/react-utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@appstandard/ui";
 import { Grid3X3 } from "lucide-react";
+import { useMemo } from "react";
 import { NoDataMessage } from "./empty-states";
 
 interface HeatmapData {
@@ -25,6 +26,17 @@ function getIntensityClass(hours: number): string {
 }
 
 export function TimeHeatmap({ heatmap }: TimeHeatmapProps) {
+	// PERF-002: Memoize lookup map to avoid rebuilding on every render
+	// Hook must be called unconditionally (before any early returns)
+	const dataMap = useMemo(() => {
+		const map = new Map<string, number>();
+		for (const item of heatmap) {
+			const key = `${item.dayOfWeek}-${item.hourSlot}`;
+			map.set(key, item.hours);
+		}
+		return map;
+	}, [heatmap]);
+
 	if (heatmap.length === 0) {
 		return (
 			<Card>
@@ -39,13 +51,6 @@ export function TimeHeatmap({ heatmap }: TimeHeatmapProps) {
 				</CardContent>
 			</Card>
 		);
-	}
-
-	// Build a lookup map
-	const dataMap = new Map<string, number>();
-	for (const item of heatmap) {
-		const key = `${item.dayOfWeek}-${item.hourSlot}`;
-		dataMap.set(key, item.hours);
 	}
 
 	return (

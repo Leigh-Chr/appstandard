@@ -6,6 +6,7 @@ import { logger } from "../logger";
 import { ERROR_MESSAGES, NETWORK_ERROR_PATTERNS } from "./constants";
 import type {
 	AppError,
+	ErrorCategory,
 	ErrorContext,
 	ErrorInfo,
 	ErrorResult,
@@ -130,6 +131,94 @@ export function getErrorSeverity(error: unknown): ErrorSeverity {
 }
 
 /**
+ * UX-010: Categorize error for UI treatment
+ * Categories:
+ * - network: Connection issues, server unreachable, timeout
+ * - auth: Authentication (UNAUTHORIZED) or authorization (FORBIDDEN) failures
+ * - server: Server-side errors (5xx - INTERNAL_SERVER_ERROR)
+ * - client: Client-side errors (4xx - BAD_REQUEST, NOT_FOUND, CONFLICT, etc.)
+ * - unknown: Unclassified errors
+ */
+export function getErrorCategory(error: unknown): ErrorCategory {
+	// Network errors take precedence
+	if (isNetworkError(error)) return "network";
+	if (isTimeoutError(error)) return "network";
+
+	const code = getErrorCode(error);
+
+	if (!code) return "unknown";
+
+	// Auth errors
+	if (code === "UNAUTHORIZED" || code === "FORBIDDEN") {
+		return "auth";
+	}
+
+	// Server errors (5xx equivalent)
+	if (code === "INTERNAL_SERVER_ERROR") {
+		return "server";
+	}
+
+	// Client errors (4xx equivalent)
+	const clientErrorCodes = [
+		"BAD_REQUEST",
+		"NOT_FOUND",
+		"CONFLICT",
+		"PRECONDITION_FAILED",
+		"PARSE_ERROR",
+		"METHOD_NOT_SUPPORTED",
+		"PAYLOAD_TOO_LARGE",
+		"UNPROCESSABLE_CONTENT",
+		"TOO_MANY_REQUESTS",
+		"CLIENT_CLOSED_REQUEST",
+	];
+	if (clientErrorCodes.includes(code)) {
+		return "client";
+	}
+
+	return "unknown";
+}
+
+/**
+ * UX-010: Get error category from tRPC error code directly
+ * This is used when we already have the error code string
+ */
+export function getErrorCategoryFromCode(code: string): ErrorCategory {
+	// Network/timeout errors
+	if (code === "NETWORK_ERROR" || code === "TIMEOUT") {
+		return "network";
+	}
+
+	// Auth errors
+	if (code === "UNAUTHORIZED" || code === "FORBIDDEN") {
+		return "auth";
+	}
+
+	// Server errors
+	if (code === "INTERNAL_SERVER_ERROR") {
+		return "server";
+	}
+
+	// Client errors
+	const clientErrorCodes = [
+		"BAD_REQUEST",
+		"NOT_FOUND",
+		"CONFLICT",
+		"PRECONDITION_FAILED",
+		"PARSE_ERROR",
+		"METHOD_NOT_SUPPORTED",
+		"PAYLOAD_TOO_LARGE",
+		"UNPROCESSABLE_CONTENT",
+		"TOO_MANY_REQUESTS",
+		"CLIENT_CLOSED_REQUEST",
+	];
+	if (clientErrorCodes.includes(code)) {
+		return "client";
+	}
+
+	return "unknown";
+}
+
+/**
  * Format error for logging
  */
 export function formatErrorForLog(
@@ -197,6 +286,7 @@ export function getTRPCErrorCode(error: unknown): string {
 /**
  * Build error result from network error
  * @param customMessages - Optional custom error messages to override defaults
+ * UX-010: Added category field
  */
 export function buildNetworkError(
 	customMessages?: Partial<Record<string, ErrorInfo>>,
@@ -209,18 +299,21 @@ export function buildNetworkError(
 			description:
 				"Unable to contact the server. Please check your connection.",
 			code: "NETWORK_ERROR",
+			category: "network",
 		};
 	}
 	return {
 		title: networkError.title,
 		description: networkError.description,
 		code: "NETWORK_ERROR",
+		category: "network",
 	};
 }
 
 /**
  * Build error result from error code and fallbacks
  * @param customMessages - Optional custom error messages to override defaults
+ * UX-010: Added category field derived from error code
  */
 export function buildErrorResult(
 	errorCode: string,
@@ -235,5 +328,6 @@ export function buildErrorResult(
 		title: errorInfo?.title || fallbackTitle,
 		description: errorInfo?.description || errorMessage || fallbackDescription,
 		code: errorCode,
+		category: getErrorCategoryFromCode(errorCode),
 	};
 }

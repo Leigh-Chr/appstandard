@@ -11,6 +11,8 @@
  * - Rounding differences in different systems
  */
 
+import { DUPLICATE_DATE_TOLERANCE_MS } from "./constants";
+
 /** Configuration for duplicate detection */
 export interface DuplicateDetectionConfig {
 	/** Tolerance in milliseconds for date comparison (default: 60000 = 1 minute) */
@@ -24,7 +26,7 @@ export interface DuplicateDetectionConfig {
 }
 
 const DEFAULT_CONFIG: Required<DuplicateDetectionConfig> = {
-	dateTolerance: 60000, // 1 minute
+	dateTolerance: DUPLICATE_DATE_TOLERANCE_MS,
 	useUid: true,
 	useTitle: true,
 	useLocation: false,

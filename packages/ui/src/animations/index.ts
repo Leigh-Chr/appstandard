@@ -17,3 +17,7 @@ export {
 	type SuccessAnimationProps,
 	useSuccessAnimation,
 } from "./success-animation";
+export {
+	getMotionTransition,
+	useReducedMotion,
+} from "./use-reduced-motion";

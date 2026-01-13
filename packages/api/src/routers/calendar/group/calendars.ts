@@ -34,6 +34,7 @@ export const calendarGroupCalendarsRouter = router({
 			}
 
 			// Find the group
+			// DB-008: Use select with IDs only instead of full include
 			const group = await prisma.calendarGroup.findFirst({
 				where: {
 					id: input.id,
@@ -41,8 +42,12 @@ export const calendarGroupCalendarsRouter = router({
 						? {} // Access already verified above
 						: buildOwnershipFilter(ctx)), // For anonymous, use ownership filter
 				},
-				include: {
-					calendars: true,
+				select: {
+					id: true,
+					userId: true,
+					calendars: {
+						select: { calendarId: true, order: true },
+					},
 				},
 			});
 
@@ -92,11 +97,13 @@ export const calendarGroupCalendarsRouter = router({
 			}
 
 			// Verify the user owns all calendars
+			// DB-008: Select only id - we just need to verify count
 			const calendars = await prisma.calendar.findMany({
 				where: {
 					id: { in: input.calendarIds },
 					...buildOwnershipFilter(ctx),
 				},
+				select: { id: true },
 			});
 
 			if (calendars.length !== input.calendarIds.length) {
@@ -138,7 +145,6 @@ export const calendarGroupCalendarsRouter = router({
 				});
 			} catch (error) {
 				handlePrismaError(error);
-				throw error; // Never reached, but TypeScript needs it
 			}
 
 			return {
@@ -220,7 +226,6 @@ export const calendarGroupCalendarsRouter = router({
 				});
 			} catch (error) {
 				handlePrismaError(error);
-				throw error; // Never reached, but TypeScript needs it
 			}
 
 			return {

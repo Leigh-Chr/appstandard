@@ -50,8 +50,9 @@
     <meta name="twitter:description" content="Free, open-source calendar manager. Import, edit, merge your calendar files in seconds. No account required, works offline." />
     <meta name="twitter:image" content="https://calendar.appstandard.io/og-image.png" />
     
-    <!-- Performance: Preload critical resources -->
-    <link rel="preload" as="image" href="/og-image.png" fetchpriority="high" />
+    <!-- Performance: Preconnect to API for faster first request -->
+    <!-- PERF-014: Removed og-image preload (not needed for initial render, only social sharing) -->
+    <!-- Fonts are self-hosted via @fontsource-variable, bundled by Vite with hash filenames -->
     <link rel="preconnect" href="https://api.appstandard.io" crossorigin />
     <link rel="dns-prefetch" href="https://api.appstandard.io" />
     <link rel="preconnect" href="https://o4506871232004096.ingest.sentry.io" />

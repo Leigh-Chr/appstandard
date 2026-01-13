@@ -4,6 +4,7 @@ import { eventCreateSchema, eventUpdateSchema } from "@appstandard/schemas";
 import { TRPCError } from "@trpc/server";
 import z from "zod";
 import { authOrAnonProcedure, router } from "../index";
+import { TRANSACTION_TIMEOUT_MS } from "../lib/constants";
 import {
 	prepareAlarmData,
 	prepareAttendeeData,
@@ -130,7 +131,6 @@ async function getEventsSortedByDuration(
 		// Handle Prisma errors for raw queries
 		// Raw queries can fail due to SQL syntax errors, connection issues, etc.
 		handlePrismaError(error);
-		throw error; // Never reached, but TypeScript needs it
 	}
 }
 
@@ -311,7 +311,6 @@ export const eventRouter = router({
 				});
 			} catch (error) {
 				handlePrismaError(error);
-				throw error; // Never reached, but TypeScript needs it
 			}
 
 			if (!calendar) {
@@ -323,6 +322,10 @@ export const eventRouter = router({
 
 			// Note: Date validation and geo coordinates validation
 			// are now handled by the Zod schema (eventCreateSchema)
+
+			// DB-006: Prepare denormalized calendar fields
+			const calendarColor = calendar.color;
+			const calendarName = calendar.name;
 
 			// Validate UID uniqueness if provided
 			if (input.uid) {
@@ -336,7 +339,6 @@ export const eventRouter = router({
 					});
 				} catch (error) {
 					handlePrismaError(error);
-					throw error; // Never reached, but TypeScript needs it
 				}
 				if (existingEvent) {
 					throw new TRPCError({
@@ -404,6 +406,9 @@ export const eventRouter = router({
 						calendarId: input.calendarId,
 						// RFC 5545: DTSTAMP is required for all VEVENT - set to current time if not provided
 						dtstamp: new Date(),
+						// DB-006: Denormalized calendar fields
+						calendarColor,
+						calendarName,
 						// Other fields from prepareEventData
 						...eventData,
 						// Nested relations
@@ -426,7 +431,6 @@ export const eventRouter = router({
 				});
 			} catch (error) {
 				handlePrismaError(error);
-				throw error; // Never reached, but TypeScript needs it
 			}
 
 			return event;
@@ -571,8 +575,8 @@ export const eventRouter = router({
 						});
 					},
 					{
-						maxWait: 5000, // Max 5s to wait for transaction to start
-						timeout: 10000, // Max 10s for transaction to complete
+						maxWait: TRANSACTION_TIMEOUT_MS / 2, // Max 5s to wait for transaction to start
+						timeout: TRANSACTION_TIMEOUT_MS, // Max 10s for transaction to complete
 					},
 				)
 				.catch((error) => {
@@ -604,7 +608,6 @@ export const eventRouter = router({
 				});
 			} catch (error) {
 				handlePrismaError(error);
-				throw error; // Never reached, but TypeScript needs it
 			}
 
 			return { success: true };
@@ -648,12 +651,17 @@ export const eventRouter = router({
 
 			// Determine and verify target calendar
 			const targetCalendarId = input.targetCalendarId || sourceEvent.calendarId;
+			let targetCalendar = sourceEvent.calendar;
 			if (targetCalendarId !== sourceEvent.calendarId) {
 				await verifyCalendarAccess(
 					targetCalendarId,
 					ctx.session?.user?.id,
 					ctx.anonymousId ?? undefined,
 				);
+				// DB-006: Fetch target calendar for denormalized fields
+				targetCalendar = await prisma.calendar.findUniqueOrThrow({
+					where: { id: targetCalendarId },
+				});
 			}
 
 			await checkEventLimit(ctx, targetCalendarId);
@@ -669,6 +677,9 @@ export const eventRouter = router({
 				duplicatedEvent = await prisma.event.create({
 					data: {
 						calendarId: targetCalendarId,
+						// DB-006: Denormalized calendar fields
+						calendarColor: targetCalendar.color,
+						calendarName: targetCalendar.name,
 						title: sourceEvent.title,
 						startDate: newStartDate,
 						endDate: newEndDate,
@@ -741,7 +752,6 @@ export const eventRouter = router({
 				});
 			} catch (error) {
 				handlePrismaError(error);
-				throw error; // Never reached, but TypeScript needs it
 			}
 
 			return duplicatedEvent;
@@ -808,7 +818,6 @@ export const eventRouter = router({
 				});
 			} catch (error) {
 				handlePrismaError(error);
-				throw error; // Never reached, but TypeScript needs it
 			}
 
 			return {
@@ -890,15 +899,19 @@ export const eventRouter = router({
 			}
 
 			// Move events to target calendar
+			// DB-006: Also update denormalized calendar fields
 			let result: Awaited<ReturnType<typeof prisma.event.updateMany>>;
 			try {
 				result = await prisma.event.updateMany({
 					where: { id: { in: accessibleEventIds } },
-					data: { calendarId: input.targetCalendarId },
+					data: {
+						calendarId: input.targetCalendarId,
+						calendarColor: targetCalendar.color,
+						calendarName: targetCalendar.name,
+					},
 				});
 			} catch (error) {
 				handlePrismaError(error);
-				throw error; // Never reached, but TypeScript needs it
 			}
 
 			return {

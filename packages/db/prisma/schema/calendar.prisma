@@ -102,7 +102,12 @@ model Event {
   
   // ICS Properties - Extensions (RFC 7986)
   color          String?  // COLOR property (hex format like #FF0000)
-  
+
+  // DB-006: Denormalized calendar fields for avoiding N+1 queries
+  // These are copied from the parent Calendar at event creation/update
+  calendarColor  String?  // Cached from calendar.color
+  calendarName   String?  // Cached from calendar.name
+
   // Relations (normalized)
   attendees        EventAttendee[]
   alarms           EventAlarm[]
@@ -122,6 +127,8 @@ model Event {
   @@index([calendarId, endDate, startDate]) // Composite index for duration sorting
   @@index([uid]) // Fast lookups by UID for validation
   @@index([status]) // Fast filtering by status
+  @@index([transp]) // Fast filtering by transparency (OPAQUE/TRANSPARENT)
+  @@index([calendarId, transp, startDate]) // Composite for time load queries
   @@map("event")
 }
 
@@ -141,6 +148,7 @@ model EventAttendee {
   @@index([eventId]) // Fast lookups for attendees of an event
   @@index([email]) // Fast lookups by email for invitations
   @@index([status]) // Fast filtering by RSVP status
+  @@index([email, status]) // DB-010: Composite for invitation lookups with status filter
   @@map("event_attendee")
 }
 

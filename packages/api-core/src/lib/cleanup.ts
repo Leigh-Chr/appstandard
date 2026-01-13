@@ -10,14 +10,23 @@ import { createLogger, type Logger } from "./logger";
 const defaultLogger = createLogger("Cleanup");
 
 /**
+ * CODE-003: Result type for cleanup operations
+ * Allows callers to distinguish between "0 items cleaned" and "error occurred"
+ */
+export interface CleanupResult {
+	count: number;
+	error?: Error;
+}
+
+/**
  * Delete expired sessions
  * Sessions are automatically invalid after expiration, but we clean them up for database hygiene
  * @param logger - Optional logger instance (defaults to cleanup logger)
- * @returns Number of deleted sessions
+ * @returns CleanupResult with count and optional error
  */
 export async function cleanupExpiredSessions(
 	logger: Logger = defaultLogger,
-): Promise<number> {
+): Promise<CleanupResult> {
 	const now = new Date();
 
 	try {
@@ -35,12 +44,15 @@ export async function cleanupExpiredSessions(
 			});
 		}
 
-		return result.count;
+		return { count: result.count };
 	} catch (error) {
 		logger.error("Failed to delete expired sessions", {
 			error,
 		});
-		return 0;
+		return {
+			count: 0,
+			error: error instanceof Error ? error : new Error(String(error)),
+		};
 	}
 }
 
@@ -48,11 +60,11 @@ export async function cleanupExpiredSessions(
  * Delete expired verification tokens
  * These are used for email verification and password reset
  * @param logger - Optional logger instance (defaults to cleanup logger)
- * @returns Number of deleted verifications
+ * @returns CleanupResult with count and optional error
  */
 export async function cleanupExpiredVerifications(
 	logger: Logger = defaultLogger,
-): Promise<number> {
+): Promise<CleanupResult> {
 	const now = new Date();
 
 	try {
@@ -70,12 +82,15 @@ export async function cleanupExpiredVerifications(
 			});
 		}
 
-		return result.count;
+		return { count: result.count };
 	} catch (error) {
 		logger.error("Failed to delete expired verifications", {
 			error,
 		});
-		return 0;
+		return {
+			count: 0,
+			error: error instanceof Error ? error : new Error(String(error)),
+		};
 	}
 }
 
@@ -112,26 +127,33 @@ export const DEFAULT_CLEANUP_CONFIG: Required<CleanupJobConfig> = {
 /**
  * Interface for app-specific cleanup functions
  * Each app must provide these functions for their specific data types
+ * CODE-003: All functions return CleanupResult to report errors to callers
  */
 export interface AppCleanupFunctions {
 	/** Delete orphaned anonymous data (calendars, address books, task lists) */
-	cleanupOrphanedAnonymousData: (daysInactive: number) => Promise<number>;
+	cleanupOrphanedAnonymousData: (
+		daysInactive: number,
+	) => Promise<CleanupResult>;
 	/** Delete expired share links */
-	cleanupExpiredShareLinks: (gracePeriodDays: number) => Promise<number>;
+	cleanupExpiredShareLinks: (gracePeriodDays: number) => Promise<CleanupResult>;
 	/** Delete expired share bundles */
-	cleanupExpiredShareBundles: (gracePeriodDays: number) => Promise<number>;
+	cleanupExpiredShareBundles: (
+		gracePeriodDays: number,
+	) => Promise<CleanupResult>;
 	/** Delete inactive share links */
 	cleanupInactiveShareLinks: (
 		inactiveDays: number,
 		activeDays: number,
-	) => Promise<number>;
+	) => Promise<CleanupResult>;
 	/** Delete inactive share bundles */
 	cleanupInactiveShareBundles: (
 		inactiveDays: number,
 		activeDays: number,
-	) => Promise<number>;
+	) => Promise<CleanupResult>;
 	/** Delete pending group invitations */
-	cleanupPendingGroupInvitations: (daysPending: number) => Promise<number>;
+	cleanupPendingGroupInvitations: (
+		daysPending: number,
+	) => Promise<CleanupResult>;
 }
 
 /**
@@ -149,64 +171,93 @@ export function createCleanupRunner(
 
 	/**
 	 * Run all cleanup tasks once
+	 * CODE-003: Collects errors from all cleanup functions and reports them
 	 */
 	async function runCleanup(): Promise<void> {
 		logger.info("Starting cleanup job...");
 
+		const errors: Error[] = [];
+
 		try {
 			// Common auth cleanup
-			const sessionsDeleted = await cleanupExpiredSessions(logger);
-			const verificationsDeleted = await cleanupExpiredVerifications(logger);
+			const sessionsResult = await cleanupExpiredSessions(logger);
+			const verificationsResult = await cleanupExpiredVerifications(logger);
 
 			// App-specific cleanup
-			const orphanedDeleted = await appFunctions.cleanupOrphanedAnonymousData(
+			const orphanedResult = await appFunctions.cleanupOrphanedAnonymousData(
 				mergedConfig.orphanedDaysInactive,
 			);
-			const expiredLinksDeleted = await appFunctions.cleanupExpiredShareLinks(
+			const expiredLinksResult = await appFunctions.cleanupExpiredShareLinks(
 				mergedConfig.expiredShareLinksGraceDays,
 			);
-			const expiredBundlesDeleted =
+			const expiredBundlesResult =
 				await appFunctions.cleanupExpiredShareBundles(
 					mergedConfig.expiredShareLinksGraceDays,
 				);
-			const inactiveLinksDeleted = await appFunctions.cleanupInactiveShareLinks(
+			const inactiveLinksResult = await appFunctions.cleanupInactiveShareLinks(
 				mergedConfig.inactiveShareLinksDisabledDays,
 				mergedConfig.inactiveShareLinksActiveDays,
 			);
-			const inactiveBundlesDeleted =
+			const inactiveBundlesResult =
 				await appFunctions.cleanupInactiveShareBundles(
 					mergedConfig.inactiveShareLinksDisabledDays,
 					mergedConfig.inactiveShareLinksActiveDays,
 				);
-			const invitationsDeleted =
+			const invitationsResult =
 				await appFunctions.cleanupPendingGroupInvitations(
 					mergedConfig.pendingInvitationsDays,
 				);
 
-			const totalDeleted =
-				sessionsDeleted +
-				verificationsDeleted +
-				orphanedDeleted +
-				expiredLinksDeleted +
-				expiredBundlesDeleted +
-				inactiveLinksDeleted +
-				inactiveBundlesDeleted +
-				invitationsDeleted;
+			// Collect errors from all results
+			const results = [
+				sessionsResult,
+				verificationsResult,
+				orphanedResult,
+				expiredLinksResult,
+				expiredBundlesResult,
+				inactiveLinksResult,
+				inactiveBundlesResult,
+				invitationsResult,
+			];
+			for (const result of results) {
+				if (result.error) {
+					errors.push(result.error);
+				}
+			}
 
-			if (totalDeleted > 0) {
+			const totalDeleted =
+				sessionsResult.count +
+				verificationsResult.count +
+				orphanedResult.count +
+				expiredLinksResult.count +
+				expiredBundlesResult.count +
+				inactiveLinksResult.count +
+				inactiveBundlesResult.count +
+				invitationsResult.count;
+
+			if (totalDeleted > 0 || errors.length > 0) {
 				logger.info("Cleanup job completed", {
 					totalDeleted,
-					sessionsDeleted,
-					verificationsDeleted,
-					orphanedDeleted,
-					expiredLinksDeleted,
-					expiredBundlesDeleted,
-					inactiveLinksDeleted,
-					inactiveBundlesDeleted,
-					invitationsDeleted,
+					sessionsDeleted: sessionsResult.count,
+					verificationsDeleted: verificationsResult.count,
+					orphanedDeleted: orphanedResult.count,
+					expiredLinksDeleted: expiredLinksResult.count,
+					expiredBundlesDeleted: expiredBundlesResult.count,
+					inactiveLinksDeleted: inactiveLinksResult.count,
+					inactiveBundlesDeleted: inactiveBundlesResult.count,
+					invitationsDeleted: invitationsResult.count,
+					errorCount: errors.length,
 				});
 			} else {
 				logger.info("Cleanup job completed with nothing to clean");
+			}
+
+			// Log any errors that occurred
+			if (errors.length > 0) {
+				logger.warn("Some cleanup operations failed", {
+					errorCount: errors.length,
+					errors: errors.map((e) => e.message),
+				});
 			}
 		} catch (error) {
 			logger.error("Cleanup job failed", { error });

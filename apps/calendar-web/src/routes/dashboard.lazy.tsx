@@ -29,32 +29,69 @@ export const Route = createLazyFileRoute("/dashboard")({
 	component: DashboardPage,
 });
 
+/**
+ * UX-007: Skeleton that matches the real dashboard layout
+ * Structure mirrors HeroMetrics, UpcomingAgenda, TimeGauge, etc.
+ */
 function DashboardSkeleton() {
 	return (
 		<div className="space-y-6">
-			{/* Header skeleton */}
-			<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+			{/* Header skeleton - matches real header */}
+			<div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 				<div>
 					<Skeleton className="mb-2 h-8 w-48" />
 					<Skeleton className="h-4 w-64" />
 				</div>
-				<div className="flex items-center gap-2">
+				<div className="flex flex-wrap items-center gap-3">
+					{/* Period selector */}
 					<Skeleton className="h-9 w-[160px]" />
+					{/* Quick actions */}
+					<Skeleton className="h-9 w-9 rounded-md" />
 				</div>
 			</div>
 
-			{/* Hero metrics skeleton */}
-			<div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-				<Skeleton className="h-32" />
-				<Skeleton className="h-32" />
-				<Skeleton className="h-32" />
-				<Skeleton className="h-32" />
+			{/* Hero metrics skeleton - 4 cards like real component */}
+			<div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
+				<Skeleton className="h-32 rounded-xl" />
+				<Skeleton className="h-32 rounded-xl" />
+				<Skeleton className="h-32 rounded-xl" />
+				<Skeleton className="h-32 rounded-xl" />
 			</div>
 
-			{/* Content skeleton */}
+			{/* Main content grid - mirrors lg:grid-cols-2 layout */}
 			<div className="grid gap-6 lg:grid-cols-2">
-				<Skeleton className="h-96" />
-				<Skeleton className="h-96" />
+				{/* Left column - Upcoming, TimeGauge, Breakdown */}
+				<div className="space-y-6">
+					{/* UpcomingAgenda skeleton */}
+					<Skeleton className="h-80 rounded-xl" />
+					{/* TimeGauge skeleton */}
+					<Skeleton className="h-32 rounded-xl" />
+					{/* BreakdownChart skeleton */}
+					<Skeleton className="h-64 rounded-xl" />
+				</div>
+
+				{/* Right column - Heatmap, 4 insights */}
+				<div className="space-y-6">
+					{/* TimeHeatmap skeleton */}
+					<Skeleton className="h-48 rounded-xl" />
+					{/* Insights grid - 2x2 like real component */}
+					<div className="grid gap-4 sm:grid-cols-2">
+						<Skeleton className="h-36 rounded-xl" />
+						<Skeleton className="h-36 rounded-xl" />
+						<Skeleton className="h-36 rounded-xl" />
+						<Skeleton className="h-36 rounded-xl" />
+					</div>
+				</div>
+			</div>
+
+			{/* Full width sections at bottom */}
+			<div className="mt-6 space-y-6">
+				{/* CalendarsTable skeleton */}
+				<Skeleton className="h-64 rounded-xl" />
+				{/* DataHealth skeleton */}
+				<Skeleton className="h-48 rounded-xl" />
+				{/* SharingStats skeleton */}
+				<Skeleton className="h-32 rounded-xl" />
 			</div>
 		</div>
 	);

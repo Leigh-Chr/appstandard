@@ -13,7 +13,12 @@ export interface ListLoadingStateProps {
 
 export function ListLoadingState({ cardCount = 3 }: ListLoadingStateProps) {
 	return (
-		<div className="relative min-h-[calc(100vh-4rem)]">
+		// UX-008: aria-busy and aria-live for accessible loading announcements
+		<div
+			className="relative min-h-[calc(100vh-4rem)]"
+			aria-busy="true"
+			aria-live="polite"
+		>
 			<div className="pointer-events-none absolute inset-0 -z-10">
 				<div className="gradient-mesh absolute inset-0 opacity-30" />
 			</div>

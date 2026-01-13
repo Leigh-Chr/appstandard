@@ -75,13 +75,17 @@ function DropdownMenuItem({
 	inset?: boolean;
 	variant?: "default" | "destructive";
 }) {
+	const isMobile = useIsMobile();
+
 	return (
 		<DropdownMenuPrimitive.Item
 			data-slot="dropdown-menu-item"
 			data-inset={inset}
 			data-variant={variant}
 			className={cn(
-				"data-[variant=destructive]:*:[svg]:!text-destructive relative flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-hidden transition-all transition-smooth duration-200 focus:bg-primary/10 focus:text-accent-foreground data-[disabled]:pointer-events-none data-[inset]:pl-8 data-[variant=destructive]:text-destructive data-[disabled]:opacity-50 data-[variant=destructive]:focus:bg-destructive/10 data-[variant=destructive]:focus:text-destructive dark:data-[variant=destructive]:focus:bg-destructive/20 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='text-'])]:text-muted-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0",
+				// UX-003: Minimum 44px touch target on mobile for accessibility
+				"data-[variant=destructive]:*:[svg]:!text-destructive relative flex cursor-default select-none items-center gap-2 rounded-sm px-2 text-sm outline-hidden transition-all transition-smooth duration-200 focus:bg-primary/10 focus:text-accent-foreground data-[disabled]:pointer-events-none data-[inset]:pl-8 data-[variant=destructive]:text-destructive data-[disabled]:opacity-50 data-[variant=destructive]:focus:bg-destructive/10 data-[variant=destructive]:focus:text-destructive dark:data-[variant=destructive]:focus:bg-destructive/20 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='text-'])]:text-muted-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0",
+				isMobile ? "min-h-[44px] py-3" : "py-1.5",
 				className,
 			)}
 			{...props}
@@ -95,11 +99,15 @@ function DropdownMenuCheckboxItem({
 	checked,
 	...props
 }: React.ComponentProps<typeof DropdownMenuPrimitive.CheckboxItem>) {
+	const isMobile = useIsMobile();
+
 	return (
 		<DropdownMenuPrimitive.CheckboxItem
 			data-slot="dropdown-menu-checkbox-item"
 			className={cn(
-				"relative flex cursor-default select-none items-center gap-2 rounded-sm py-1.5 pr-2 pl-8 text-sm outline-hidden transition-all transition-smooth duration-200 focus:bg-primary/10 focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0",
+				// UX-003: Minimum 44px touch target on mobile for accessibility
+				"relative flex cursor-default select-none items-center gap-2 rounded-sm pr-2 pl-8 text-sm outline-hidden transition-all transition-smooth duration-200 focus:bg-primary/10 focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0",
+				isMobile ? "min-h-[44px] py-3" : "py-1.5",
 				className,
 			)}
 			{...(checked !== undefined ? { checked } : {})}
@@ -131,11 +139,15 @@ function DropdownMenuRadioItem({
 	children,
 	...props
 }: React.ComponentProps<typeof DropdownMenuPrimitive.RadioItem>) {
+	const isMobile = useIsMobile();
+
 	return (
 		<DropdownMenuPrimitive.RadioItem
 			data-slot="dropdown-menu-radio-item"
 			className={cn(
-				"relative flex cursor-default select-none items-center gap-2 rounded-sm py-1.5 pr-2 pl-8 text-sm outline-hidden transition-all transition-smooth duration-200 focus:bg-primary/10 focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0",
+				// UX-003: Minimum 44px touch target on mobile for accessibility
+				"relative flex cursor-default select-none items-center gap-2 rounded-sm pr-2 pl-8 text-sm outline-hidden transition-all transition-smooth duration-200 focus:bg-primary/10 focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0",
+				isMobile ? "min-h-[44px] py-3" : "py-1.5",
 				className,
 			)}
 			{...props}
@@ -213,12 +225,16 @@ function DropdownMenuSubTrigger({
 }: React.ComponentProps<typeof DropdownMenuPrimitive.SubTrigger> & {
 	inset?: boolean;
 }) {
+	const isMobile = useIsMobile();
+
 	return (
 		<DropdownMenuPrimitive.SubTrigger
 			data-slot="dropdown-menu-sub-trigger"
 			data-inset={inset}
 			className={cn(
-				"flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-hidden transition-all transition-smooth duration-200 focus:bg-primary/10 focus:text-accent-foreground data-[state=open]:bg-primary/10 data-[inset]:pl-8 data-[state=open]:text-accent-foreground [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='text-'])]:text-muted-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0",
+				// UX-003: Minimum 44px touch target on mobile for accessibility
+				"flex cursor-default select-none items-center gap-2 rounded-sm px-2 text-sm outline-hidden transition-all transition-smooth duration-200 focus:bg-primary/10 focus:text-accent-foreground data-[state=open]:bg-primary/10 data-[inset]:pl-8 data-[state=open]:text-accent-foreground [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='text-'])]:text-muted-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0",
+				isMobile ? "min-h-[44px] py-3" : "py-1.5",
 				className,
 			)}
 			{...props}

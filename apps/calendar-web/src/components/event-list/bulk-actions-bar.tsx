@@ -50,10 +50,14 @@ export function BulkActionsBar({
 	const bulkDeleteMutation = useMutation(
 		trpc.event.bulkDelete.mutationOptions({
 			onSuccess: (data) => {
-				void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.event.all });
+				// PERF-004: Granular invalidation - only this calendar's events
 				void queryClient.invalidateQueries({
-					queryKey: QUERY_KEYS.calendar.all,
+					queryKey: QUERY_KEYS.event.list(currentCalendarId),
 				});
+				void queryClient.invalidateQueries({
+					queryKey: QUERY_KEYS.calendar.byId(currentCalendarId),
+				});
+				// Dashboard aggregates across all calendars
 				void queryClient.invalidateQueries({
 					queryKey: QUERY_KEYS.dashboard.all,
 				});

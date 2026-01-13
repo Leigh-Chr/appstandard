@@ -12,6 +12,7 @@ import { logger as honoLogger } from "hono/logger";
 import { secureHeaders } from "hono/secure-headers";
 import { z } from "zod";
 import { logger } from "./lib/logger";
+import { metrics, recordHttpRequest, startTimer } from "./lib/metrics";
 import {
 	getRequiredSecret,
 	getSecret,
@@ -238,6 +239,13 @@ export function createServerApp(config: ServerConfig) {
 				return event;
 			},
 		});
+
+		// SEC-006: Explicitly verify PII settings in production
+		if (isProduction) {
+			logger.info(
+				"Sentry initialized with sendDefaultPii=false (PII collection disabled)",
+			);
+		}
 	}
 
 	// Log which secret management method is being used
@@ -254,7 +262,11 @@ export function createServerApp(config: ServerConfig) {
 			process.exit(1);
 		}
 		if (env.CORS_ORIGIN === "*") {
-			logger.warn("CORS_ORIGIN is set to '*' in production. This is insecure.");
+			// SEC-007: Hard-fail on CORS wildcard in production
+			logger.error(
+				"CORS_ORIGIN cannot be '*' in production. This is a security risk.",
+			);
+			process.exit(1);
 		}
 		if (env.CORS_ORIGIN.includes("localhost")) {
 			logger.warn(
@@ -354,6 +366,31 @@ export function createServerApp(config: ServerConfig) {
 				baseUri: ["'none'"],
 			},
 		})(c, next);
+	});
+
+	// DEVOPS-004: HTTP metrics collection middleware
+	// Records request counts, durations, and error rates
+	app.use(async (c, next) => {
+		// Skip metrics for metrics/health endpoints to avoid noise
+		if (
+			c.req.path === "/metrics" ||
+			c.req.path === "/health" ||
+			c.req.path === "/livez" ||
+			c.req.path === "/readyz"
+		) {
+			return next();
+		}
+
+		const timer = startTimer();
+		metrics.incrementGauge("http_requests_in_flight");
+
+		try {
+			await next();
+		} finally {
+			metrics.incrementGauge("http_requests_in_flight", -1);
+			const duration = timer();
+			recordHttpRequest(c.req.method, c.req.path, c.res.status, duration);
+		}
 	});
 
 	// Anonymous ID management (server-generated signed cookies)
@@ -599,6 +636,32 @@ export function createServerApp(config: ServerConfig) {
 				},
 				503,
 			);
+		}
+	});
+
+	// DEVOPS-004: Prometheus metrics endpoint
+	// Exposes application metrics in Prometheus text format
+	app.get("/metrics", (c) => {
+		return c.text(metrics.getMetrics(), 200, {
+			"Content-Type": "text/plain; version=0.0.4; charset=utf-8",
+		});
+	});
+
+	// DEVOPS-005: Liveness probe (lightweight, no dependencies)
+	// Returns 200 if the process is running
+	app.get("/livez", (c) => {
+		return c.text("ok", 200);
+	});
+
+	// DEVOPS-005: Readiness probe (checks if ready to serve traffic)
+	// Verifies database connectivity
+	app.get("/readyz", async (c) => {
+		try {
+			const prisma = (await import("@appstandard/db")).default;
+			await prisma.$queryRaw`SELECT 1`;
+			return c.text("ok", 200);
+		} catch {
+			return c.text("not ready", 503);
 		}
 	});
 

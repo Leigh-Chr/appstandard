@@ -4,36 +4,55 @@
  * to prevent client-side forgery and ID spoofing.
  */
 
-import { createHmac, randomBytes } from "node:crypto";
+import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 import { getSecret } from "./secrets";
 
 const ANON_ID_LENGTH = 32;
 const SIGNATURE_LENGTH = 32; // 16 bytes = 32 hex chars
 const COOKIE_NAME = "anon_id";
 
+// Flag to track if we've already warned about missing dedicated secret
+let warnedAboutMissingDedicatedSecret = false;
+
 /**
  * Get the signing secret from environment/Docker secrets
- * Falls back to BETTER_AUTH_SECRET for compatibility
+ * SECURITY: In production, a dedicated ANON_ID_SECRET is recommended
+ * to ensure secret rotation can be done independently.
  */
 function getSigningSecret(): string {
-	// Try dedicated secret first, then fall back to BETTER_AUTH_SECRET
-	const secret =
-		getSecret("ANON_ID_SECRET") ||
-		getSecret("BETTER_AUTH_SECRET") ||
-		process.env["BETTER_AUTH_SECRET"];
+	const isProduction = process.env["NODE_ENV"] === "production";
 
-	if (!secret) {
-		// In production, this should fail
-		if (process.env["NODE_ENV"] === "production") {
+	// Try dedicated secret first (recommended)
+	const dedicatedSecret = getSecret("ANON_ID_SECRET");
+	if (dedicatedSecret) {
+		return dedicatedSecret;
+	}
+
+	// Fall back to BETTER_AUTH_SECRET
+	const authSecret =
+		getSecret("BETTER_AUTH_SECRET") || process.env["BETTER_AUTH_SECRET"];
+
+	if (!authSecret) {
+		if (isProduction) {
 			throw new Error(
-				"BETTER_AUTH_SECRET or ANON_ID_SECRET required for anonymous ID signing",
+				"ANON_ID_SECRET or BETTER_AUTH_SECRET required for anonymous ID signing",
 			);
 		}
 		// In development, use a static secret (not secure, but allows testing)
 		return "dev-secret-do-not-use-in-production-32chars";
 	}
 
-	return secret;
+	// SECURITY: Warn in production if using shared secret (only once)
+	if (isProduction && !warnedAboutMissingDedicatedSecret) {
+		warnedAboutMissingDedicatedSecret = true;
+		// biome-ignore lint/suspicious/noConsole: intentional security warning for ops monitoring
+		console.warn(
+			"[SECURITY] ANON_ID_SECRET not configured. Using BETTER_AUTH_SECRET as fallback. " +
+				"Consider setting a dedicated ANON_ID_SECRET for independent secret rotation.",
+		);
+	}
+
+	return authSecret;
 }
 
 /**
@@ -55,19 +74,21 @@ function createSignature(anonId: string): string {
 
 /**
  * Verify the signature of an anonymous ID
+ * Uses Node's built-in timingSafeEqual for cryptographically secure comparison
  */
 function verifySignature(anonId: string, signature: string): boolean {
 	const expectedSignature = createSignature(anonId);
-	// Use timing-safe comparison to prevent timing attacks
+
+	// Length check must come first, but we use constant-time comparison
 	if (signature.length !== expectedSignature.length) {
 		return false;
 	}
 
-	let result = 0;
-	for (let i = 0; i < signature.length; i++) {
-		result |= signature.charCodeAt(i) ^ expectedSignature.charCodeAt(i);
-	}
-	return result === 0;
+	// Use Node's built-in timing-safe comparison to prevent timing attacks
+	const sigBuffer = Buffer.from(signature, "utf8");
+	const expectedBuffer = Buffer.from(expectedSignature, "utf8");
+
+	return timingSafeEqual(sigBuffer, expectedBuffer);
 }
 
 /**

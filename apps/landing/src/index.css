@@ -3,6 +3,17 @@
 @import "@fontsource-variable/sora";
 @import "@fontsource-variable/jetbrains-mono";
 
+/* PERF-006: Ensure font-display: swap for all font faces */
+@font-face {
+	font-family: "Sora Variable";
+	font-display: swap;
+}
+
+@font-face {
+	font-family: "JetBrains Mono Variable";
+	font-display: swap;
+}
+
 /* Scan packages/ui for additional Tailwind classes */
 @source "../../../packages/ui/src";
 

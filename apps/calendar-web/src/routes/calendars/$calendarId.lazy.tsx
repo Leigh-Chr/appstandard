@@ -99,7 +99,10 @@ function CalendarViewComponent() {
 	const cleanDuplicatesMutation = useMutation(
 		trpc.calendar.cleanDuplicates.mutationOptions({
 			onSuccess: (data) => {
-				void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.event.all });
+				// PERF-004: Granular invalidation - only this calendar's events
+				void queryClient.invalidateQueries({
+					queryKey: QUERY_KEYS.event.list(calendarId),
+				});
 				void queryClient.invalidateQueries({
 					queryKey: QUERY_KEYS.calendar.byId(calendarId),
 				});
@@ -125,13 +128,17 @@ function CalendarViewComponent() {
 	const refreshFromUrlMutation = useMutation(
 		trpc.calendar.refreshFromUrl.mutationOptions({
 			onSuccess: (data) => {
-				void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.event.all });
+				// PERF-004: Granular invalidation - only this calendar's events
+				void queryClient.invalidateQueries({
+					queryKey: QUERY_KEYS.event.list(calendarId),
+				});
 				void queryClient.invalidateQueries({
 					queryKey: QUERY_KEYS.calendar.byId(calendarId),
 				});
 				void queryClient.invalidateQueries({
 					queryKey: QUERY_KEYS.calendar.list,
 				});
+				// Dashboard aggregates across all calendars
 				void queryClient.invalidateQueries({
 					queryKey: QUERY_KEYS.dashboard.all,
 				});

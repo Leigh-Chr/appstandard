@@ -45,13 +45,14 @@ function ImportIntoCalendarComponent() {
 	const importMutation = useMutation(
 		trpc.calendar.importIcsIntoCalendar.mutationOptions({
 			onSuccess: (data) => {
-				// Invalidate queries to refresh the UI
+				// PERF-004: Granular invalidation - only this calendar's events
 				void queryClient.invalidateQueries({
-					queryKey: QUERY_KEYS.event.all,
+					queryKey: QUERY_KEYS.event.list(calendarId),
 				});
 				void queryClient.invalidateQueries({
 					queryKey: QUERY_KEYS.calendar.byId(calendarId),
 				});
+				// Dashboard aggregates across all calendars
 				void queryClient.invalidateQueries({
 					queryKey: QUERY_KEYS.dashboard.all,
 				});

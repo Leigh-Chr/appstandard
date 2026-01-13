@@ -16,6 +16,8 @@ interface CircuitBreakerOptions {
 	resetTimeout?: number;
 	/** Name for logging */
 	name?: string;
+	/** SEC-009: Maximum concurrent requests when circuit is closed (prevents overload) */
+	maxConcurrent?: number;
 }
 
 /**
@@ -31,11 +33,15 @@ export class CircuitBreaker {
 	private readonly failureThreshold: number;
 	private readonly resetTimeout: number;
 	private readonly name: string;
+	private readonly maxConcurrent: number;
+	private activeRequests = 0;
 
 	constructor(options: CircuitBreakerOptions = {}) {
 		this.failureThreshold = options.failureThreshold ?? 5;
 		this.resetTimeout = options.resetTimeout ?? 60000; // 1 minute
 		this.name = options.name ?? "CircuitBreaker";
+		// SEC-009: Default to 10 concurrent requests to prevent overload
+		this.maxConcurrent = options.maxConcurrent ?? 10;
 	}
 
 	/**
@@ -60,6 +66,24 @@ export class CircuitBreaker {
 			}
 		}
 
+		// SEC-009: In HALF_OPEN, only allow one test request
+		if (this.state === "HALF_OPEN" && this.activeRequests > 0) {
+			throw new TRPCError({
+				code: "INTERNAL_SERVER_ERROR",
+				message: "Service recovery in progress. Please try again in a moment.",
+			});
+		}
+
+		// SEC-009: Enforce concurrent request limit when circuit is closed
+		if (this.activeRequests >= this.maxConcurrent) {
+			throw new TRPCError({
+				code: "TOO_MANY_REQUESTS",
+				message:
+					"Too many concurrent requests to external service. Please try again.",
+			});
+		}
+
+		this.activeRequests++;
 		try {
 			const result = await fn();
 			this.onSuccess();
@@ -67,6 +91,8 @@ export class CircuitBreaker {
 		} catch (error) {
 			this.onFailure();
 			throw error;
+		} finally {
+			this.activeRequests--;
 		}
 	}
 

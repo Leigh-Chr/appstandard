@@ -34,6 +34,7 @@ vi.mock("@appstandard/db", () => ({
 // Mock dependencies
 vi.mock("../../lib/url-validator", () => ({
 	assertValidExternalUrlWithDNS: vi.fn().mockResolvedValue(undefined),
+	safeFetch: vi.fn(),
 }));
 
 vi.mock("../../lib/ics-parser", () => ({
@@ -54,13 +55,11 @@ vi.mock("../../middleware", () => ({
 	checkCalendarLimit: vi.fn(),
 }));
 
-// Mock global fetch
-global.fetch = vi.fn();
-
 import prisma from "@appstandard/db";
 import type { Context } from "../../context";
 import { findDuplicatesAgainstExisting } from "../../lib/duplicate-detection";
 import { parseIcsFile } from "../../lib/ics-parser";
+import { safeFetch } from "../../lib/url-validator";
 import { verifyCalendarAccess } from "../../middleware";
 import { createEventFromParsed } from "../calendar/helpers";
 import { calendarImportUrlRouter } from "../calendar/import-url";
@@ -110,8 +109,9 @@ describe("calendarImportUrlRouter", () => {
 				lastSyncedAt: new Date(),
 			});
 
-			(global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+			(safeFetch as ReturnType<typeof vi.fn>).mockResolvedValue({
 				ok: true,
+				headers: { get: () => null },
 				text: async () => mockIcsContent,
 			});
 

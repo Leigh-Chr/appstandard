@@ -4,6 +4,11 @@ import prisma from "@appstandard/db";
 import { TRPCError } from "@trpc/server";
 import z from "zod";
 import { authOrAnonProcedure, publicProcedure, router } from "../index";
+import {
+	DUPLICATE_DATE_TOLERANCE_MS,
+	MAX_EXPORT_SIZE_WARN,
+	MAX_FILE_SIZE_BYTES,
+} from "../lib/constants";
 import { deduplicateEvents } from "../lib/duplicate-detection";
 import { logger } from "../lib/logger";
 import { buildOwnershipFilter } from "../middleware";
@@ -221,7 +226,6 @@ export const shareRouter = router({
 				});
 			} catch (error) {
 				handlePrismaError(error);
-				throw error; // Never reached, but TypeScript needs it
 			}
 
 			return {
@@ -339,7 +343,6 @@ export const shareRouter = router({
 				});
 			} catch (error) {
 				handlePrismaError(error);
-				throw error; // Never reached, but TypeScript needs it
 			}
 
 			return {
@@ -393,7 +396,6 @@ export const shareRouter = router({
 				});
 			} catch (error) {
 				handlePrismaError(error);
-				throw error; // Never reached, but TypeScript needs it
 			}
 
 			return { success: true };
@@ -806,7 +808,6 @@ export const shareRouter = router({
 					})
 					.catch((error) => {
 						handlePrismaError(error);
-						throw error; // Never reached, but TypeScript needs it
 					});
 
 				return {
@@ -957,7 +958,6 @@ export const shareRouter = router({
 					});
 				} catch (error) {
 					handlePrismaError(error);
-					throw error; // Never reached, but TypeScript needs it
 				}
 
 				return {
@@ -1018,7 +1018,6 @@ export const shareRouter = router({
 					});
 				} catch (error) {
 					handlePrismaError(error);
-					throw error; // Never reached, but TypeScript needs it
 				}
 
 				return { success: true };
@@ -1199,7 +1198,7 @@ export const shareRouter = router({
 					const { unique, duplicates } = deduplicateEvents(allEvents, {
 						useUid: true,
 						useTitle: true,
-						dateTolerance: 60000, // 1 minute tolerance
+						dateTolerance: DUPLICATE_DATE_TOLERANCE_MS,
 					});
 					removedDuplicates = duplicates.length;
 					allEvents = unique;
@@ -1207,7 +1206,7 @@ export const shareRouter = router({
 
 				// Validate file size (estimate: ~1.5KB per event)
 				const estimatedSize = allEvents.length * 1.5 * 1024;
-				if (estimatedSize > 4 * 1024 * 1024) {
+				if (estimatedSize > MAX_EXPORT_SIZE_WARN) {
 					// Warn but continue - log for monitoring large bundle requests
 					logger.warn(
 						`[Share Bundle] Large bundle detected: ${allEvents.length} events, estimated ${(estimatedSize / 1024 / 1024).toFixed(2)}MB`,
@@ -1223,10 +1222,10 @@ export const shareRouter = router({
 
 				// Validate actual size
 				const actualSize = new Blob([icsContent]).size;
-				if (actualSize > 5 * 1024 * 1024) {
+				if (actualSize > MAX_FILE_SIZE_BYTES) {
 					throw new TRPCError({
 						code: "BAD_REQUEST",
-						message: `Bundle too large (${(actualSize / 1024 / 1024).toFixed(2)}MB). Maximum allowed: 5MB. Please select fewer calendars or remove some events.`,
+						message: `Bundle too large (${(actualSize / 1024 / 1024).toFixed(2)}MB). Maximum allowed: ${MAX_FILE_SIZE_BYTES / 1024 / 1024}MB. Please select fewer calendars or remove some events.`,
 					});
 				}
 

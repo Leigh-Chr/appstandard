@@ -105,6 +105,7 @@ export function useShare(): UseShareReturn {
 					return false;
 				}
 				// Other errors (NotAllowedError, TypeError) indicate actual failures
+				// biome-ignore lint/suspicious/noConsole: intentional warning for API errors
 				console.warn("Share failed:", error);
 				return false;
 			}
@@ -135,6 +136,7 @@ export async function shareContent(data: ShareData): Promise<boolean> {
 		if (error instanceof Error && error.name === "AbortError") {
 			return false;
 		}
+		// biome-ignore lint/suspicious/noConsole: intentional warning for API errors
 		console.warn("Share failed:", error);
 		return false;
 	}
@@ -168,6 +170,7 @@ export async function shareFile(
 		if (error instanceof Error && error.name === "AbortError") {
 			return false;
 		}
+		// biome-ignore lint/suspicious/noConsole: intentional warning for API errors
 		console.warn("Share file failed:", error);
 		return false;
 	}

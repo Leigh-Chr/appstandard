@@ -1,5 +1,9 @@
 import "dotenv/config";
 import { createContext } from "@appstandard/api/context";
+import {
+	generateApiDocs,
+	generateOpenApiSpec,
+} from "@appstandard/api/lib/openapi";
 import { appRouter } from "@appstandard/api/routers/index";
 import { auth } from "@appstandard/auth";
 import {
@@ -27,6 +31,30 @@ const { app, port, isProduction } = createServerApp({
 
 // Better-Auth handler for auth endpoints
 app.all("/api/auth/*", createAuthHandler(auth));
+
+// API-004: API documentation endpoints
+const apiDocsOptions = {
+	title: "AppStandard Calendar API",
+	version: "1.0.0",
+	description:
+		"Calendar management API. Use the tRPC client for type-safe access, or the HTTP RPC endpoints directly.",
+	basePath: "/trpc",
+};
+
+// Simple API docs endpoint (lightweight JSON)
+app.get("/api/docs", (c) => {
+	const docs = generateApiDocs(appRouter, apiDocsOptions);
+	return c.json(docs);
+});
+
+// OpenAPI 3.0 spec endpoint
+app.get("/api/openapi.json", (c) => {
+	const serverUrl = c.req.header("host")
+		? `${c.req.header("x-forwarded-proto") || "http"}://${c.req.header("host")}`
+		: undefined;
+	const spec = generateOpenApiSpec(appRouter, { ...apiDocsOptions, serverUrl });
+	return c.json(spec);
+});
 
 // tRPC server
 app.use(

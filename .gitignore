@@ -62,6 +62,12 @@ bun-debug.log*
 coverage
 .nyc_output
 
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+
 # PWA development files
 dev-dist
 

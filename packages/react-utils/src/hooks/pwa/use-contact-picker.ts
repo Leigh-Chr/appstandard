@@ -121,6 +121,7 @@ export function useContactPicker(): UseContactPickerReturn {
 						error.name === "InvalidStateError" ||
 						error.name === "SecurityError"
 					) {
+						// biome-ignore lint/suspicious/noConsole: intentional warning for API errors
 						console.warn("Contact picker error:", error.message);
 					}
 				}

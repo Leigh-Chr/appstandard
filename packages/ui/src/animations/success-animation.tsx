@@ -1,6 +1,7 @@
 /**
  * SuccessAnimation - Animated visual feedback for successful actions
  * Uses motion/react for smooth animations
+ * UX-001: Respects prefers-reduced-motion for accessibility
  */
 
 import { cn } from "@appstandard/react-utils";
@@ -8,6 +9,7 @@ import type { LucideIcon } from "lucide-react";
 import { Calendar, Check, Copy, Download, Trash2 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
+import { useReducedMotion } from "./use-reduced-motion";
 
 type AnimationType = "success" | "create" | "delete" | "copy" | "download";
 
@@ -47,14 +49,18 @@ export function SuccessAnimation({
 }: SuccessAnimationProps) {
 	const Icon = type === "create" && createIcon ? createIcon : iconMap[type];
 	const bgColor = colorMap[type];
+	const prefersReducedMotion = useReducedMotion();
+
+	// Shorter duration for reduced motion
+	const effectiveDuration = prefersReducedMotion ? 800 : duration;
 
 	useEffect(() => {
 		if (show && onComplete) {
-			const timer = setTimeout(onComplete, duration);
+			const timer = setTimeout(onComplete, effectiveDuration);
 			return () => clearTimeout(timer);
 		}
 		return undefined;
-	}, [show, onComplete, duration]);
+	}, [show, onComplete, effectiveDuration]);
 
 	return (
 		<AnimatePresence>
@@ -63,17 +69,24 @@ export function SuccessAnimation({
 					initial={{ opacity: 0 }}
 					animate={{ opacity: 1 }}
 					exit={{ opacity: 0 }}
+					transition={{ duration: prefersReducedMotion ? 0.1 : 0.2 }}
 					className="pointer-events-none fixed inset-0 z-50 flex items-center justify-center bg-background/50 backdrop-blur-sm"
 				>
 					<motion.div
-						initial={{ scale: 0, opacity: 0 }}
+						initial={{
+							scale: prefersReducedMotion ? 1 : 0,
+							opacity: prefersReducedMotion ? 0 : 0,
+						}}
 						animate={{
-							scale: [0, 1.2, 1],
+							scale: prefersReducedMotion ? 1 : [0, 1.2, 1],
 							opacity: 1,
 						}}
-						exit={{ scale: 1.5, opacity: 0 }}
+						exit={{
+							scale: prefersReducedMotion ? 1 : 1.5,
+							opacity: 0,
+						}}
 						transition={{
-							duration: 0.4,
+							duration: prefersReducedMotion ? 0.1 : 0.4,
 							ease: [0.16, 1, 0.3, 1],
 						}}
 						className="flex flex-col items-center gap-4"
@@ -83,17 +96,20 @@ export function SuccessAnimation({
 								"flex h-20 w-20 items-center justify-center rounded-full text-white shadow-lg",
 								bgColor,
 							)}
-							initial={{ rotate: -180 }}
+							initial={{ rotate: prefersReducedMotion ? 0 : -180 }}
 							animate={{ rotate: 0 }}
-							transition={{ duration: 0.4, ease: "easeOut" }}
+							transition={{
+								duration: prefersReducedMotion ? 0 : 0.4,
+								ease: "easeOut",
+							}}
 						>
 							<Icon className="h-10 w-10" />
 						</motion.div>
 						{message && (
 							<motion.p
-								initial={{ opacity: 0, y: 10 }}
+								initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 10 }}
 								animate={{ opacity: 1, y: 0 }}
-								transition={{ delay: 0.2 }}
+								transition={{ delay: prefersReducedMotion ? 0 : 0.2 }}
 								className="font-medium text-lg"
 							>
 								{message}

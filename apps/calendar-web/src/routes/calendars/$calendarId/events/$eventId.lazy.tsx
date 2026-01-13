@@ -343,7 +343,10 @@ function EditEventComponent() {
 	const duplicateMutation = useMutation(
 		trpc.event.duplicate.mutationOptions({
 			onSuccess: (duplicatedEvent) => {
-				void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.event.all });
+				// PERF-004: Granular invalidation - only this calendar's events
+				void queryClient.invalidateQueries({
+					queryKey: QUERY_KEYS.event.list(calendarId),
+				});
 				void queryClient.invalidateQueries({
 					queryKey: QUERY_KEYS.calendar.byId(calendarId),
 				});
@@ -372,10 +375,14 @@ function EditEventComponent() {
 	const updateMutation = useMutation(
 		trpc.event.update.mutationOptions({
 			onSuccess: (updatedEvent) => {
-				void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.event.all });
+				// PERF-004: Granular invalidation - only this calendar's events
+				void queryClient.invalidateQueries({
+					queryKey: QUERY_KEYS.event.list(calendarId),
+				});
 				void queryClient.invalidateQueries({
 					queryKey: QUERY_KEYS.calendar.byId(calendarId),
 				});
+				// Dashboard aggregates across all calendars, so full invalidation needed
 				void queryClient.invalidateQueries({
 					queryKey: QUERY_KEYS.dashboard.all,
 				});

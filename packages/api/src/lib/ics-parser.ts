@@ -1,4 +1,5 @@
 import ical from "ical.js";
+import { MAX_EVENTS_PER_FILE } from "./constants";
 
 export interface ParsedAttendee {
 	name?: string | undefined;
@@ -592,13 +593,8 @@ function parseVEvent(
 
 /**
  * Parse an ICS file content and extract events
+ * Note: MAX_EVENTS_PER_FILE imported from constants.ts
  */
-/**
- * Maximum number of events that can be parsed from a single ICS file
- * SECURITY: Prevents DoS attacks via files with millions of tiny events
- */
-const MAX_EVENTS_PER_FILE = 5000;
-
 export function parseIcsFile(fileContent: string): ParseResult {
 	const events: ParsedEvent[] = [];
 	const errors: string[] = [];
