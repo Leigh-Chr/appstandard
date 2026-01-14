@@ -95,8 +95,8 @@ export default defineConfig(({ mode }) => {
 					short_name: "AppStandard Contacts",
 					description:
 						"Manage your vCard contacts. Import, create, edit, and export your contacts.",
-					theme_color: "#1e3a8a",
-					background_color: "#1e3a8a",
+					theme_color: "#134e4a",
+					background_color: "#134e4a",
 					display: "standalone",
 					display_override: ["window-controls-overlay", "standalone"],
 					orientation: "any",

@@ -1,7 +1,6 @@
 import { authClient } from "@appstandard/react-utils";
-import { CheckEmailPage } from "@appstandard/ui";
+import { AppLogo, CheckEmailPage } from "@appstandard/ui";
 import { useNavigate, useSearch } from "@tanstack/react-router";
-import { CheckSquare } from "lucide-react";
 
 export default function CheckEmail() {
 	const navigate = useNavigate();
@@ -13,7 +12,7 @@ export default function CheckEmail() {
 			navigate={navigate}
 			email={(search.email as string | undefined) || ""}
 			redirect={(search.redirect as string | undefined) || ""}
-			icon={<CheckSquare className="size-7 text-primary" />}
+			icon={<AppLogo className="size-10" />}
 			showBackgroundEffects={true}
 			loginRoute="/login"
 		/>

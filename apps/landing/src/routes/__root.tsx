@@ -14,17 +14,7 @@ import {
 	Link,
 	Outlet,
 } from "@tanstack/react-router";
-import {
-	Calendar,
-	Contact,
-	ExternalLink,
-	Github,
-	Heart,
-	Layers,
-	ListChecks,
-	Menu,
-	Shield,
-} from "lucide-react";
+import { ExternalLink, Github, Heart, Menu, Shield } from "lucide-react";
 import "../index.css";
 
 const BASE_URL = "https://www.appstandard.io";
@@ -137,8 +127,10 @@ function Header() {
 					aria-label="AppStandard - Home"
 				>
 					<div className="relative">
-						<Layers
-							className="logo-icon size-5 text-primary"
+						<img
+							src="/logo.png"
+							alt=""
+							className="logo-icon size-7"
 							aria-hidden="true"
 						/>
 						<div className="absolute inset-0 rounded-full bg-primary/20 opacity-0 blur-md transition-opacity group-hover:opacity-100" />
@@ -157,21 +149,36 @@ function Header() {
 						href={CALENDAR_URL}
 						className="flex items-center gap-2 rounded-sm font-medium text-muted-foreground text-sm transition-colors hover:text-foreground focus-visible:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 					>
-						<Calendar className="size-4" aria-hidden="true" />
+						<img
+							src="/calendar-icon.png"
+							alt=""
+							className="size-5"
+							aria-hidden="true"
+						/>
 						Calendar
 					</a>
 					<a
 						href={TASKS_URL}
 						className="flex items-center gap-2 rounded-sm font-medium text-muted-foreground text-sm transition-colors hover:text-foreground focus-visible:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 					>
-						<ListChecks className="size-4" aria-hidden="true" />
+						<img
+							src="/tasks-icon.png"
+							alt=""
+							className="size-5"
+							aria-hidden="true"
+						/>
 						Tasks
 					</a>
 					<a
 						href={CONTACTS_URL}
 						className="flex items-center gap-2 rounded-sm font-medium text-muted-foreground text-sm transition-colors hover:text-foreground focus-visible:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 					>
-						<Contact className="size-4" aria-hidden="true" />
+						<img
+							src="/contacts-icon.png"
+							alt=""
+							className="size-5"
+							aria-hidden="true"
+						/>
 						Contacts
 					</a>
 					<div className="mx-2 h-4 w-px bg-border" />
@@ -206,26 +213,35 @@ function Header() {
 							<DropdownMenuContent align="end" className="w-56">
 								<DropdownMenuItem asChild>
 									<a href={CALENDAR_URL} className="flex items-center gap-2">
-										<Calendar className="size-4" aria-hidden="true" />
+										<img
+											src="/calendar-icon.png"
+											alt=""
+											className="size-5"
+											aria-hidden="true"
+										/>
 										Calendar
 									</a>
 								</DropdownMenuItem>
 								<DropdownMenuItem asChild>
 									<a href={TASKS_URL} className="flex items-center gap-2">
-										<ListChecks className="size-4" aria-hidden="true" />
+										<img
+											src="/tasks-icon.png"
+											alt=""
+											className="size-5"
+											aria-hidden="true"
+										/>
 										Tasks
-										<span className="ml-auto rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">
-											Soon
-										</span>
 									</a>
 								</DropdownMenuItem>
 								<DropdownMenuItem asChild>
 									<a href={CONTACTS_URL} className="flex items-center gap-2">
-										<Contact className="size-4" aria-hidden="true" />
+										<img
+											src="/contacts-icon.png"
+											alt=""
+											className="size-5"
+											aria-hidden="true"
+										/>
 										Contacts
-										<span className="ml-auto rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">
-											Soon
-										</span>
 									</a>
 								</DropdownMenuItem>
 								<DropdownMenuSeparator />
@@ -263,7 +279,12 @@ function Footer() {
 					{/* Brand section */}
 					<div className="space-y-3">
 						<div className="flex items-center gap-2">
-							<Layers className="size-5 text-primary" aria-hidden="true" />
+							<img
+								src="/logo.png"
+								alt=""
+								className="size-6"
+								aria-hidden="true"
+							/>
 							<p className="font-semibold text-base">AppStandard</p>
 						</div>
 						<p className="text-muted-foreground text-sm">
@@ -293,7 +314,12 @@ function Footer() {
 									href={CALENDAR_URL}
 									className="flex items-center gap-2 text-muted-foreground text-sm transition-colors hover:text-foreground"
 								>
-									<Calendar className="h-4 w-4" aria-hidden="true" />
+									<img
+										src="/calendar-icon.png"
+										alt=""
+										className="size-5"
+										aria-hidden="true"
+									/>
 									Calendar
 								</a>
 							</li>
@@ -302,7 +328,12 @@ function Footer() {
 									href={TASKS_URL}
 									className="flex items-center gap-2 text-muted-foreground text-sm transition-colors hover:text-foreground"
 								>
-									<ListChecks className="h-4 w-4" aria-hidden="true" />
+									<img
+										src="/tasks-icon.png"
+										alt=""
+										className="size-5"
+										aria-hidden="true"
+									/>
 									Tasks
 								</a>
 							</li>
@@ -311,7 +342,12 @@ function Footer() {
 									href={CONTACTS_URL}
 									className="flex items-center gap-2 text-muted-foreground text-sm transition-colors hover:text-foreground"
 								>
-									<Contact className="h-4 w-4" aria-hidden="true" />
+									<img
+										src="/contacts-icon.png"
+										alt=""
+										className="size-5"
+										aria-hidden="true"
+									/>
 									Contacts
 								</a>
 							</li>

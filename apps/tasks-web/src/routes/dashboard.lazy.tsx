@@ -1,6 +1,6 @@
 import { Button, Skeleton } from "@appstandard/ui";
 import { createLazyFileRoute, Link } from "@tanstack/react-router";
-import { ListTodo, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useState } from "react";
 import {
 	HealthInsights,
@@ -55,7 +55,7 @@ function EmptyState() {
 	return (
 		<div className="rounded-lg border border-dashed p-8 text-center">
 			<div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-				<ListTodo className="h-6 w-6 text-primary" />
+				<img src="/logo.png" alt="" className="h-8 w-8" aria-hidden="true" />
 			</div>
 			<p className="mb-2 font-semibold text-lg">No task lists yet</p>
 			<p className="mb-4 text-muted-foreground text-sm">

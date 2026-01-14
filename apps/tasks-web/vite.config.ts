@@ -95,8 +95,8 @@ export default defineConfig(({ mode }) => {
 					short_name: "AppStandard Tasks",
 					description:
 						"Manage your tasks and todos. Create, organize, and track your tasks.",
-					theme_color: "#14532d",
-					background_color: "#14532d",
+					theme_color: "#312e81",
+					background_color: "#312e81",
 					display: "standalone",
 					display_override: ["window-controls-overlay", "standalone"],
 					orientation: "any",

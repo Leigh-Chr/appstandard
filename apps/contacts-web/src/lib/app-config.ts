@@ -10,6 +10,7 @@ export const APP_CONFIG: AppConfig = {
 	appName: "AppStandard Contacts",
 	appSlug: "contacts",
 	appIcon: Contact,
+	logoSrc: "/logo.png",
 	baseUrl: "https://contacts.appstandard.io",
 	mainRoute: "/contacts",
 	protectedRoutePrefix: "/contacts",

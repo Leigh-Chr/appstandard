@@ -11,8 +11,10 @@ export interface AppConfig {
 	appName: string;
 	/** Short app name for UI (e.g., "calendars", "tasks", "contacts") */
 	appSlug: string;
-	/** Icon component for the app (e.g., Calendar, CheckSquare, Contact) */
+	/** Icon component for the app (e.g., Calendar, CheckSquare, Contact) - fallback if no logo */
 	appIcon: LucideIcon;
+	/** Path to the app logo image (e.g., "/logo.png") - preferred over appIcon */
+	logoSrc?: string;
 	/** Base URL for SEO meta tags (e.g., "https://calendar.appstandard.io") */
 	baseUrl: string;
 	/** Main route for the app (e.g., "/calendars", "/tasks", "/contacts") */

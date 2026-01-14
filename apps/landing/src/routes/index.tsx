@@ -2,15 +2,12 @@ import { Button } from "@appstandard/ui";
 import { createFileRoute } from "@tanstack/react-router";
 import {
 	ArrowRight,
-	Calendar,
 	CheckCircle2,
 	Cloud,
-	Contact,
 	Download,
 	Github,
 	Globe,
 	Heart,
-	ListChecks,
 	Lock,
 	Smartphone,
 	Sparkles,
@@ -39,8 +36,7 @@ const products = [
 		name: "AppStandard Calendar",
 		description:
 			"Import, create, edit, and merge your ICS calendars. Works with Google Calendar, Apple Calendar, and Outlook.",
-		icon: Calendar,
-		iconColor: "text-amber-600 dark:text-amber-400",
+		logoSrc: "/calendar-icon.png",
 		bgColor: "bg-amber-500/10 dark:bg-amber-500/20",
 		borderColor: "border-amber-500/20 hover:border-amber-500/50",
 		shadowColor: "hover:shadow-amber-500/10",
@@ -57,8 +53,7 @@ const products = [
 		name: "AppStandard Tasks",
 		description:
 			"Organize your tasks with lists, priorities, and labels. Stay productive with a clean, focused interface.",
-		icon: ListChecks,
-		iconColor: "text-indigo-600 dark:text-indigo-400",
+		logoSrc: "/tasks-icon.png",
 		bgColor: "bg-indigo-500/10 dark:bg-indigo-500/20",
 		borderColor: "border-indigo-500/20 hover:border-indigo-500/50",
 		shadowColor: "hover:shadow-indigo-500/10",
@@ -75,8 +70,7 @@ const products = [
 		name: "AppStandard Contacts",
 		description:
 			"Manage your contacts with vCard support. Import, organize, and export your address book effortlessly.",
-		icon: Contact,
-		iconColor: "text-teal-600 dark:text-teal-400",
+		logoSrc: "/contacts-icon.png",
 		bgColor: "bg-teal-500/10 dark:bg-teal-500/20",
 		borderColor: "border-teal-500/20 hover:border-teal-500/50",
 		shadowColor: "hover:shadow-teal-500/10",
@@ -386,8 +380,7 @@ function LandingPage() {
 interface Product {
 	name: string;
 	description: string;
-	icon: React.ComponentType<{ className?: string }>;
-	iconColor: string;
+	logoSrc: string;
 	bgColor: string;
 	borderColor: string;
 	shadowColor: string;
@@ -397,7 +390,6 @@ interface Product {
 }
 
 function ProductCard({ product, delay }: { product: Product; delay: number }) {
-	const Icon = product.icon;
 	const isAvailable = product.status === "Available";
 
 	return (
@@ -421,11 +413,16 @@ function ProductCard({ product, delay }: { product: Product; delay: number }) {
 				</span>
 			</div>
 
-			{/* Icon with proper color */}
+			{/* Logo */}
 			<div
-				className={`relative mb-6 inline-flex size-14 items-center justify-center rounded-xl ${product.bgColor} transition-transform duration-300 group-hover:scale-110`}
+				className={`relative mb-6 inline-flex size-16 items-center justify-center rounded-xl ${product.bgColor} transition-transform duration-300 group-hover:scale-110`}
 			>
-				<Icon className={`size-7 ${product.iconColor}`} aria-hidden="true" />
+				<img
+					src={product.logoSrc}
+					alt=""
+					className="size-12"
+					aria-hidden="true"
+				/>
 			</div>
 
 			<h3 className="relative mb-3 text-heading-3">{product.name}</h3>

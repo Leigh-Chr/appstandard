@@ -5,11 +5,12 @@
 
 import { useForm } from "@tanstack/react-form";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
-import { createElement, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import z from "zod";
 
 import { useAppConfig } from "../app-context";
+import { AppLogo } from "../app-logo";
 import { Button } from "../button";
 import { FormMessage } from "../form-message";
 import { Input } from "../input";
@@ -61,11 +62,7 @@ export function SignInForm({
 	const [showPassword, setShowPassword] = useState(false);
 
 	// Use props if provided, otherwise fall back to AppConfig
-	const icon =
-		iconProp ??
-		(config.appIcon
-			? createElement(config.appIcon, { className: "size-7 text-primary" })
-			: null);
+	const icon = iconProp ?? <AppLogo className="size-10" />;
 	const appName = appNameProp ?? config.appSlug;
 	const defaultRedirect = defaultRedirectProp ?? config.mainRoute;
 

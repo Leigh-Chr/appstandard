@@ -7,6 +7,7 @@ import { cn, useIsMobile } from "@appstandard/react-utils";
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { HelpCircle, Menu, Search } from "lucide-react";
 import { useAppConfig } from "./app-context";
+import { AppLogo } from "./app-logo";
 import { Button } from "./button";
 import {
 	DropdownMenu,
@@ -98,8 +99,6 @@ export function AppHeader({
 		{ to: "/dashboard", label: "Dashboard" },
 	] as const;
 
-	const Icon = config.appIcon;
-
 	return (
 		<header
 			data-slot="app-header"
@@ -112,10 +111,7 @@ export function AppHeader({
 					aria-label={`${config.appName} - Home`}
 				>
 					<div className="relative">
-						<Icon
-							className="logo-icon size-5 text-primary"
-							aria-hidden="true"
-						/>
+						<AppLogo className="logo-icon size-7" />
 						<div className="absolute inset-0 rounded-full bg-primary/20 opacity-0 blur-md transition-opacity group-hover:opacity-100" />
 					</div>
 					<span className="bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text">

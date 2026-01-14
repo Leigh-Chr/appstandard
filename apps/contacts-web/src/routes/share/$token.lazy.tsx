@@ -11,18 +11,17 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { createLazyFileRoute, Link } from "@tanstack/react-router";
 import {
-	BookUser,
 	Building2,
 	CheckCircle2,
 	Download,
 	ExternalLink,
-	Layers,
 	Loader2,
 	Mail,
 	Phone,
 	User,
 	XCircle,
 } from "lucide-react";
+// Note: BookUser and Layers icons removed, using logo.png image instead
 import { useState } from "react";
 import { toast } from "sonner";
 import { trpcClient } from "@/utils/trpc";
@@ -252,7 +251,12 @@ function SingleShareView({
 				<Card className="mb-6">
 					<CardHeader className="text-center">
 						<div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-							<BookUser className="h-8 w-8 text-primary" />
+							<img
+								src="/logo.png"
+								alt=""
+								className="h-10 w-10"
+								aria-hidden="true"
+							/>
 						</div>
 						<CardTitle className="text-2xl">{info.addressBookName}</CardTitle>
 						<CardDescription>
@@ -382,7 +386,12 @@ function BundleShareView({
 				<Card className="mb-6">
 					<CardHeader className="text-center">
 						<div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-							<Layers className="h-8 w-8 text-primary" />
+							<img
+								src="/logo.png"
+								alt=""
+								className="h-10 w-10"
+								aria-hidden="true"
+							/>
 						</div>
 						<CardTitle className="text-2xl">{bundleInfo.bundleName}</CardTitle>
 						<CardDescription>

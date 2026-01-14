@@ -10,6 +10,7 @@ export const APP_CONFIG: AppConfig = {
 	appName: "AppStandard Calendar",
 	appSlug: "calendars",
 	appIcon: Calendar,
+	logoSrc: "/logo.png",
 	baseUrl: "https://calendar.appstandard.io",
 	mainRoute: "/calendars",
 	protectedRoutePrefix: "/calendars",

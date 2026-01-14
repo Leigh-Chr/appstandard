@@ -68,6 +68,8 @@ export {
 	openCreateGroup,
 	openKeyboardShortcuts,
 } from "./app-header";
+// App Logo
+export { AppLogo, type AppLogoProps } from "./app-logo";
 // Auth Forms
 export {
 	// Types

@@ -1,7 +1,6 @@
 import { authClient } from "@appstandard/react-utils";
-import { ResendVerificationForm } from "@appstandard/ui";
+import { AppLogo, ResendVerificationForm } from "@appstandard/ui";
 import { useNavigate } from "@tanstack/react-router";
-import { Calendar } from "lucide-react";
 
 export default function ResendVerification() {
 	const navigate = useNavigate();
@@ -10,7 +9,7 @@ export default function ResendVerification() {
 		<ResendVerificationForm
 			authClient={authClient}
 			navigate={navigate}
-			icon={<Calendar className="size-7 text-primary" />}
+			icon={<AppLogo className="size-10" />}
 			showBackgroundEffects={true}
 			loginRoute="/login"
 			verifyEmailRoute="/verify-email"

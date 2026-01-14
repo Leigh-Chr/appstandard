@@ -12,11 +12,9 @@ import { createLazyFileRoute, Link } from "@tanstack/react-router";
 import { format } from "date-fns";
 import { enUS } from "date-fns/locale";
 import {
-	Calendar,
 	CheckCircle2,
 	Download,
 	ExternalLink,
-	Layers,
 	Loader2,
 	XCircle,
 } from "lucide-react";
@@ -255,7 +253,12 @@ function BundleShareView({
 				<Card className="mb-6">
 					<CardHeader className="text-center">
 						<div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-							<Layers className="h-8 w-8 text-primary" />
+							<img
+								src="/logo.png"
+								alt=""
+								className="h-10 w-10"
+								aria-hidden="true"
+							/>
 						</div>
 						<CardTitle className="text-heading-1">
 							{bundleInfo.bundleName}
@@ -413,7 +416,12 @@ function SingleShareView({
 				<Card className="mb-6">
 					<CardHeader className="text-center">
 						<div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-							<Calendar className="h-8 w-8 text-primary" />
+							<img
+								src="/logo.png"
+								alt=""
+								className="h-10 w-10"
+								aria-hidden="true"
+							/>
 						</div>
 						<CardTitle className="text-heading-1">
 							{info.calendarName}

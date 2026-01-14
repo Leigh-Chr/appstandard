@@ -1,6 +1,6 @@
 import { Button, Card, CardContent } from "@appstandard/ui";
 import { Link } from "@tanstack/react-router";
-import { Calendar, FileUp, Plus, Sparkles } from "lucide-react";
+import { FileUp, Plus, Sparkles } from "lucide-react";
 
 interface EmptyStateProps {
 	type: "no-calendars" | "no-events" | "no-conflicts" | "free-day";
@@ -13,7 +13,12 @@ export function EmptyState({ type }: EmptyStateProps) {
 				<Card>
 					<CardContent className="flex flex-col items-center justify-center py-12 text-center">
 						<div className="mb-4 rounded-full bg-primary/10 p-4">
-							<Calendar className="h-8 w-8 text-primary" />
+							<img
+								src="/logo.png"
+								alt=""
+								className="h-10 w-10"
+								aria-hidden="true"
+							/>
 						</div>
 						<p className="mb-2 font-semibold text-lg">
 							Welcome to your Dashboard
@@ -45,7 +50,12 @@ export function EmptyState({ type }: EmptyStateProps) {
 				<Card>
 					<CardContent className="flex flex-col items-center justify-center py-8 text-center">
 						<div className="mb-3 rounded-full bg-muted p-3">
-							<Calendar className="h-6 w-6 text-muted-foreground" />
+							<img
+								src="/logo.png"
+								alt=""
+								className="h-8 w-8 opacity-60"
+								aria-hidden="true"
+							/>
 						</div>
 						<p className="mb-1 font-medium">No events yet</p>
 						<p className="text-muted-foreground text-sm">
