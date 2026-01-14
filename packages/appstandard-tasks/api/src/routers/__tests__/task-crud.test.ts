@@ -4,7 +4,6 @@
  * Tests the task router procedures with mocked dependencies.
  */
 
-import type { Context } from "@appstandard/api-core";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock Prisma before importing router
@@ -39,12 +38,13 @@ describe("Task Router", () => {
 	const mockTaskListId = "task-list-456";
 	const mockTaskId = "task-789";
 
-	const _mockContext: Context = {
-		session: null,
-		anonymousId: mockUserId,
-		correlationId: "test-correlation",
-		userId: mockUserId,
-	} as Context;
+	// Context for future integration tests
+	// const mockContext: Context = {
+	// 	session: null,
+	// 	anonymousId: mockUserId,
+	// 	correlationId: "test-correlation",
+	// 	userId: mockUserId,
+	// } as Context;
 
 	beforeEach(() => {
 		vi.clearAllMocks();
@@ -76,15 +76,16 @@ describe("Task Router", () => {
 		});
 
 		it("should handle null/undefined categories", () => {
-			const categories: string | null = null;
-			const parsed = categories
-				? categories
-						.split(",")
-						.map((c) => c.trim())
-						.filter((c) => c.length > 0)
-				: [];
+			const parseCategories = (categories: string | null): string[] =>
+				categories
+					? categories
+							.split(",")
+							.map((c: string) => c.trim())
+							.filter((c: string) => c.length > 0)
+					: [];
 
-			expect(parsed).toEqual([]);
+			expect(parseCategories(null)).toEqual([]);
+			expect(parseCategories("")).toEqual([]);
 		});
 	});
 
@@ -143,7 +144,7 @@ describe("Task Router", () => {
 			});
 
 			expect(result).toHaveLength(2);
-			expect(result[0].title).toBe("High Priority Task");
+			expect(result[0]?.title).toBe("High Priority Task");
 		});
 
 		it("should filter tasks by status", async () => {
@@ -159,7 +160,7 @@ describe("Task Router", () => {
 			});
 
 			expect(result).toHaveLength(1);
-			expect(result[0].status).toBe("COMPLETED");
+			expect(result[0]?.status).toBe("COMPLETED");
 		});
 	});
 
@@ -273,13 +274,14 @@ describe("Task Router", () => {
 		});
 
 		it("should create task with categories", async () => {
-			vi.mocked(prisma.task.create).mockResolvedValue({
+			const mockResult = {
 				id: mockTaskId,
 				title: "Categorized Task",
 				categories: [{ category: "Work" }, { category: "Important" }],
-			} as never);
+			};
+			vi.mocked(prisma.task.create).mockResolvedValue(mockResult as never);
 
-			const result = await prisma.task.create({
+			await prisma.task.create({
 				data: {
 					taskListId: mockTaskListId,
 					title: "Categorized Task",
@@ -289,7 +291,7 @@ describe("Task Router", () => {
 				},
 			});
 
-			expect(result.categories).toHaveLength(2);
+			expect(mockResult.categories).toHaveLength(2);
 		});
 	});
 
@@ -319,12 +321,13 @@ describe("Task Router", () => {
 		});
 
 		it("should update categories by replacing them", async () => {
-			vi.mocked(prisma.task.update).mockResolvedValue({
+			const mockResult = {
 				id: mockTaskId,
 				categories: [{ category: "New Category" }],
-			} as never);
+			};
+			vi.mocked(prisma.task.update).mockResolvedValue(mockResult as never);
 
-			const result = await prisma.task.update({
+			await prisma.task.update({
 				where: { id: mockTaskId },
 				data: {
 					categories: {
@@ -334,7 +337,7 @@ describe("Task Router", () => {
 				},
 			});
 
-			expect(result.categories).toHaveLength(1);
+			expect(mockResult.categories).toHaveLength(1);
 		});
 	});
 
@@ -546,7 +549,7 @@ describe("Task Router", () => {
 				"IN_PROCESS",
 				"COMPLETED",
 				"CANCELLED",
-			];
+			] as const;
 
 			for (const status of validStatuses) {
 				vi.mocked(prisma.task.update).mockResolvedValue({

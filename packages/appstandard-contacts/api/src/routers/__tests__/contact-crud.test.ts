@@ -4,7 +4,6 @@
  * Tests the contact router procedures with mocked dependencies.
  */
 
-import type { Context } from "@appstandard/api-core";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock Prisma before importing router
@@ -39,12 +38,13 @@ describe("Contact Router", () => {
 	const mockAddressBookId = "address-book-456";
 	const mockContactId = "contact-789";
 
-	const _mockContext: Context = {
-		session: null,
-		anonymousId: mockUserId,
-		correlationId: "test-correlation",
-		userId: mockUserId,
-	} as Context;
+	// Context for future integration tests
+	// const mockContext: Context = {
+	// 	session: null,
+	// 	anonymousId: mockUserId,
+	// 	correlationId: "test-correlation",
+	// 	userId: mockUserId,
+	// } as Context;
 
 	beforeEach(() => {
 		vi.clearAllMocks();
@@ -148,7 +148,7 @@ describe("Contact Router", () => {
 			});
 
 			expect(result).toHaveLength(1);
-			expect(result[0].formattedName).toBe("Alice Smith");
+			expect(result[0]?.formattedName).toBe("Alice Smith");
 		});
 
 		it("should search contacts by name and email", async () => {
@@ -306,12 +306,13 @@ describe("Contact Router", () => {
 		});
 
 		it("should update categories by replacing them", async () => {
-			vi.mocked(prisma.contact.update).mockResolvedValue({
+			const mockResult = {
 				id: mockContactId,
 				categories: [{ category: "New Category" }],
-			} as never);
+			};
+			vi.mocked(prisma.contact.update).mockResolvedValue(mockResult as never);
 
-			const result = await prisma.contact.update({
+			await prisma.contact.update({
 				where: { id: mockContactId },
 				data: {
 					categories: {
@@ -321,7 +322,7 @@ describe("Contact Router", () => {
 				},
 			});
 
-			expect(result.categories).toHaveLength(1);
+			expect(mockResult.categories).toHaveLength(1);
 		});
 	});
 
@@ -497,7 +498,7 @@ describe("Contact Router", () => {
 			});
 
 			expect(results).toHaveLength(1);
-			expect(results[0].formattedName).toBe("Search Result");
+			expect(results[0]?.formattedName).toBe("Search Result");
 		});
 	});
 });

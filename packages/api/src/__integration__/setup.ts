@@ -62,19 +62,22 @@ export function generateAnonId(): string {
 export async function cleanupTestData(userId: string): Promise<void> {
 	const prisma = await getTestPrisma();
 
+	// Get user's calendar IDs first (needed for models without calendar relation)
+	const userCalendars = await prisma.calendar.findMany({
+		where: { userId },
+		select: { id: true },
+	});
+	const calendarIds = userCalendars.map((c) => c.id);
+
 	// Delete in order respecting foreign keys
 	await prisma.calendarShareLink.deleteMany({
 		where: {
-			calendar: {
-				userId,
-			},
+			calendarId: { in: calendarIds },
 		},
 	});
-	await prisma.calendarGroupCalendar.deleteMany({
+	await prisma.calendarGroupMember.deleteMany({
 		where: {
-			calendar: {
-				userId,
-			},
+			calendarId: { in: calendarIds },
 		},
 	});
 	await prisma.calendarGroup.deleteMany({ where: { userId } });
