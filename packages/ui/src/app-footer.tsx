@@ -103,7 +103,7 @@ export function AppFooter() {
 							</li>
 							<li>
 								<a
-									href="https://github.com/Leigh-Chr/appstandard/blob/main/LICENSE"
+									href="https://github.com/Leigh-Chr/appstandard/blob/master/LICENSE"
 									target="_blank"
 									rel="noopener noreferrer"
 									className="text-muted-foreground text-sm transition-colors hover:text-foreground"

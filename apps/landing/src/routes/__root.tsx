@@ -351,7 +351,7 @@ function Footer() {
 							</li>
 							<li>
 								<a
-									href={`${GITHUB_URL}/blob/main/LICENSE`}
+									href={`${GITHUB_URL}/blob/master/LICENSE`}
 									target="_blank"
 									rel="noopener noreferrer"
 									className="text-muted-foreground text-sm transition-colors hover:text-foreground"
