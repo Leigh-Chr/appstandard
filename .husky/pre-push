@@ -19,8 +19,9 @@ if [ $? -ne 0 ]; then
 fi
 
 # Knip (unused code)
+# Run with Node.js — bun's module resolution breaks knip's tsdown loader
 echo "Checking for unused code..."
-bunx knip
+PATH=$(echo "$PATH" | tr ':' '\n' | grep -v '\.bun' | tr '\n' ':' | sed 's/:$//') npx knip
 if [ $? -ne 0 ]; then
     echo "❌ Knip found unused code. Fix before pushing."
     exit 1

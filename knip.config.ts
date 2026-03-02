@@ -48,6 +48,8 @@ const config: KnipConfig = {
 		"**/knip.config.ts",
 		// TanStack Router lazy-loaded route files (loaded dynamically by convention)
 		"**/*.lazy.tsx",
+		// Standalone utility scripts
+		"scripts/**",
 		// Codacy config files
 		".codacy/**",
 		// BMAD framework files (external tooling)
@@ -205,6 +207,7 @@ const config: KnipConfig = {
 
 		// ===== CSS-imported dependencies (not detected by knip) =====
 		"tw-animate-css",
+		"@fontsource-variable/dm-sans",
 		"@fontsource-variable/jetbrains-mono",
 		"@fontsource-variable/sora",
 
@@ -213,10 +216,7 @@ const config: KnipConfig = {
 
 		// ===== Packages re-exported =====
 		"@appstandard/core", // Core types re-exported
-		"@appstandard/ics-utils", // ICS utilities used in calendar-web
 		"@appstandard/react-utils", // React utilities
-		"@appstandard-contacts/vcard-utils", // vCard utilities used in contacts-api
-		"@appstandard-tasks/todo-utils", // Todo utilities used in tasks-api
 		"@tanstack/react-query", // Used as peer dep
 		"@trpc/client", // Used via tRPC setup
 
