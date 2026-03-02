@@ -1,6 +1,6 @@
 import { Button } from "@appstandard/ui";
 import { createFileRoute } from "@tanstack/react-router";
-import { Github, Globe, Lock, Smartphone } from "lucide-react";
+import { FileText, Github, Globe, Lock, Smartphone } from "lucide-react";
 
 export const Route = createFileRoute("/")({
 	component: LandingPage,
