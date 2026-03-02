@@ -14,7 +14,7 @@ import {
 	Link,
 	Outlet,
 } from "@tanstack/react-router";
-import { ExternalLink, Github, Heart, Menu, Shield } from "lucide-react";
+import { Github, Menu } from "lucide-react";
 import "../index.css";
 
 const BASE_URL = "https://www.appstandard.io";
@@ -118,36 +118,24 @@ function RootComponent() {
 
 function Header() {
 	return (
-		<header className="header-glow sticky top-0 z-50 border-b bg-background/95 backdrop-blur-md supports-[backdrop-filter]:bg-background/80">
-			<div className="container flex items-center justify-between px-4 py-3">
-				{/* Logo */}
+		<header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur-sm supports-[backdrop-filter]:bg-background/80">
+			<div className="flex items-center justify-between py-3 content-column">
 				<Link
 					to="/"
-					className="logo-animated group flex items-center gap-2.5 rounded-md font-semibold text-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+					className="flex items-center gap-2 rounded-md font-semibold text-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 					aria-label="AppStandard - Home"
 				>
-					<div className="relative">
-						<img
-							src="/logo.png"
-							alt=""
-							className="logo-icon size-7"
-							aria-hidden="true"
-						/>
-						<div className="absolute inset-0 rounded-full bg-primary/20 opacity-0 blur-md transition-opacity group-hover:opacity-100" />
-					</div>
-					<span className="bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text">
-						AppStandard
-					</span>
+					<img src="/logo.png" alt="" className="size-7" aria-hidden="true" />
+					<span>AppStandard</span>
 				</Link>
 
-				{/* Desktop navigation */}
 				<nav
 					className="hidden items-center gap-6 md:flex"
 					aria-label="Main navigation"
 				>
 					<a
 						href={CALENDAR_URL}
-						className="flex items-center gap-2 rounded-sm font-medium text-muted-foreground text-sm transition-colors hover:text-foreground focus-visible:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+						className="flex items-center gap-2 rounded-sm text-muted-foreground text-sm transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 					>
 						<img
 							src="/calendar-icon.png"
@@ -159,7 +147,7 @@ function Header() {
 					</a>
 					<a
 						href={TASKS_URL}
-						className="flex items-center gap-2 rounded-sm font-medium text-muted-foreground text-sm transition-colors hover:text-foreground focus-visible:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+						className="flex items-center gap-2 rounded-sm text-muted-foreground text-sm transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 					>
 						<img
 							src="/tasks-icon.png"
@@ -171,7 +159,7 @@ function Header() {
 					</a>
 					<a
 						href={CONTACTS_URL}
-						className="flex items-center gap-2 rounded-sm font-medium text-muted-foreground text-sm transition-colors hover:text-foreground focus-visible:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+						className="flex items-center gap-2 rounded-sm text-muted-foreground text-sm transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 					>
 						<img
 							src="/contacts-icon.png"
@@ -186,31 +174,24 @@ function Header() {
 						href={GITHUB_URL}
 						target="_blank"
 						rel="noopener noreferrer"
-						className="flex items-center gap-2 rounded-sm font-medium text-muted-foreground text-sm transition-colors hover:text-foreground focus-visible:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+						className="flex items-center gap-2 rounded-sm text-muted-foreground text-sm transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 					>
 						<Github className="size-4" aria-hidden="true" />
 						GitHub
 					</a>
 				</nav>
 
-				{/* Right side actions */}
 				<div className="flex items-center gap-2">
 					<ModeToggle />
 
-					{/* Mobile menu */}
 					<div className="md:hidden">
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>
-								<Button
-									variant="ghost"
-									size="icon"
-									className="min-h-[44px] min-w-[44px]"
-									aria-label="Open menu"
-								>
+								<Button variant="ghost" size="icon" aria-label="Open menu">
 									<Menu className="size-5" />
 								</Button>
 							</DropdownMenuTrigger>
-							<DropdownMenuContent align="end" className="w-56">
+							<DropdownMenuContent align="end" className="w-48">
 								<DropdownMenuItem asChild>
 									<a href={CALENDAR_URL} className="flex items-center gap-2">
 										<img
@@ -254,10 +235,6 @@ function Header() {
 									>
 										<Github className="size-4" aria-hidden="true" />
 										GitHub
-										<ExternalLink
-											className="ml-auto size-3 text-muted-foreground"
-											aria-hidden="true"
-										/>
 									</a>
 								</DropdownMenuItem>
 							</DropdownMenuContent>
@@ -273,146 +250,64 @@ function Footer() {
 	const currentYear = new Date().getFullYear();
 
 	return (
-		<footer className="border-t bg-muted/30">
-			<div className="container mx-auto px-4 py-8">
-				<div className="grid grid-cols-1 gap-8 md:grid-cols-3">
-					{/* Brand section */}
-					<div className="space-y-3">
-						<div className="flex items-center gap-2">
+		<footer className="border-t">
+			<div className="py-8 content-column">
+				<div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
+					<div className="max-w-sm">
+						<div className="mb-2 flex items-center gap-2">
 							<img
 								src="/logo.png"
 								alt=""
-								className="size-6"
+								className="size-5"
 								aria-hidden="true"
 							/>
-							<p className="font-semibold text-base">AppStandard</p>
+							<p className="font-medium text-sm">AppStandard</p>
 						</div>
 						<p className="text-muted-foreground text-sm">
-							Open-source productivity apps for calendars, contacts, and tasks.
-							Free forever, privacy first.
-						</p>
-						<p className="mt-3 text-muted-foreground text-xs">
-							Enjoying AppStandard?{" "}
-							<a
-								href="https://ko-fi.com/leigh_chr"
-								target="_blank"
-								rel="noopener noreferrer"
-								className="font-medium text-primary hover:underline"
-							>
-								Support the project
-								<span className="sr-only"> (opens in new tab)</span>
-							</a>
+							Open-source productivity apps. Free forever, privacy first.
 						</p>
 					</div>
 
-					{/* Apps section */}
-					<div className="space-y-3">
-						<p className="font-semibold text-base">Apps</p>
-						<ul className="space-y-2">
-							<li>
-								<a
-									href={CALENDAR_URL}
-									className="flex items-center gap-2 text-muted-foreground text-sm transition-colors hover:text-foreground"
-								>
-									<img
-										src="/calendar-icon.png"
-										alt=""
-										className="size-5"
-										aria-hidden="true"
-									/>
-									Calendar
-								</a>
-							</li>
-							<li>
-								<a
-									href={TASKS_URL}
-									className="flex items-center gap-2 text-muted-foreground text-sm transition-colors hover:text-foreground"
-								>
-									<img
-										src="/tasks-icon.png"
-										alt=""
-										className="size-5"
-										aria-hidden="true"
-									/>
-									Tasks
-								</a>
-							</li>
-							<li>
-								<a
-									href={CONTACTS_URL}
-									className="flex items-center gap-2 text-muted-foreground text-sm transition-colors hover:text-foreground"
-								>
-									<img
-										src="/contacts-icon.png"
-										alt=""
-										className="size-5"
-										aria-hidden="true"
-									/>
-									Contacts
-								</a>
-							</li>
-						</ul>
-					</div>
-
-					{/* Legal & Links section */}
-					<div className="space-y-3">
-						<p className="font-semibold text-base">Legal & Links</p>
-						<ul className="space-y-2">
-							<li>
-								<a
-									href={GITHUB_URL}
-									target="_blank"
-									rel="noopener noreferrer"
-									className="flex items-center gap-2 text-muted-foreground text-sm transition-colors hover:text-foreground"
-								>
-									<Github className="h-4 w-4" aria-hidden="true" />
-									GitHub
-									<span className="sr-only">(opens in new tab)</span>
-								</a>
-							</li>
-							<li>
-								<a
-									href="https://ko-fi.com/leigh_chr"
-									target="_blank"
-									rel="noopener noreferrer"
-									className="flex items-center gap-2 text-muted-foreground text-sm transition-colors hover:text-primary"
-								>
-									<Heart
-										className="h-4 w-4 fill-current text-primary/70"
-										aria-hidden="true"
-									/>
-									Support on Ko-fi
-									<span className="sr-only">(opens in new tab)</span>
-								</a>
-							</li>
-							<li>
-								<a
-									href={`${GITHUB_URL}/blob/master/LICENSE`}
-									target="_blank"
-									rel="noopener noreferrer"
-									className="text-muted-foreground text-sm transition-colors hover:text-foreground"
-								>
-									License
-									<span className="sr-only"> (opens in new tab)</span>
-								</a>
-							</li>
-							<li>
-								<Link
-									to="/privacy"
-									className="flex items-center gap-2 text-muted-foreground text-sm transition-colors hover:text-foreground"
-								>
-									<Shield className="h-4 w-4" aria-hidden="true" />
-									Privacy Policy
-								</Link>
-							</li>
-						</ul>
-					</div>
+					<nav
+						className="flex flex-wrap gap-x-6 gap-y-2 text-sm"
+						aria-label="Footer navigation"
+					>
+						<a
+							href={GITHUB_URL}
+							target="_blank"
+							rel="noopener noreferrer"
+							className="rounded-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+						>
+							GitHub<span className="sr-only"> (opens in new tab)</span>
+						</a>
+						<Link
+							to="/privacy"
+							className="rounded-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+						>
+							Privacy
+						</Link>
+						<a
+							href={`${GITHUB_URL}/blob/master/LICENSE`}
+							target="_blank"
+							rel="noopener noreferrer"
+							className="rounded-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+						>
+							License<span className="sr-only"> (opens in new tab)</span>
+						</a>
+						<a
+							href="https://ko-fi.com/leigh_chr"
+							target="_blank"
+							rel="noopener noreferrer"
+							className="rounded-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+						>
+							Support<span className="sr-only"> (opens in new tab)</span>
+						</a>
+					</nav>
 				</div>
 
-				{/* Copyright */}
-				<div className="mt-8 border-t pt-6 text-center">
-					<p className="text-muted-foreground text-sm">
-						© {currentYear} AppStandard. Open source and free to use.
+				<div className="mt-6 border-t pt-4">
+					<p className="text-muted-foreground text-xs">
+						© {currentYear} AppStandard
 					</p>
 				</div>
 			</div>

@@ -21,7 +21,7 @@ const CONTACT_EMAIL = "privacy@appstandard.io";
 
 function PrivacyPolicyPage() {
 	return (
-		<div className="container mx-auto max-w-4xl px-4 py-12 sm:py-16">
+		<div className="max-w-4xl py-12 content-column sm:py-16">
 			{/* Header */}
 			<header className="mb-12 text-center">
 				<div className="mb-6 inline-flex items-center justify-center rounded-full bg-primary/10 p-4">
