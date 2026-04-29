@@ -288,8 +288,6 @@ Add DNS records at your registrar:
 
 ```
 Type    Name    Value              TTL
-A       @       YOUR_VPS_IP        3600
-A       www     YOUR_VPS_IP        3600
 A       api     YOUR_VPS_IP        3600
 ```
 
@@ -298,8 +296,6 @@ A       api     YOUR_VPS_IP        3600
 ```bash
 # For all domains (recommended - single SAN certificate)
 sudo certbot --nginx \
-  -d appstandard.io \
-  -d www.appstandard.io \
   -d calendar.appstandard.io \
   -d api.appstandard.io \
   -d tasks.appstandard.io \
@@ -343,14 +339,13 @@ docker compose ps
 
 # Test endpoints
 curl https://api.appstandard.io/health
-curl -I https://appstandard.io
 
 # Check database
 docker compose exec db psql -U appstandard -d appstandard -c "\dt"
 ```
 
 **Test the application**:
-1. Open https://appstandard.io in a browser
+1. Open https://calendar.appstandard.io in a browser
 2. Check that there are no errors in the console (F12)
 3. Test account creation
 

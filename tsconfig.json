@@ -25,7 +25,6 @@
 		{ "path": "./apps/tasks-web" },
 		{ "path": "./apps/tasks-server" },
 		{ "path": "./apps/contacts-web" },
-		{ "path": "./apps/contacts-server" },
-		{ "path": "./apps/landing" }
+		{ "path": "./apps/contacts-server" }
 	]
 }

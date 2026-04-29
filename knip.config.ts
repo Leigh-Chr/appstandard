@@ -23,10 +23,6 @@ const config: KnipConfig = {
 		"apps/tasks-server": {
 			project: ["src/**/*.{ts,tsx}", "!**/*.test.{ts,tsx}"],
 		},
-		"apps/landing": {
-			entry: ["src/main.tsx"],
-			project: ["src/**/*.{ts,tsx}", "!**/*.test.{ts,tsx}"],
-		},
 		"packages/*": {
 			project: ["src/**/*.{ts,tsx}", "!**/*.test.{ts,tsx}"],
 		},
@@ -160,9 +156,6 @@ const config: KnipConfig = {
 		"apps/calendar-web/src/routes/__root.tsx": ["types"],
 		"apps/contacts-web/src/routes/__root.tsx": ["types"],
 		"apps/tasks-web/src/routes/__root.tsx": ["types"],
-		// Landing page routes - Route exports used by TanStack Router
-		"apps/landing/src/routes/__root.tsx": ["exports"],
-		"apps/landing/src/routes/index.tsx": ["exports"],
 		// Filter components exported for composition
 		"apps/contacts-web/src/components/contact-filters.tsx": [
 			"exports",

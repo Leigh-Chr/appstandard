@@ -41,7 +41,7 @@ show_help() {
     echo ""
     echo "Services:"
     echo "  calendar-server, calendar-web, tasks-server, tasks-web,"
-    echo "  contacts-server, contacts-web, landing"
+    echo "  contacts-server, contacts-web"
     echo ""
     echo "Options (via environment variables):"
     echo "  SKIP_PULL=true       Skip git pull"
@@ -179,8 +179,8 @@ case "${MODE}" in
             build_service "${service}"
         done
 
-        # Then frontends and landing
-        FRONTENDS="landing calendar-web tasks-web contacts-web"
+        # Then frontends
+        FRONTENDS="calendar-web tasks-web contacts-web"
         for service in $FRONTENDS; do
             build_service "${service}"
         done
@@ -200,7 +200,7 @@ case "${MODE}" in
         docker compose up -d
         ;;
 
-    calendar-server|calendar-web|tasks-server|tasks-web|contacts-server|contacts-web|landing)
+    calendar-server|calendar-web|tasks-server|tasks-web|contacts-server|contacts-web)
         build_service "${MODE}"
         deploy_service "${MODE}"
         ;;
@@ -215,7 +215,7 @@ log "Verifying deployment..."
 sleep 5
 
 FAILED=0
-SERVICES="calendar-server calendar-web tasks-server tasks-web contacts-server contacts-web landing"
+SERVICES="calendar-server calendar-web tasks-server tasks-web contacts-server contacts-web"
 for service in $SERVICES; do
     if docker compose ps "${service}" --format '{{.Status}}' | grep -q "healthy\|Up"; then
         success "${service}: running"

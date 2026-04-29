@@ -5,7 +5,6 @@ This guide describes the steps to deploy all AppStandard products in production.
 ## Architecture Overview
 
 AppStandard is a multi-product monorepo containing:
-- **AppStandard Landing** - Main landing page (appstandard.io)
 - **AppStandard Calendar** - ICS calendar management (production-ready)
 - **AppStandard Tasks** - Todo/task management (production-ready)
 - **AppStandard Contacts** - vCard contact management (production-ready)
@@ -14,7 +13,6 @@ AppStandard is a multi-product monorepo containing:
 
 | App | Frontend URL | API URL | Internal Ports |
 |-----|--------------|---------|----------------|
-| Landing | appstandard.io | - | 3010 → 8080 |
 | Calendar | calendar.appstandard.io | api.appstandard.io | 3001 → 8080, 3000 |
 | Tasks | tasks.appstandard.io | api-tasks.appstandard.io | 3004 → 8080, 3002 |
 | Contacts | contacts.appstandard.io | api-contacts.appstandard.io | 3005 → 8080, 3003 |
@@ -25,7 +23,6 @@ AppStandard is a multi-product monorepo containing:
 |-----------|----------------|-------|------|
 | PostgreSQL | appstandard-db | postgres:16-alpine | 5432 |
 | Redis | appstandard-redis | redis:7-alpine | 6379 |
-| Landing | appstandard-landing | nginx-unprivileged | 3010 |
 | Calendar Backend | appstandard-calendar-server | bun:alpine | 3000 |
 | Calendar Frontend | appstandard-calendar-web | nginx-unprivileged | 3001 |
 | Tasks Backend | appstandard-tasks-server | bun:alpine | 3002 |
@@ -104,11 +101,6 @@ SENTRY_DSN=
 VITE_SENTRY_DSN=
 
 # ===================================
-# Landing Page (appstandard.io)
-# ===================================
-LANDING_PORT=3010
-
-# ===================================
 # Calendar (calendar.appstandard.io)
 # ===================================
 CALENDAR_API_URL=https://api.appstandard.io
@@ -168,9 +160,6 @@ docker compose up -d --build
 # Only Calendar
 docker compose up -d db redis calendar-server calendar-web
 
-# Only Landing + Calendar
-docker compose up -d landing db redis calendar-server calendar-web
-
 # All apps
 docker compose up -d --build
 ```
@@ -207,10 +196,6 @@ docker compose exec db psql -U appstandard -d appstandard
 # ===================================
 # Upstream definitions
 # ===================================
-upstream landing {
-    server 127.0.0.1:3010;
-}
-
 upstream calendar_web {
     server 127.0.0.1:3001;
 }
@@ -233,29 +218,6 @@ upstream contacts_web {
 
 upstream contacts_api {
     server 127.0.0.1:3003;
-}
-
-# ===================================
-# Landing Page - appstandard.io
-# ===================================
-server {
-    listen 443 ssl http2;
-    listen [::]:443 ssl http2;
-    server_name appstandard.io www.appstandard.io;
-
-    ssl_certificate /etc/letsencrypt/live/appstandard.io/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/appstandard.io/privkey.pem;
-    include /etc/letsencrypt/options-ssl-nginx.conf;
-    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
-
-    location / {
-        proxy_pass http://landing;
-        proxy_http_version 1.1;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
 }
 
 # ===================================
@@ -414,8 +376,7 @@ server {
 server {
     listen 80;
     listen [::]:80;
-    server_name appstandard.io www.appstandard.io
-                calendar.appstandard.io api.appstandard.io
+    server_name calendar.appstandard.io api.appstandard.io
                 tasks.appstandard.io api-tasks.appstandard.io
                 contacts.appstandard.io api-contacts.appstandard.io;
 
@@ -439,8 +400,6 @@ apt install certbot python3-certbot-nginx
 
 # Get wildcard certificate for all subdomains
 certbot certonly --nginx \
-  -d appstandard.io \
-  -d www.appstandard.io \
   -d calendar.appstandard.io \
   -d api.appstandard.io \
   -d tasks.appstandard.io \
@@ -465,8 +424,6 @@ Configure these DNS records for appstandard.io:
 
 | Type | Name | Value |
 |------|------|-------|
-| A | @ | YOUR_VPS_IP |
-| A | www | YOUR_VPS_IP |
 | A | calendar | YOUR_VPS_IP |
 | A | api | YOUR_VPS_IP |
 | A | tasks | YOUR_VPS_IP |
@@ -539,7 +496,6 @@ See [SECURITY.md](SECURITY.md) for security measures, secret rotation, and best 
 | Calendar API | `https://api.appstandard.io/health` |
 | Tasks API | `https://api-tasks.appstandard.io/health` |
 | Contacts API | `https://api-contacts.appstandard.io/health` |
-| Landing | `https://appstandard.io/nginx-health` |
 
 ### Sentry Integration
 

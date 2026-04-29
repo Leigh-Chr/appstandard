@@ -9,7 +9,6 @@ AppStandard is a **monorepo** managed with Turborepo, containing multiple produc
 ### Applications
 | App | Frontend | Backend | Description |
 |-----|----------|---------|-------------|
-| Landing | `apps/landing` | - | Landing page presenting all products |
 | Calendar | `apps/calendar-web` | `apps/calendar-server` | ICS calendar management |
 | Tasks | `apps/tasks-web` | `apps/tasks-server` | Todo/task management |
 | Contacts | `apps/contacts-web` | `apps/contacts-server` | vCard contact management |

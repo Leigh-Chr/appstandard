@@ -54,7 +54,6 @@
 		"dev:contacts": "turbo -F contacts-web -F contacts-server dev",
 		"dev:contacts-web": "turbo -F contacts-web dev",
 		"dev:contacts-server": "turbo -F contacts-server dev",
-		"dev:landing": "turbo -F landing dev",
 		"db:push": "turbo -F @appstandard/db db:push",
 		"db:studio": "turbo -F @appstandard/db db:studio",
 		"db:generate": "turbo -F @appstandard/db db:generate",

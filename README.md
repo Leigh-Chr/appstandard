@@ -13,7 +13,7 @@
 
 | Metric | Count |
 |--------|-------|
-| Applications | 7 (3 frontends, 3 backends, 1 landing) |
+| Applications | 6 (3 frontends, 3 backends) |
 | Shared Packages | 13+ |
 | Lines of TypeScript | 50,000+ |
 | Test Files | 47 |
@@ -46,8 +46,7 @@ appstandard/
 │   ├── tasks-web/
 │   ├── tasks-server/
 │   ├── contacts-web/
-│   ├── contacts-server/
-│   └── landing/             # Marketing site
+│   └── contacts-server/
 │
 └── packages/
     ├── Core Infrastructure
@@ -184,7 +183,6 @@ bun run dev
 | Calendar | 3001 | 3000 |
 | Tasks | 3004 | 3002 |
 | Contacts | 3005 | 3003 |
-| Landing | 3010 | - |
 
 ## Scripts
 

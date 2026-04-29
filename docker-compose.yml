@@ -11,7 +11,7 @@
 # Recommended deployment:
 #   docker compose up -d db redis && sleep 10
 #   docker compose up -d --build calendar-server tasks-server contacts-server
-#   docker compose up -d --build landing calendar-web tasks-web contacts-web
+#   docker compose up -d --build calendar-web tasks-web contacts-web
 #
 # Enable BuildKit for faster builds with cache mounts
 # Run with: DOCKER_BUILDKIT=1 docker-compose up --build -d
@@ -109,59 +109,6 @@ services:
       - "com.appstandard.service=redis"
       - "com.appstandard.version=7-alpine"
       - "com.appstandard.environment=${NODE_ENV:-production}"
-
-  # ===================================
-  # LANDING PAGE (appstandard.io)
-  # ===================================
-  landing:
-    build:
-      context: .
-      dockerfile: apps/landing/Dockerfile
-      args:
-        TURBO_TOKEN: ${TURBO_TOKEN:-}
-        TURBO_TEAM: ${TURBO_TEAM:-}
-    container_name: appstandard-landing
-    restart: unless-stopped
-    ports:
-      - "127.0.0.1:${LANDING_PORT:-3010}:8080"
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 10s
-    networks:
-      - appstandard-network
-    read_only: true
-    cap_drop:
-      - ALL
-    cap_add:
-      - CHOWN
-      - SETGID
-      - SETUID
-    security_opt:
-      - no-new-privileges:true
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 256M
-        reservations:
-          cpus: '0.1'
-          memory: 64M
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
-        compress: "true"
-    labels:
-      - "com.appstandard.service=landing"
-      - "com.appstandard.environment=${NODE_ENV:-production}"
-    tmpfs:
-      - /var/cache/nginx:noexec,nosuid,nodev
-      - /var/run:noexec,nosuid,nodev
-      - /tmp:noexec,nosuid,nodev
 
   # ===================================
   # CALENDAR (calendar.appstandard.io)

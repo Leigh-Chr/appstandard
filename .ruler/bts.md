@@ -45,7 +45,6 @@ This is a **Turborepo monorepo** with the following structure:
 ```
 appstandard/
 ├── apps/
-│   ├── landing/             # Landing page (React + Vite)
 │   ├── calendar-web/        # Calendar frontend (React + TanStack Router)
 │   ├── calendar-server/     # Calendar API server (Hono + tRPC)
 │   ├── tasks-web/           # Tasks frontend (React + TanStack Router)
@@ -96,7 +95,6 @@ core → ics-utils (0 internal dependencies)
 - `bun run dev:calendar` - Start calendar web + server
 - `bun run dev:tasks` - Start tasks web + server
 - `bun run dev:contacts` - Start contacts web + server
-- `bun run dev:landing` - Start landing page
 
 ### Build & Type Checking
 - `bun run build` - Build all apps for production
